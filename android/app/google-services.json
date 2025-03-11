@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "742827419889",
+    "firebase_url": "https://session-1-46a86-default-rtdb.firebaseio.com",
+    "project_id": "session-1-46a86",
+    "storage_bucket": "session-1-46a86.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:742827419889:android:a401f4d74be4fbb5bf2150",
+        "android_client_info": {
+          "package_name": "com.example.session1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "742827419889-iu3dbvno2jmfmoomgom6u0ej02kmia6c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCncr-h6otbET-y74hml1eNH168cuJGXC8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "742827419889-iu3dbvno2jmfmoomgom6u0ej02kmia6c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:742827419889:android:6a0753c1c95c8d4cbf2150",
+        "android_client_info": {
+          "package_name": "com.iishanto.personalized_job_hunter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "742827419889-iu3dbvno2jmfmoomgom6u0ej02kmia6c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCncr-h6otbET-y74hml1eNH168cuJGXC8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "742827419889-iu3dbvno2jmfmoomgom6u0ej02kmia6c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:742827419889:android:a1304f60cf135ebfbf2150",
+        "android_client_info": {
+          "package_name": "com.netraservices.kpdigitals"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "742827419889-iu3dbvno2jmfmoomgom6u0ej02kmia6c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCncr-h6otbET-y74hml1eNH168cuJGXC8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "742827419889-iu3dbvno2jmfmoomgom6u0ej02kmia6c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
