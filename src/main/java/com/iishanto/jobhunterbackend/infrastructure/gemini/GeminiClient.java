@@ -1,5 +1,6 @@
 package com.iishanto.jobhunterbackend.infrastructure.gemini;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.CharMatcher;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
@@ -55,12 +56,13 @@ public class GeminiClient {
             for(GeminiResponse.Candidate candidate:geminiResponse.getCandidates()){
                 String json=candidate.getContent().getParts().get(0).getText();
                 json=sanitizeJsonString(json.substring(7,json.length()-3));
+                System.out.println("the json: "+json);
                 List < SimpleJobModel > jobModels = objectMapper.readValue(json, objectMapper.getTypeFactory().constructCollectionType(List.class, SimpleJobModel.class));
-                System.out.println(json);
                 return jobModels;
             }
             return null;
         }catch (Exception e){
+            e.printStackTrace();
             System.out.println("An error happened while parsing the response: "+e.getMessage());
             return null;
         }
@@ -69,9 +71,7 @@ public class GeminiClient {
 
     public GeminiPrompt getJobListingPromptFromUrl(String url){
         try{
-            System.out.println("Getting prompt from: "+url);
             String html = webCrawler.getHtml(url);
-            System.out.println("Got HTML for: "+url);
             return GeminiPrompt.builder().temperature(0).message(html).baseUrl(url).build();
         }catch (Exception e) {
             System.out.println("An error happened while getting prompt: " + e.getMessage());
@@ -105,7 +105,6 @@ public class GeminiClient {
             for(GeminiResponse.Candidate candidate:geminiResponse.getCandidates()){
                 String json=candidate.getContent().getParts().get(0).getText();
                 json=sanitizeJsonString(json.substring(7,json.length()-3));
-                System.out.println("got json: "+json);
                 SimpleJobModel jobModel = objectMapper.readValue(json, SimpleJobModel.class);
                 System.out.println(json);
                 return jobModel;
@@ -127,7 +126,8 @@ public class GeminiClient {
             String body = document.html();
             String markdown= FlexmarkHtmlConverter.builder().build().convert(body);
             String escapedMessage = markdown.replace("\"","\\\"");
-            escapedMessage=escapedMessage.replaceAll("\\(data:(image|video)/(.*?)\\)","");
+            escapedMessage=sanitizeMarkdown(markdown);
+//            escapedMessage=escapedMessage.replaceAll("\\(data:(image|video)/(.*?)\\)","");
             return GeminiPromptLibrary.getPrompt(
                     promptType,
                     GeminiPromptLibrary.PromptParameters.builder()
@@ -137,5 +137,16 @@ public class GeminiClient {
                             .build()
             );
         }
+
+        private String sanitizeMarkdown(String markdown) {
+            return CharMatcher.javaIsoControl() // Remove non-printable control characters
+                    .and(CharMatcher.isNot('\n'))
+                    .and(CharMatcher.isNot('\r'))
+                    .and(CharMatcher.isNot('\t'))
+                    .removeFrom(markdown)
+                    .replaceAll("\\(data:(image|video)/[^)]+\\)", "") // Remove base64 media links
+                    .replace("\"", "\\\"");
+        }
+
     }
 }

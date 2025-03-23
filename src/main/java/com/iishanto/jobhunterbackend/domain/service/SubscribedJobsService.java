@@ -38,4 +38,34 @@ public class SubscribedJobsService implements AddSubscriptionUseCase, GetSubscri
                 userDataAdapter.getLoggedInUser().getId()
         );
     }
+
+    @Override
+    public List<SimpleJobModel> getSubscribedJobs(int page, int limit, String query,int siteId) {
+        if(page<0){
+            throw new IllegalArgumentException("Page can not be less than zero");
+        }
+        if(limit>50){
+            throw new IllegalArgumentException("Too high limit, max is 50");
+        }
+        if (query!=null&&query.length()>25){
+            throw new IllegalArgumentException("Too long query");
+        }
+        if(siteId==-1){
+            return subscriptionDataAdapter.getSubscribedJobsOf(
+                    userDataAdapter.getLoggedInUser().getId(),
+                    page,
+                    limit,
+                    query
+            );
+        }else{
+            System.out.println("SITEIDii: "+siteId);
+            return subscriptionDataAdapter.getSubscribedJobsOf(
+                    userDataAdapter.getLoggedInUser().getId(),
+                    page,
+                    limit,
+                    query,
+                    siteId
+            );
+        }
+    }
 }

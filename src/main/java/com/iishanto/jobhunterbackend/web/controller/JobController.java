@@ -6,6 +6,7 @@ import com.iishanto.jobhunterbackend.scheduled.ScheduledJobIndexRefresher;
 import com.iishanto.jobhunterbackend.web.dto.response.ApiResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -21,7 +22,7 @@ public class JobController {
     }
 
 
-    @GetMapping("/api/refresh")
+    @GetMapping("/refresh")
     public ApiResponse refreshJobs(){
         scheduledJobIndexRefresher.refreshJobIndex();
         return new ApiResponse(
@@ -32,10 +33,20 @@ public class JobController {
     }
 
     @GetMapping
-    public ApiResponse getJobs(){
+    public ApiResponse getJobs(
+            @RequestParam(defaultValue = "") String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int limit,
+            @RequestParam(defaultValue = "-1") int siteId
+    ){
+        if(page<0||limit<0||limit>50){
+            throw new IllegalArgumentException("Invalid query parameters");
+        }
         return new ApiResponse(
                 true,
-                getSubscribedJobsUseCase.getSubscribedJobs(),
+                getSubscribedJobsUseCase.getSubscribedJobs(
+                        page,limit,query,siteId
+                ),
                 "Jobs fetched successfully"
         );
     }

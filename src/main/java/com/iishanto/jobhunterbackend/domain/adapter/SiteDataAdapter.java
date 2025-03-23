@@ -10,5 +10,5 @@ public interface SiteDataAdapter {
     public SimpleSiteModel getSiteByJobListUrl(String jobListUrl);
     public SimpleSiteModel getSiteByHomePage(String homePage);
     public SimpleSiteModel getSite(Long Id);
-    public List<SimpleSiteModel> getSites(int page, int size);
+    public List<SimpleSiteModel> getSites(int page, int size,String query);
 }

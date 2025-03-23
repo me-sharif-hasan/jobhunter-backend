@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.sql.Timestamp;
-
 @Data
 @Builder
 @ToString
@@ -17,6 +16,9 @@ public class UserRegistrationDto {
     @NotBlank
     private String email;
     private String password;
+    private String confirmPassword;
+    private String token;
+    private String imageUrl;
     private String role;
 
     public SimpleUserModel toUserModel(){
@@ -24,9 +26,12 @@ public class UserRegistrationDto {
                 .name(name)
                 .email(email)
                 .password(password)
+                .confirmPassword(confirmPassword)
                 .role(role)
                 .createdAt(new Timestamp(System.currentTimeMillis()))
                 .updatedAt(new Timestamp(System.currentTimeMillis()))
+                .imageUrl(imageUrl)
+                .token(token)
                 .build();
     }
 }

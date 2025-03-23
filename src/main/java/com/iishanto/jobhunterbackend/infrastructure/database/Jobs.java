@@ -5,7 +5,6 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.sql.Timestamp;
@@ -17,6 +16,7 @@ public class Jobs {
     private String jobId;
     private String title;
     @Nullable
+    @Lob
     private String jobUrl;
     @Nullable
     private String location;
@@ -33,12 +33,14 @@ public class Jobs {
     @Lob
     private String skillsNeeded;
     @Nullable
+    @Lob
     private String experienceNeeded;
     @Nullable
     private String jobPostedDate;
     @Nullable
     private String jobLastDate;
     @Nullable
+    @Lob
     private String jobApplyLink;
     @Nullable
     private String jobApplyEmail;
@@ -52,6 +54,8 @@ public class Jobs {
             nullable = false
     )
     private boolean isDescriptionIndexed=false;
+    //for facebook and linkedin sourced jobs the job will be private
+    private boolean isPrivateJob=false;
 
     @ManyToOne
     @JoinColumn(name = "site_id")
