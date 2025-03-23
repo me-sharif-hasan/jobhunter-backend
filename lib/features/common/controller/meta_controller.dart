@@ -1,4 +1,9 @@
+import 'dart:developer';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
+import 'package:get_it/get_it.dart';
+import 'package:personalized_job_hunter/features/common/domain/datasource/backend_meta_datasource.dart';
 import 'package:personalized_job_hunter/util/values/constants.dart';
 
 import '../../job/screens/job_timelime_screen.dart';
@@ -9,6 +14,12 @@ class MetaController extends ChangeNotifier {
   int _currentPage = 1;
   bool _loadingData = false;
   bool get loadingData => _loadingData;
+  static Map<String,dynamic> notificationPayload={};
+  GetIt locator = GetIt.instance;
+  BackendMetaDatasource? _backendMetaDatasource;
+  MetaController() {
+    _backendMetaDatasource = locator<BackendMetaDatasource>();
+  }
   static BuildContext? mainPageBuildContext;
   set loadingData(bool value) {
     _loadingData = value;
@@ -56,5 +67,15 @@ class MetaController extends ChangeNotifier {
       Color(Constants.themeColor[currentPage][1]),
     ];
     return colors;
+  }
+
+  getFcmPushToken() async{
+    try{
+      String? fcmToken = await FirebaseMessaging.instance.getToken();
+      log('FCM Token: $fcmToken');
+      await _backendMetaDatasource!.savePushNotificationToken(fcmToken!);
+    }catch(e){
+      log('Error getting FCM token: $e');
+    }
   }
 }

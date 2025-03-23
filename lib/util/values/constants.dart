@@ -13,6 +13,7 @@ class Constants{
 
   static const register = "/auth/google/registration";
   static const facebookConnect = "/auth/facebook/connect";
+  static const saveFirebasePushToken = "/api/settings/saveFirebaseToken";
 
   static const List<List<int>> themeColor = [
     [0xFF42A5F5, 0xFF79BCFF], // Light Blue to Blue

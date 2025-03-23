@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 class ModernSearchBar extends StatefulWidget {
@@ -14,6 +16,7 @@ class ModernSearchBar extends StatefulWidget {
 
 class _ModernSearchBarState extends State<ModernSearchBar> {
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -46,6 +49,13 @@ class _ModernSearchBarState extends State<ModernSearchBar> {
                 hintStyle: TextStyle(color: Colors.black54),
                 border: InputBorder.none,
               ),
+              onChanged: (e){
+                //set timer to search within 500ms and cancel the previous timer
+                if(_debounce?.isActive ?? false) _debounce!.cancel();
+                _debounce = Timer(const Duration(milliseconds: 500), (){
+                  widget.onSearch(_searchController.text);
+                });
+              },
             ),
           ),
           GestureDetector(

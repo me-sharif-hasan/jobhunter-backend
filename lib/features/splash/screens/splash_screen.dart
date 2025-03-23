@@ -1,16 +1,19 @@
 import 'dart:developer';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:personalized_job_hunter/features/auth/controller/user_login_controller.dart';
 import 'package:personalized_job_hunter/features/auth/screens/login_screen.dart';
 import 'package:personalized_job_hunter/features/common/screens/main_page.dart';
+import 'package:personalized_job_hunter/util/firebase/firebase_util.dart';
 import 'package:provider/provider.dart';
 
 import '../../auth/controller/auth_controller.dart';
 import '../../auth/screens/signin_with_google_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  String? initialPayload;
+  SplashScreen({super.key, this.initialPayload});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -24,6 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
   @override
   Widget build(BuildContext context) {
+    print('SplashScreen: build');
     return Consumer<AuthController>(
       builder: (context, controller, _) {
         return getScreen(controller);
@@ -33,7 +37,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
 
   Widget getScreen(AuthController controller){
-    log('Status: ${controller.status}');
+    log('Status iix: ${controller.status} ${widget.initialPayload} hhl');
+    // if(widget.initialPayload!=null&&widget.initialPayload!.isNotEmpty){
+    //   handleAppOpeningThroughNotification(widget.initialPayload!, context);
+    // }
     switch(controller.status){
       case AuthStatus.authenticated:
         return const MainScreen();

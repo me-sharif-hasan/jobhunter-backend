@@ -9,27 +9,23 @@ import 'package:personalized_job_hunter/util/values/constants.dart';
 
 import '../../../../util/http/client.dart';
 
-class JobDatasource{
+class BackendMetaDatasource{
   GetIt locator = GetIt.instance;
   BackendClient? client;
-  JobDatasource() {
+  BackendMetaDatasource() {
     client = locator<BackendClient>();
   }
-  Future <List<Job>> getJobByLimit(int limit, currentPage, String searchQuery, int siteId) {
-    return client!.get("${Constants.getJobs}?limit=$limit&page=$currentPage&query=$searchQuery&siteId=$siteId").then((response) {
+
+  Future savePushNotificationToken(String token) {
+    return client!.post(Constants.saveFirebasePushToken, body: {"fcmToken": token}).then((response) {
       if (response.statusCode == HttpStatus.ok) {
         log("--->${response.body}");
         final dynamic data = jsonDecode(utf8.decode(response.bodyBytes));
         ApiResponse apiResponse = ApiResponse.fromJson(data);
         log(data.toString());
-        List<dynamic> jobs = apiResponse.data;
-        List <Job> jobList = [];
-        for (var job in jobs) {
-          jobList.add(Job.fromJson(job));
-        }
-        return jobList;
+        return apiResponse;
       } else {
-        throw Exception('Failed to load jobs');
+        throw Exception('Failed to save push notification token');
       }
     });
   }
