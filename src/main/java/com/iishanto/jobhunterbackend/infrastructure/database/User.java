@@ -13,8 +13,10 @@ public class User{
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String name;
+    @Column(unique = true)
     private String email;
     private String password;
+    private String imageUrl;
     private String role;
     private Timestamp createdAt;
     private Timestamp updatedAt;
@@ -27,6 +29,9 @@ public class User{
 
     public static User fromUserModel(SimpleUserModel userModel){
         User user=new User();
+        if (userModel.getId()!=null){
+            user.setId(userModel.getId());
+        }
         user.setName(userModel.getName());
         user.setEmail(userModel.getEmail());
         user.setPassword(userModel.getPassword());
@@ -36,6 +41,7 @@ public class User{
         user.setLastLogin(userModel.getLastLogin());
         user.setLastLogout(userModel.getLastLogout());
         user.setLastIp(userModel.getLastIp());
+        user.imageUrl=userModel.getImageUrl();
 //        user.setSubscriptions(
 //                userModel.getSubscriptions().stream().map(Subscription::fromSubscriptionModels).toList()
 //        );
@@ -53,6 +59,7 @@ public class User{
                 .updatedAt(updatedAt)
                 .lastLogin(lastLogin)
                 .lastLogout(lastLogout)
+                .imageUrl(imageUrl)
                 .lastIp(lastIp)
 //                .subscriptions(
 //                        subscriptions.stream().map(Subscription::toSubscriptionModel).toList()

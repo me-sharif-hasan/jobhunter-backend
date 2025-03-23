@@ -9,6 +9,8 @@ import java.util.List;
 public interface SubscriptionDataAdapter {
     Long addSubscription(SimpleSubscriptionModel subscriptionModel);
     List<SimpleJobModel> getSubscribedJobsOf(Long userId);
+    List<SimpleJobModel> getSubscribedJobsOf(Long userId,int page,int limit,String query);
+    List<SimpleJobModel> getSubscribedJobsOf(Long userId,int page,int limit,String query,int siteId);
     List<SimpleSiteModel> getSubscribedSitesInSideIds(Long userId,List<Long> siteIds);
 
     void removeSubscription(SimpleSubscriptionModel simpleSubscriptionModel);

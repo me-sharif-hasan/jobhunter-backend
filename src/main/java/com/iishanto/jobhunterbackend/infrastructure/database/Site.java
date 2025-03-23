@@ -37,7 +37,7 @@ public class Site {
         site.setJobListPageUrl(siteModel.getJobListPageUrl());
         site.setDescription(siteModel.getDescription());
         site.setIconUrl(siteModel.getIconUrl());
-        site.setLastCrawledAt(new Timestamp(System.currentTimeMillis()));
+        site.setLastCrawledAt(siteModel.getLastCrawledAt());
         return site;
     }
 

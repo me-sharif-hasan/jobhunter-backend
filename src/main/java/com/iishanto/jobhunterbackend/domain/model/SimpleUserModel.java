@@ -17,6 +17,9 @@ public class SimpleUserModel {
     private String name;
     private String email;
     private String password;
+    private String confirmPassword;
+    private String token;
+    private String imageUrl;
     private String role;
     private Timestamp createdAt;
     private Timestamp updatedAt;

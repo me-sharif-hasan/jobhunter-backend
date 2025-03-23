@@ -60,15 +60,22 @@ public class SiteDataPort implements SiteDataAdapter {
     }
 
     @Override
-    public List<SimpleSiteModel> getSites(int page, int size) {
+    public List<SimpleSiteModel> getSites(int page, int size,String query) {
+        if(size>50) throw new IllegalArgumentException("Size can't be greater than 40");
         Pageable pageable= PageRequest.of(page,size);
-        List <Site> sites=siteRepository.findAllByOrderByCreatedAtDesc(pageable);
-        List <SimpleSiteModel> subscribedSites=subscriptionDataPort.getSubscribedSitesInSideIds(
+        System.out.println("Page: "+page+" Size: "+size+" Query: "+query);
+        List <Site> sites=siteRepository.findAllByNameContainingOrDescriptionContainingOrderByCreatedAtDesc(query,query,pageable);
+        List <SimpleSiteModel> subscribedSites= new java.util.ArrayList<>(subscriptionDataPort.getSubscribedSitesInSideIds(
                 userDataAdapter.getLoggedInUser().getId(),
                 sites.stream().map(Site::getId).toList()
-        ).stream().toList();
+        ).stream().toList());
         Map<Long,Boolean> subscribedSitesMap=new HashMap<>();
         subscribedSites.forEach(simpleSiteModel -> subscribedSitesMap.put(simpleSiteModel.getId(),true));
+        subscribedSites.sort((o1, o2) -> {
+            if(o1.isSubscribed()&&o2.isSubscribed()) return 0;
+            if(o1.isSubscribed()) return -1;
+            return 1;
+        });
         return sites.stream().map(Site::toDomain).peek(simpleSiteModel -> simpleSiteModel.setSubscribed(
                 subscribedSitesMap.getOrDefault(simpleSiteModel.getId(),false)
         )).toList();

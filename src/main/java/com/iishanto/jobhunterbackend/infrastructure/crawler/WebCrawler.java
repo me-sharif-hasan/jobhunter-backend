@@ -20,8 +20,11 @@ public class WebCrawler {
     }
     public String getHtml(String url) {
         try{
-            webDriver.navigate().to(url);
             JavascriptExecutor js = (JavascriptExecutor) webDriver;
+            webDriver.manage().deleteAllCookies();
+            js.executeScript("window.localStorage.clear();");
+            js.executeScript("window.sessionStorage.clear();");
+            webDriver.navigate().to(url);
             js.executeScript("window.scrollTo(0, document.body.scrollHeight);");
             WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(5));
             try{

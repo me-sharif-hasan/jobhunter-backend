@@ -35,6 +35,8 @@ public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseC
             throw new IllegalArgumentException("Job list page url already exists");
         }
         SimpleSiteModel siteModel=getSiteInformationFromUrl(url);
+        Timestamp timestamp=new Timestamp(0);
+        siteModel.setLastCrawledAt(timestamp);
         return siteDataAdapter.saveSite(
                 siteModel.withJobListPageUrl(jobListPageUrl)
         );
@@ -83,7 +85,7 @@ public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseC
     }
 
     @Override
-    public List<SimpleSiteModel> getSites(int page, int size) {
-        return siteDataAdapter.getSites(page,size);
+    public List<SimpleSiteModel> getSites(int page, int size,String query) {
+        return siteDataAdapter.getSites(page,size,query);
     }
 }

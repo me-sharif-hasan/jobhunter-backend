@@ -12,6 +12,8 @@ import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.SubscriptionRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -37,10 +39,41 @@ public class SubscriptionDataPort implements SubscriptionDataAdapter {
 
     @Override
     public List<SimpleJobModel> getSubscribedJobsOf(Long userId) {
+        return getSubscribedJobsOf(userId,0,500,"");
+//        System.out.println("USERID: "+userId);
+//        List <Subscription> subscriptions=subscriptionRepository.findAllByUserId(userId);
+//        System.out.println("SUBS: "+subscriptions+":"+subscriptions.size());
+//        List <Site> sites=subscriptions.stream().map(Subscription::getSite).toList();
+//        List <Long> siteIds=sites.stream().map(Site::getId).toList();
+//        List <Jobs> jobs = jobsRepository.findTopNBySiteIn(siteIds,70);
+//        System.out.println("REC: "+jobs+":"+jobs.size());
+//        return jobs.stream().map(Jobs::toSimpleJobModel).toList();
+    }
+
+    @Override
+    public List<SimpleJobModel> getSubscribedJobsOf(Long userId, int page, int limit, String query) {
+        System.out.println("USERID: "+userId);
         List <Subscription> subscriptions=subscriptionRepository.findAllByUserId(userId);
+        System.out.println("SUBS: "+subscriptions+":"+subscriptions.size());
         List <Site> sites=subscriptions.stream().map(Subscription::getSite).toList();
         List <Long> siteIds=sites.stream().map(Site::getId).toList();
-        List <Jobs> jobs = jobsRepository.findTopNBySiteIn(siteIds,70);
+        Pageable pageable=PageRequest.of(page,limit);
+        System.out.println(page+" "+limit);
+        List <Jobs> jobs = jobsRepository.findJobs(siteIds,query,pageable).getContent();
+        System.out.println("REC: "+jobs+":"+jobs.size());
+        return jobs.stream().map(Jobs::toSimpleJobModel).toList();
+    }
+
+    @Override
+    public List<SimpleJobModel> getSubscribedJobsOf(Long userId, int page, int limit, String query, int siteId) {
+        System.out.println("USERID: "+userId);
+        List <Subscription> subscriptions=subscriptionRepository.findAllByUserId(userId);
+        System.out.println("SUBS: "+subscriptions+":"+subscriptions.size());
+        List <Site> sites=subscriptions.stream().map(Subscription::getSite).toList();
+        List <Long> siteIds=siteId>=0?List.of((long)siteId):sites.stream().map(Site::getId).toList();
+        Pageable pageable=PageRequest.of(page,limit);
+        System.out.println(page+" "+limit);
+        List <Jobs> jobs = jobsRepository.findJobs(siteIds,query,pageable).getContent();
         System.out.println("REC: "+jobs+":"+jobs.size());
         return jobs.stream().map(Jobs::toSimpleJobModel).toList();
     }

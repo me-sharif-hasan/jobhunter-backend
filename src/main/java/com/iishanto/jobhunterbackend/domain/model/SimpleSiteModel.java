@@ -6,19 +6,21 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.util.TimeZone;
 
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class SimpleSiteModel{
-    Long id;
-    String name;
-    String homepage;
-    String description;
-    String iconUrl;
-    String jobListPageUrl;
-    Timestamp lastCrawledAt;
+    private Long id;
+    private String name;
+    private String homepage;
+    private String description;
+    private String iconUrl;
+    private String jobListPageUrl;
+    private Timestamp lastCrawledAt;
+
     boolean isSubscribed=false;
     public SimpleSiteModel (
             Long id,

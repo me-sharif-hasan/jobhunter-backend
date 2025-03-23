@@ -3,6 +3,8 @@ package com.iishanto.jobhunterbackend.infrastructure.repository;
 import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,17 +12,13 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface JobsRepository extends JpaRepository<Jobs, String>{
-    List<Jobs> findAllBySiteIn(List<Site> sites);
-    @Query(value = """
-    SELECT * FROM (
-        SELECT j.*, ROW_NUMBER() OVER (PARTITION BY j.site_id ORDER BY j.job_updated_at DESC) AS row_num
-        FROM jobs j
-        WHERE j.site_id IN (:siteIds)
-    ) AS subquery
-    WHERE subquery.row_num <= :limit ORDER BY subquery.job_parsed_at DESC
-""", nativeQuery = true)
-    List<Jobs> findTopNBySiteIn(@Param("siteIds") List<Long> siteIds,@Param("limit") int limit);
+    @Query(value = "SELECT * FROM jobs,site WHERE site.id = site_id AND site_id IN :siteIds AND (title LIKE %:keyword% OR job_description LIKE %:keyword% OR site.name LIKE %:keyword%) ORDER BY job_parsed_at DESC",nativeQuery = true)
+    Page<Jobs> findJobs(@Param("siteIds") List<Long> siteIds, @Param("keyword") String keyword,Pageable pageable);
 
     @Override
     boolean existsById(@NotNull String id);
+
+    boolean existsByJobUrl(String jobUrl);
+
+    List <Jobs> findAllByJobIdIn(List<String> jobIds);
 }

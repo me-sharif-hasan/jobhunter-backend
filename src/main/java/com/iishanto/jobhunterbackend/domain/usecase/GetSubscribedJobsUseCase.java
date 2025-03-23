@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface GetSubscribedJobsUseCase {
     List<SimpleJobModel> getSubscribedJobs();
+    List<SimpleJobModel> getSubscribedJobs(int page,int limit,String query,int siteId);
 }

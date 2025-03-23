@@ -1,0 +1,69 @@
+package com.iishanto.jobhunterbackend.infrastructure.ports.firebase;
+
+import com.iishanto.jobhunterbackend.domain.adapter.NotificationAdapter;
+import com.iishanto.jobhunterbackend.infrastructure.database.*;
+import com.iishanto.jobhunterbackend.infrastructure.firebase.FirebaseHandler;
+import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
+import com.iishanto.jobhunterbackend.infrastructure.repository.PushNotificationTokenRepository;
+import com.iishanto.jobhunterbackend.infrastructure.repository.SubscriptionRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+@Component
+@AllArgsConstructor
+public class FirebaseNotificationPort implements NotificationAdapter {
+    JobsRepository jobsRepository;
+    SubscriptionRepository subscriptionRepository;
+    PushNotificationTokenRepository pushNotificationTokenRepository;
+    FirebaseHandler firebaseHandler;
+
+    @Override
+    public void sendJobNotification(List<String> jobIds) {
+        if(jobIds.isEmpty()) return;
+        List < Jobs> jobsList=jobsRepository.findAllByJobIdIn(jobIds);
+        Map < Site,List<Jobs>> groupedJobs=new HashMap<>();
+        for (Jobs job:jobsList){
+            if(!groupedJobs.containsKey(job.getSite())){
+                groupedJobs.put(job.getSite(),new LinkedList<>());
+            }
+            groupedJobs.get(job.getSite()).add(job);
+        }
+        for (Site site:groupedJobs.keySet()){
+            List<Subscription> subscriptions=subscriptionRepository.findAllBySite(site);
+            List < PushNotificationToken> pushNotificationTokens=processSubscription(subscriptions);
+            firebaseHandler.sendPushNotification(
+                    createNewJobNotificationPayload(groupedJobs.get(site),site,pushNotificationTokens)
+            );
+        }
+    }
+
+    private List < PushNotificationToken>  processSubscription(List<Subscription> subscriptions){
+        List <User> targetUsers=subscriptions.stream().map(Subscription::getUser).toList();
+        return pushNotificationTokenRepository.findAllByUserIn(targetUsers);
+    }
+
+    private FirebaseHandler.NotificationPayload createNewJobNotificationPayload(List <Jobs> jobsList, Site site,List < PushNotificationToken> pushNotificationTokens){
+        String title="%d new job openings for %s.".formatted(jobsList.size(),site.getName());
+        String body="Check them out before they expires.\n";
+        for(int i=0;i<jobsList.size();i++){
+            if(i>4){
+                body+="and more.";
+                break;
+            }
+            body+="%d. %s\n".formatted(i+1,jobsList.get(i).getTitle());
+        }
+        List<String> targetTokens=pushNotificationTokens.stream().map(PushNotificationToken::getToken).toList();
+        return FirebaseHandler.NotificationPayload.builder()
+                .body(body)
+                .title(title)
+                .token(targetTokens)
+                .id(site.getId())
+                .iconUrl("https://www.google.com/s2/favicons?domain=%s&sz=64".formatted(site.getHomepage()))
+                .build();
+    }
+}

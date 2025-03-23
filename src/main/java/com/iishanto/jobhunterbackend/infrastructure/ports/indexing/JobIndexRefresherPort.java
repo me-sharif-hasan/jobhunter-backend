@@ -12,7 +12,8 @@ import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.security.MessageDigest;
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -31,23 +32,16 @@ public class JobIndexRefresherPort implements JobIndexingAdapter {
         this.hunterUtility=hunterUtility;
     }
     Queue < Site > indexingQueue=new LinkedList<>();
-    Queue < Jobs > indexingJobsQueue=new LinkedList<>();
     boolean isIndexing=false;
     @Override
     public void refreshIndexingQueue() {
-        List < Site > sites = siteRepository.findAllByOrderByCreatedAtDesc();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR, -24);
+        Timestamp timestamp24HoursAgo = new Timestamp(calendar.getTimeInMillis());
+        List < Site > sites = siteRepository.findAllByLastCrawledAtBefore(timestamp24HoursAgo);
         indexingQueue.addAll(sites);
     }
 
-    private void addJobForIndexing(Jobs job) {
-        System.out.println("Adding job for indexing");
-        if(job!=null&&!job.isDescriptionIndexed()){
-            indexingJobsQueue.add(job);
-            getJobMetadata();
-        }else if(job!=null){
-            System.out.println("Job already indexed: "+job.getJobId());
-        }
-    }
 
     @Override
     public Jobs getJobMetadata(Jobs job){
@@ -57,72 +51,64 @@ public class JobIndexRefresherPort implements JobIndexingAdapter {
         System.out.println("THE PROMPT"+prompt.getPromptTemplate(GeminiPromptLibrary.PromptType.JOB_DETAIL));
         SimpleJobModel jobModel = geminiClient.getJobMetadata(prompt);
         System.out.println("the job model"+jobModel);
+        if(jobModel==null) return job;
         Jobs jobEntity=Jobs.fromSimpleJobModel(jobModel, job.getSite());
         jobEntity.setJobId(job.getJobId());
+        jobEntity.setJobUrl(job.getJobUrl());
         jobEntity.setDescriptionIndexed(true);
         return jobEntity;
     }
 
-    boolean isGettingJobMetadata=false;
-    private void getJobMetadata(){
-        if (isGettingJobMetadata) return;
-        System.out.println("Starting metadata fetcher");
-        isGettingJobMetadata=true;
-        new Thread(()->{
-            while (!indexingJobsQueue.isEmpty()){
-                try{
-                    Jobs job=indexingJobsQueue.poll();
-                    GeminiClient.GeminiPrompt prompt = geminiClient.getMetadataPromptFromUrl(job.getJobUrl());
-                    if (prompt==null) return;
-                    SimpleJobModel jobModel = geminiClient.getJobMetadata(prompt);
-                    Jobs jobEntity=Jobs.fromSimpleJobModel(jobModel, job.getSite());
-                    jobEntity.setJobId(job.getJobId());
-                    jobEntity.setDescriptionIndexed(true);
-                    jobsRepository.save(jobEntity);
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-            isGettingJobMetadata=false;
-        }).start();
-    }
-
     @Override
-    public void indexJob() {
+    public void indexJob(OnIndexingDone onIndexingDone) {
         if(isIndexing) return;
         isIndexing=true;
+        List <String> newJobIds=new LinkedList<>();
         new Thread(()->{
             while (!indexingQueue.isEmpty()){
                 try{
                     Site site=indexingQueue.poll();
                     System.out.println("Indexing: "+site.getHomepage());
-                    List <Jobs> toBeAddedOrUpdated=new LinkedList<>();
                     GeminiClient.GeminiPrompt prompt = geminiClient.getJobListingPromptFromUrl(site.getJobListPageUrl());
-                    if(prompt==null) return;
+                    if(prompt==null) continue;
+                    site.setLastCrawledAt(new Timestamp(System.currentTimeMillis()));
+                    siteRepository.save(site);
                     List < SimpleJobModel > jobs = geminiClient.getJsonResponseOfJobs(prompt);
+                    if(jobs==null) continue;
                     for(SimpleJobModel job:jobs){
                         System.out.println("Job: "+job);
                         Jobs jobEntity=Jobs.fromSimpleJobModel(job,site);
-                        if(jobEntity.getJobUrl()!=null){
-                            jobEntity.setJobId(hunterUtility.MD5(jobEntity.getJobUrl()));
+                        if(jobEntity.getJobId()!=null){
+                            jobEntity.setJobId(site.getJobListPageUrl()+"/"+jobEntity.getJobId());
+                        }else{
+                            jobEntity.setJobId(jobEntity.getJobUrl());
                         }
-                        if(!jobsRepository.existsById(jobEntity.getJobId())){
+                        jobEntity.setJobId(cleanJobId(jobEntity.getJobId()));
+                        if(!jobsRepository.existsById(jobEntity.getJobId())&&!jobsRepository.existsByJobUrl(jobEntity.getJobUrl())){
                             System.out.println("job not exits"+jobEntity.getJobId()+" "+jobEntity.getJobUrl());
                             if(jobEntity.getJobUrl()!=null&&!jobEntity.isDescriptionIndexed()){
+                                String preservedUrl=jobEntity.getJobUrl();
                                 jobEntity=this.getJobMetadata(jobEntity);
+                                jobEntity.setJobUrl(preservedUrl);
                             }
                             jobsRepository.save(jobEntity);
-//                            toBeAddedOrUpdated.add(jobEntity);
+                            newJobIds.add(jobEntity.getJobId());
                         }else{
                             System.out.println("job already exits");
                         }
                     }
-//                    jobsRepository.saveAll(toBeAddedOrUpdated);
                 }catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+            System.out.println("Indexing done");
             isIndexing=false;
+            onIndexingDone.onIndexingDone(newJobIds);
         }).start();
     }
+
+    private String cleanJobId(String jobId) {
+        return StringUtils.stripAccents(jobId).replaceAll("[^a-zA-Z0-9]", "_");
+    }
+
 }
