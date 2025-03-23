@@ -98,6 +98,8 @@ class _SiteCardState extends State<SiteCard>
                               width: 40,
                               height: 40,
                               fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.business),
                             ),
                           ),
                         ),

@@ -18,6 +18,11 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   @override
+  void initState() {
+    super.initState();
+    Provider.of<MetaController>(context,listen: false).getFcmPushToken();
+  }
+  @override
   Widget build(BuildContext context) {
     MetaController.mainPageBuildContext = context;
     return Consumer<MetaController>(

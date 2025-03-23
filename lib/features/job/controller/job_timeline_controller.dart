@@ -1,10 +1,17 @@
+import 'dart:developer';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:personalized_job_hunter/features/common/domain/model/job_model.dart';
+import 'package:provider/provider.dart';
 
+import '../../common/controller/meta_controller.dart';
 import '../domain/datasource/job_datasource.dart';
 
 class JobTimelineController extends ChangeNotifier{
+  int siteId=-1;
+  String currentlyFilteredSite="All";
   final List<Job> _jobs = [
   ];
 
@@ -22,17 +29,58 @@ class JobTimelineController extends ChangeNotifier{
   }
   get jobs => _jobs;
 
-  Future loadJobs({bool notify = true}) async {
+  Future loadJobs({currentPage=0,bool notify = true, bool isSilent=false, String searchQuery=""}) async {
     try{
-      isLoading = true;
-      final List<Job> jobs = await _jobDatasource!.getJobByLimit(10);
-      _jobs.clear();
+      if(siteId==-1&&MetaController.notificationPayload['id']!=null){
+        siteId = MetaController.notificationPayload['id'];
+        MetaController.notificationPayload = {};
+      }
+      log("is silent $isSilent $currentPage");
+      if(!isSilent){
+        _isLoading = true;
+        notifyListeners();
+      }
+      if(isSilent){
+        if(MetaController.mainPageBuildContext!=null){
+          Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).loadingData = true;
+        }
+      }
+      final List<Job> jobs = await _jobDatasource!.getJobByLimit(10,currentPage,searchQuery,siteId);
+      if(jobs.isEmpty&&isSilent){
+        throw Exception("No more jobs");
+      }
+      if(!isSilent){
+        _jobs.clear();
+      }
       _jobs.addAll(jobs);
+      if(siteId!=-1&&_jobs.isNotEmpty){
+        currentlyFilteredSite = _jobs[0].company??"All";
+      }else if(siteId==-1){
+        currentlyFilteredSite = "All";
+      }
+    }catch(e){
+      log("ii logs Exception: $e");
     }finally{
       isLoading = false;
+      if(isSilent) {
+        if (MetaController.mainPageBuildContext != null) {
+          Provider
+              .of<MetaController>(
+              MetaController.mainPageBuildContext!, listen: false)
+              .loadingData = false;
+        }
+      }
     }
     if(notify){
       notifyListeners();
     }
+  }
+
+  void setSiteFilter(int siteId) {
+    print('setSiteFilter: $siteId');
+    this.siteId = siteId;
+    MetaController.notificationPayload = {};
+    loadJobs();
+    notifyListeners();
   }
 }

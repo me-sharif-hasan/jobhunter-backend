@@ -49,7 +49,7 @@ class AuthController extends ChangeNotifier {
       log("$userRegistrationModel hello world");
       _status = AuthStatus.uninitialized;
       log("Status: $_status: ${userRegistrationModel.toJson()}");
-      // notifyListeners();
+      notifyListeners();
       String token = await authDatasource.registration(userRegistrationModel);
       log("Toke is: "+token);
       storeTokenInSharedPref(token);

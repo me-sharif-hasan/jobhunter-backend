@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:developer';
+import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:personalized_job_hunter/features/common/screens/main_page.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:personalized_job_hunter/features/job/controller/job_timeline_controller.dart';
-import 'package:personalized_job_hunter/features/job/screens/job_timelime_screen.dart';
+import 'package:personalized_job_hunter/util/firebase/firebase_util.dart';
 import 'package:personalized_job_hunter/util/http/client.dart';
 import 'package:provider/provider.dart';
 
@@ -13,6 +18,7 @@ import 'package:get_it/get_it.dart';
 
 import 'features/auth/domain/datasource/auth_datasource.dart';
 import 'features/common/controller/meta_controller.dart';
+import 'features/common/domain/datasource/backend_meta_datasource.dart';
 import 'features/job/domain/datasource/job_datasource.dart';
 import 'features/profile/controller/facebook_controller.dart';
 import 'features/profile/datasource/profile_datasource.dart';
@@ -23,6 +29,7 @@ import 'firebase_options.dart';
 
 GetIt locator = GetIt.instance;
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+String notificationPayload = "";
 
 void setupLocator() {
   locator.registerSingleton<BackendClient>(BackendClient("token"));
@@ -30,14 +37,44 @@ void setupLocator() {
   locator.registerSingleton<SiteDataSource>(SiteDataSource());
   locator.registerSingleton<AuthDatasource>(AuthDatasource());
   locator.registerSingleton<ProfileDatasource>(ProfileDatasource());
+  locator.registerSingleton<BackendMetaDatasource>(BackendMetaDatasource());
 }
+
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   setupLocator();
+
+  initFlutterLocalNotification();
+  requestPushNotificationPermission();
+  listenForNotification();
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  RemoteMessage? remoteMessage = await FirebaseMessaging.instance.getInitialMessage();
+  log("Remote message: $remoteMessage");
+
+  final NotificationAppLaunchDetails? notificationAppLaunchDetails =
+  await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+
+  if(notificationAppLaunchDetails?.didNotificationLaunchApp??false){
+    try{
+      log("iif: Notification clicked: ${notificationAppLaunchDetails?.notificationResponse?.payload}");
+      notificationPayload=notificationAppLaunchDetails?.notificationResponse?.payload??"";
+      log("iif4: Notification clicked: $notificationPayload");
+    }catch(e) {
+      log("iif-e-4: Notification clicked: $e");
+    }
+  }
+  log("iif5: Notification clicked: $notificationPayload");
+
+  if(remoteMessage!=null){
+    notificationPayload = jsonEncode(remoteMessage.data);
+  }
+
   runApp(
     MultiProvider(
       providers: [
@@ -59,6 +96,12 @@ class JobHunter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    log("Building app: $notificationPayload");
+    if(notificationPayload.isNotEmpty){
+      handleAppOpeningThroughNotification(notificationPayload,context);
+      notificationPayload="";
+    }
+
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'Job Hunter',
@@ -66,7 +109,41 @@ class JobHunter extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const SplashScreen(),
+      home: SplashScreen(
+        initialPayload: notificationPayload,
+      ),
     );
   }
+
 }
+
+Future<void> initFlutterLocalNotification() async {
+  const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const InitializationSettings initializationSettings = InitializationSettings(android: androidSettings);
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveBackgroundNotificationResponse: handleBackgroundNotification,
+    onDidReceiveNotificationResponse: (NotificationResponse response) async {
+      log("iif3: Notification clicked: ${response.payload}");
+      if(response.payload!=null){
+        log("iif2: Notification clicked: ${response.payload}");
+        notificationPayload=response.payload??"";
+        MetaController.notificationPayload=jsonDecode(notificationPayload);
+        //trigger refresh
+        if(MetaController.mainPageBuildContext!=null){
+          Navigator.of(MetaController.mainPageBuildContext!).pushReplacement(MaterialPageRoute(builder: (context) => SplashScreen(initialPayload: notificationPayload,)));
+        }
+      }
+    },
+  );
+}
+
+@pragma('vm:entry-point')
+handleBackgroundNotification(NotificationResponse message) {
+  log("iif: Notification clicked bg: ${message.payload}");
+  notificationPayload=message.payload??"{id:-1}";
+  MetaController.notificationPayload=jsonDecode(notificationPayload);
+}
+
+handleForegroundNotification(){}
+

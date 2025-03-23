@@ -100,4 +100,6 @@ class SiteController extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void setSiteFilter(int siteId) {}
 }

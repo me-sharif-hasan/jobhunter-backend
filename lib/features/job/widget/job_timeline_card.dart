@@ -1,4 +1,5 @@
 // lib/features/jobs/ui/job_timeline_card.dart
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:personalized_job_hunter/features/common/widgets/apply_button.dart';
@@ -123,10 +124,15 @@ class _JobTimelineCardState extends State<JobTimelineCard> with SingleTickerProv
                                 shape: BoxShape.circle,
                               ),
                               child: widget.job.constructedIcon!=null?
-                                  Image.network(
-                                    widget.job.constructedIcon!,
+                                  CachedNetworkImage(
+                                    imageUrl: widget.job.constructedIcon!,
                                     width: 30,height: 30,
                                     fit: BoxFit.contain,
+                                    errorWidget: (context, error, stackTrace) => const Icon(
+                                      Icons.business,
+                                      size: 30,
+                                      color: Color(0xFFFFA726),
+                                    )
                                   )
                                   :const Icon(
                                 Icons.business,
