@@ -30,11 +30,11 @@ public class FirebaseHandler {
     public void sendPushNotification(NotificationPayload notificationPayload){
         System.out.printf("Sending push notification %s \n %s \n %d%n", notificationPayload.title,notificationPayload.body,notificationPayload.token.size());
         MulticastMessage multicastMessage = MulticastMessage.builder()
-                .setNotification(Notification.builder()
-                        .setTitle(notificationPayload.title)
-                        .setBody(notificationPayload.body)
-                        .setImage(notificationPayload.iconUrl)
-                        .build())
+//                .setNotification(Notification.builder()
+//                        .setTitle(notificationPayload.title)
+//                        .setBody(notificationPayload.body)
+//                        .setImage(notificationPayload.iconUrl)
+//                        .build())
                 .putData("title", notificationPayload.title)
                 .putData("body", notificationPayload.body)
                 .putData("id", notificationPayload.id.toString())
