@@ -13,8 +13,8 @@ class SiteControllerTest {
     SiteController siteController;
     @Test
     void addSite() {
-        String homepage="https://fieldnation.com/";
-        String jobListPageUrl="https://jobs.lever.co/fieldnation";
+        String homepage="https://wppool.dev/";
+        String jobListPageUrl="https://careers.wppool.dev/";
         AddSiteDto addSiteDto=AddSiteDto.builder()
                 .homepage(homepage)
                 .jobListPageUrl(jobListPageUrl)

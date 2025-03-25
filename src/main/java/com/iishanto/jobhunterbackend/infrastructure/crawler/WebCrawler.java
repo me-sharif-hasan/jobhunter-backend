@@ -22,6 +22,7 @@ public class WebCrawler {
         try{
             JavascriptExecutor js = (JavascriptExecutor) webDriver;
             webDriver.manage().deleteAllCookies();
+            js.executeScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");
             js.executeScript("window.localStorage.clear();");
             js.executeScript("window.sessionStorage.clear();");
             webDriver.navigate().to(url);

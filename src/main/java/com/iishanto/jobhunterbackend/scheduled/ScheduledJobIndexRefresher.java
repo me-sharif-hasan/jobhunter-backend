@@ -14,8 +14,8 @@ public class ScheduledJobIndexRefresher {
     JobIndexingAdapter jobIndexingAdapter;
     NotificationAdapter notificationAdapter;
     @Scheduled(
-//            cron = "0 0 0 * * *"
-            fixedRate = 1000*60*60*24
+            cron = "0 0 0 * * *"
+//            fixedRate = 1000*60*60*24
     )
     public void refreshJobIndex(){
         jobIndexingAdapter.refreshIndexingQueue();
