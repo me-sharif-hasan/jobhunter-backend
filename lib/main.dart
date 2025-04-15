@@ -7,6 +7,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:personalized_job_hunter/features/job/controller/job_timeline_controller.dart';
+import 'package:personalized_job_hunter/util/firebase/firebase_analytics.dart';
 import 'package:personalized_job_hunter/util/firebase/firebase_util.dart';
 import 'package:personalized_job_hunter/util/http/client.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,8 @@ import 'features/auth/domain/datasource/auth_datasource.dart';
 import 'features/common/controller/meta_controller.dart';
 import 'features/common/domain/datasource/backend_meta_datasource.dart';
 import 'features/job/domain/datasource/job_datasource.dart';
+import 'features/notification/controller/in_app_notification_controller.dart';
+import 'features/notification/domain/datasource/notification_datasource.dart';
 import 'features/profile/controller/facebook_controller.dart';
 import 'features/profile/datasource/profile_datasource.dart';
 import 'features/splash/screens/splash_screen.dart';
@@ -38,6 +41,7 @@ void setupLocator() {
   locator.registerSingleton<AuthDatasource>(AuthDatasource());
   locator.registerSingleton<ProfileDatasource>(ProfileDatasource());
   locator.registerSingleton<BackendMetaDatasource>(BackendMetaDatasource());
+  locator.registerSingleton<NotificationDatasource>(NotificationDatasource());
 }
 
 
@@ -85,6 +89,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => MetaController()),
         ChangeNotifierProvider(create: (_) => AuthController()),
         ChangeNotifierProvider(create: (_) => FacebookController()),
+        ChangeNotifierProvider(create: (_) => InAppNotificationController()),
       ],
       child: const JobHunter(),
     ),
@@ -104,6 +109,9 @@ class JobHunter extends StatelessWidget {
 
     return MaterialApp(
       navigatorKey: navigatorKey,
+      navigatorObservers: <NavigatorObserver>[
+        FirebaseAnalyticsService().getAnalyticsObserver(),
+      ],
       title: 'Job Hunter',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
