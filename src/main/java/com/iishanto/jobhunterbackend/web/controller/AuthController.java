@@ -5,10 +5,7 @@ import com.iishanto.jobhunterbackend.domain.usecase.UserLoginUseCase;
 import com.iishanto.jobhunterbackend.web.dto.request.UserRegistrationDto;
 import com.iishanto.jobhunterbackend.web.dto.response.ApiResponse;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")

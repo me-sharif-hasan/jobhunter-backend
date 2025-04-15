@@ -79,7 +79,7 @@ public final class GeminiPromptLibrary {
                                             \\"salary\\": \\"<Salary Information>\\",
                                             \\"jobType\\": \\"<Job Type>\\",
                                             \\"jobCategory\\": \\"<Job Category>\\",
-                                            \\"jobDescription\\": \\"<Full Job Description, within 400 words or less, must summarize full description given, include responsibilities, context etc>\\",
+                                            \\"jobDescription\\": \\"<Full Job Description, within 50 words if job url exists else within 400 words or less, must summarize full description given, include responsibilities, context etc>\\",
                                             \\"jobPostedDate\\": \\"<Job Posted Date>\\",
                                             \\"jobLastDate\\": \\"<Last Date to Apply>\\",
                                             \\"jobApplyLink\\": \\"<Direct Apply Link>\\",
@@ -99,7 +99,7 @@ public final class GeminiPromptLibrary {
                                                 \\"salary\\": \\"<Salary Information>\\",
                                                 \\"jobType\\": \\"<Job Type>\\",
                                                 \\"jobCategory\\": \\"<Job Category>\\",
-                                                \\"jobDescription\\": \\"<Full Job Description, within 400 words or less, must summarize full description given, include responsibilities, context etc>\\",
+                                                \\"jobDescription\\": \\"<Full Job Description, within 50 words if job url exists else within 400 words or less, must summarize full description given, include responsibilities, context etc>\\",
                                                 \\"jobPostedDate\\": \\"<Job Posted Date>\\",
                                                 \\"jobLastDate\\": \\"<Last Date to Apply>\\",
                                                 \\"jobApplyLink\\": \\"<Direct Apply Link>\\",
@@ -109,7 +109,7 @@ public final class GeminiPromptLibrary {
                                                 \\"skillsNeeded\\": \\"<Skills Needed>\\",
                                                 \\"experienceNeeded\\": \\"<Experience Needed>\\"
                                             },
-                                        ...<more jobs>...
+                                        ...<more jobs (10 jobs max at a time)>...
                                     ]
                                     Job URL is the url immediately followed by the name of the job or that makes sense. I mean in Browser using which link user navigate is job url.
                                     Sites Base URL is: %s, use it when you need to construct the full URL. For missing values, if it is possible to guess from the title, do so else leave it blank.

@@ -62,7 +62,7 @@ public class NotificationHandlerPort implements NotificationAdapter {
     @Override
     public List<SimpleNotificationModel> getInAppNotification(int page, int limit) {
         Pageable pageable=Pageable.ofSize(limit).withPage(page);
-        return notificationRepository.findByUserId(userDataAdapter.getLoggedInUser().getId(),pageable).stream().map(Notification::toSimpleNotificationModel).toList();
+        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userDataAdapter.getLoggedInUser().getId(),pageable).stream().map(Notification::toSimpleNotificationModel).toList();
     }
 
     private List < PushNotificationToken>  processSubscription(List<Subscription> subscriptions){
