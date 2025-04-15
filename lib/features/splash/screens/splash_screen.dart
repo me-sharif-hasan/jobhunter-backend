@@ -2,14 +2,11 @@ import 'dart:developer';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:personalized_job_hunter/features/auth/controller/user_login_controller.dart';
-import 'package:personalized_job_hunter/features/auth/screens/login_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:personalized_job_hunter/features/auth/controller/auth_controller.dart';
+import 'package:personalized_job_hunter/features/auth/screens/signin_with_google_screen.dart';
 import 'package:personalized_job_hunter/features/common/screens/main_page.dart';
-import 'package:personalized_job_hunter/util/firebase/firebase_util.dart';
 import 'package:provider/provider.dart';
-
-import '../../auth/controller/auth_controller.dart';
-import '../../auth/screens/signin_with_google_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   String? initialPayload;
@@ -25,6 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Provider.of<AuthController>(context, listen: false).getCurrentUser();
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     print('SplashScreen: build');
@@ -35,49 +33,92 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
-
-  Widget getScreen(AuthController controller){
+  Widget getScreen(AuthController controller) {
     log('Status iix: ${controller.status} ${widget.initialPayload} hhl');
-    // if(widget.initialPayload!=null&&widget.initialPayload!.isNotEmpty){
-    //   handleAppOpeningThroughNotification(widget.initialPayload!, context);
-    // }
-    switch(controller.status){
+    switch (controller.status) {
       case AuthStatus.authenticated:
         return const MainScreen();
       case AuthStatus.unauthenticated:
         return const SignInWithGoogleScreen();
       default:
         return Scaffold(
+          backgroundColor: Colors.transparent,
           body: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+                begin: Alignment.topLeft, // Angular start
+                end: Alignment.bottomRight, // Angular finish
                 colors: [
-                  Color(0xFFFFA726), // Orange (hopeful start)
-                  Color(0xFFFF963C), // Light Orange (hopeful finish)
+                  Color(0xFFFF9C00), // Soft orange for warmth
+                  Color(0xFFFD9F10), // Calming purple for peace
+                  Color(0xFFFCA41E), // Calming purple for peace
+                  Color(0xFFFCAC32), // Calming purple for peace
+                  Color(0xFFFDB342), // Calming purple for peace
                 ],
               ),
             ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Logo
-                  Image.asset(
-                    'assets/logo.png',
-                    width: 200, // Adjust size as needed
-                    height: 200,
+            child: Stack(
+              children: [
+                // Main content
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Logo
+                      Image.asset(
+                        'assets/logo.png',
+                        width: 140,
+                        height: 140,
+                      ),
+                      const SizedBox(height: 32),
+                      // "Job Hunter by JS Enterprise"
+                      Column(
+                        children: [
+                          Text(
+                            'Job Hunter',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 34,
+                              fontWeight: FontWeight.w300, // Ultra-light
+                              color: Colors.white,
+                              letterSpacing: 2.0, // Wide spacing
+                              height: 1.1,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'by JS Enterprise',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white.withOpacity(0.8),
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 40),
+                      // Circular Progress Indicator
+                      CircularProgressIndicator(
+                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                        backgroundColor: Colors.white.withOpacity(0.1),
+                        strokeWidth: 3.0,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 32), // Spacing between logo and loader
-                  // Customized Circular Progress Indicator
-                  CircularProgressIndicator(
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                    backgroundColor: Colors.white.withOpacity(0.3),
-                    strokeWidth: 6.0, // Thicker for visibility
+                ),
+                // JS Enterprise logo at bottom
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 40.0),
+                    child: Image.asset(
+                      'assets/js_enterprise.png',
+                      width: 100,
+                      height: 100,
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );

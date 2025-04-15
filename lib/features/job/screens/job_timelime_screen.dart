@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:personalized_job_hunter/features/common/widgets/loader.dart';
 import 'package:personalized_job_hunter/features/common/widgets/search_bar.dart';

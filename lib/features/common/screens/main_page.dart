@@ -52,12 +52,7 @@ class _MainScreenState extends State<MainScreen> {
             index: controller.currentPage,
             children: controller.screens,
           ),
-          bottomNavigationBar: BottomNavigationBarWidget(
-            selectedIndex: 1,
-            onItemTapped: (int index) {
-              Provider.of<MetaController>(context, listen: false).currentPage=index;
-            },
-          ),
+          bottomNavigationBar: const BottomNavigationBarWidget(),
         );
       },
     );
