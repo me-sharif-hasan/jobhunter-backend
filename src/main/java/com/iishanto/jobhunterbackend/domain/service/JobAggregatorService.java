@@ -17,9 +17,4 @@ public class JobAggregatorService implements IndexJobs {
     public List<SimpleJobModel> getJobFromUrl(String url){
         return jobParserAdapter.parse(url);
     }
-
-    @Override
-    public void index() {
-
-    }
 }
