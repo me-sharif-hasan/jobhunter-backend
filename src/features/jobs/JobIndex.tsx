@@ -9,6 +9,7 @@ import JobController from "./controller/JobController.ts";
 import dicontainer from "../../utility/ioc_registry.ts";
 import Job from "../common/types/Job.ts";
 import AdminDialog from "../common/widgets/AdminDialog.tsx";
+import {SystemStatusNameValue} from "../common/types/SystemStatus.ts";
 
 export default function JobIndex(){
     const jobController = dicontainer.get(JobController);
@@ -18,6 +19,7 @@ export default function JobIndex(){
     const [totalPage, setTotalPage] = useState(0);
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
     const [showViewDialog, setShowViewDialog] = useState(false);
+    const [jobIndexingState, setJobIndexingState] = useState<SystemStatusNameValue | undefined>(undefined);
 
     useEffect(() => {
         jobController.getAllJobs(page,limit,"").then(
@@ -28,6 +30,12 @@ export default function JobIndex(){
             }
         );
     }, [page,limit,totalPage]);
+
+    useEffect(() =>{
+        jobController.getJobIndexingStatus().then(
+            status=>setJobIndexingState(status?.value)
+        )
+    }, []);
 
     const truncateText = (text: string, maxLength: number = 255) => {
         if (!text) return '';
@@ -88,6 +96,7 @@ export default function JobIndex(){
     }
 
     return <>
+    {JSON.stringify(jobIndexingState)}
         <AdminDialog 
             showModalButtonText="Close Dialog" 
             hideModalButtonText="Add New Job Manually"
