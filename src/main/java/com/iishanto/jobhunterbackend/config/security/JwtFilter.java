@@ -38,17 +38,20 @@ public class JwtFilter extends OncePerRequestFilter {
                 token = authorizationHeader.substring(7);
                 if(!token.contains(".")) throw new IllegalArgumentException("Invalid token");
                 email = jwtUtil.getUsernameFromToken(token);
+                System.out.println("Token: "+token+" Email: "+email);
                 SimpleUserModel user = getUserByEmailUseCase.getUserByEmail(email);
                 System.out.println("Email: "+email+" "+user.getEmail()+" "+user.getToken()+" "+user.getPassword()+" "+user.getRole());
                 if(user.getEmail().equals(email)){
-                    UserDetails userDetails = new org.springframework.security.core.userdetails.User(email, user.getPassword(), getGrantedAuthority());
+                    UserDetails userDetails = new org.springframework.security.core.userdetails.User(email, user.getPassword()==null?"NO_PASS":user.getPassword(), getGrantedAuthority());
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     System.out.println("Authenticated: "+email);
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 }
             }
-        }catch (Exception ignore){}finally {
+        }catch (Exception ignore){
+            ignore.printStackTrace();
+        }finally {
             filterChain.doFilter(request, response);
         }
     }

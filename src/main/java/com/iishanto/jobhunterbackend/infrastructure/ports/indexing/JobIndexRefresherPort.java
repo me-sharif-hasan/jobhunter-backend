@@ -3,10 +3,12 @@ package com.iishanto.jobhunterbackend.infrastructure.ports.indexing;
 import com.iishanto.jobhunterbackend.config.HunterUtility;
 import com.iishanto.jobhunterbackend.domain.adapter.JobIndexingAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
+import com.iishanto.jobhunterbackend.domain.model.values.SystemStatusValues;
+import com.iishanto.jobhunterbackend.domain.service.admin.SystemStatusService;
 import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
-import com.iishanto.jobhunterbackend.infrastructure.gemini.GeminiClient;
-import com.iishanto.jobhunterbackend.infrastructure.gemini.GeminiPromptLibrary;
+import com.iishanto.jobhunterbackend.infrastructure.google.GeminiClient;
+import com.iishanto.jobhunterbackend.infrastructure.google.GeminiPromptLibrary;
 import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
 import org.apache.commons.lang3.StringUtils;
@@ -23,13 +25,15 @@ public class JobIndexRefresherPort implements JobIndexingAdapter {
     private final SiteRepository siteRepository;
     private final JobsRepository jobsRepository;
     HunterUtility hunterUtility;
+    private final SystemStatusService systemStatusService;
     private final
     GeminiClient geminiClient;
-    public JobIndexRefresherPort(SiteRepository siteRepository, JobsRepository jobsRepository,GeminiClient geminiClient,HunterUtility hunterUtility){
+    public JobIndexRefresherPort(SiteRepository siteRepository, JobsRepository jobsRepository,GeminiClient geminiClient,HunterUtility hunterUtility,SystemStatusService systemStatusService) {
         this.siteRepository=siteRepository;
         this.geminiClient=geminiClient;
         this.jobsRepository=jobsRepository;
         this.hunterUtility=hunterUtility;
+        this.systemStatusService=systemStatusService;
     }
     Queue < Site > indexingQueue=new LinkedList<>();
     boolean isIndexing=false;
@@ -63,6 +67,7 @@ public class JobIndexRefresherPort implements JobIndexingAdapter {
     public void indexJob(OnIndexingDone onIndexingDone) {
         if(isIndexing) return;
         isIndexing=true;
+        systemStatusService.updateJobIndexingStatus(SystemStatusValues.JOB_INDEXING);
         List <String> newJobIds=new LinkedList<>();
         new Thread(()->{
             while (!indexingQueue.isEmpty()){
@@ -103,6 +108,7 @@ public class JobIndexRefresherPort implements JobIndexingAdapter {
             }
             System.out.println("Indexing done");
             isIndexing=false;
+            systemStatusService.updateJobIndexingStatus(SystemStatusValues.JOB_INDEXER_IDLE);
             onIndexingDone.onIndexingDone(newJobIds);
         }).start();
     }

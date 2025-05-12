@@ -1,6 +1,5 @@
-package com.iishanto.jobhunterbackend.infrastructure.gemini;
+package com.iishanto.jobhunterbackend.infrastructure.google;
 
-import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
 import lombok.Builder;
 
 public final class GeminiPromptLibrary {
