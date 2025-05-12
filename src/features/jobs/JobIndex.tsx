@@ -16,6 +16,8 @@ export default function JobIndex(){
     const [limit,setLimit]=useState(10);
     const [page, setPage] = useState(0);
     const [totalPage, setTotalPage] = useState(0);
+    const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+    const [showViewDialog, setShowViewDialog] = useState(false);
 
     useEffect(() => {
         jobController.getAllJobs(page,limit,"").then(
@@ -27,6 +29,50 @@ export default function JobIndex(){
         );
     }, [page,limit,totalPage]);
 
+    const truncateText = (text: string, maxLength: number = 255) => {
+        if (!text) return '';
+        return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+    };
+
+    const viewButton = (rowData: Job) => {
+        return (
+            <Button 
+                icon="pi pi-eye" 
+                className="p-button-text p-button-rounded p-button-info"
+                onClick={() => {
+                    setSelectedJob(rowData);
+                    setShowViewDialog(true);
+                }}
+            />
+        );
+    };
+
+    const textTemplate = (rowData: Job, field: keyof Job) => {
+        return (
+            <div className="break-words line-clamp-2 min-w-0">
+                {truncateText(rowData[field] as string)}
+            </div>
+        );
+    };
+
+    const urlTemplate = (rowData: Job) => {
+        return (
+            <a 
+                href={rowData.jobUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 break-words line-clamp-2 min-w-0"
+            >
+                <Button
+                    icon="pi pi-link"
+                    className="p-button-text p-button-rounded p-button-info"
+                    onClick={(e) => {
+                        e.stopPropagation(); // Prevent row click event
+                    }}
+                />
+            </a>
+        );
+    };
 
     function addJobHandler(e:any){
         e.preventDefault();
@@ -41,49 +87,128 @@ export default function JobIndex(){
         // })
     }
 
-    /**
-     * Local states
-     */
-
     return <>
-        <AdminDialog hideModalButtonText={'Add new job'} showModalButtonText={'Close dialog'}>
+        <AdminDialog 
+            showModalButtonText="Close Dialog" 
+            hideModalButtonText="Add New Job Manually"
+            showButton={true}
+        >
             <form onSubmit={addJobHandler}>
-                <div style={{padding:'2em',display:'flex',flexDirection:'column', justifyContent:'center', alignItems: 'center',gap:'30px'}}>
+                <div className="p-8 flex flex-col justify-center items-center gap-8">
                     <FloatLabel>
-                        <InputText name={'homepage'} id="job-home"/>
+                        <InputText name="homepage" id="job-home"/>
                         <label htmlFor="job-home">Job Home Page URL</label>
                     </FloatLabel>
                     <FloatLabel>
-                        <InputText name={'jobListPage'} id="job-list-page"/>
-                        <label htmlFor="job-list-page">Job Job List Page URL</label>
+                        <InputText name="jobListPage" id="job-list-page"/>
+                        <label htmlFor="job-list-page">Job List Page URL</label>
                     </FloatLabel>
-                    <Button type={"submit"}>Add Job Handler</Button>
+                    <Button type="submit">Add Job</Button>
                 </div>
             </form>
         </AdminDialog>
 
-        {page} - {limit}
-        <DataTable
-            totalRecords={totalPage}
-            onPage={(e)=>{
-                console.log(e);
-                setPage(e.first/e.rows);
-                setLimit(e.rows);
-            }}
-            editMode={"row"}
-            first={page*limit}
-            paginator
-            rows={limit}
-            rowsPerPageOptions={[5, 10, 25, 50]}
-            value={jobs}
-            lazy
-            tableStyle={{ minWidth: '50rem' }}
+        {/* View Job Details Modal */}
+        <AdminDialog 
+            visible={showViewDialog}
+            onHide={() => setShowViewDialog(false)}
+            hideModalButtonText="Close"
+            showModalButtonText="View Job Details"
+            showButton={false}
         >
-            <Column sortable field="jobId" header="Job ID"></Column>
-            <Column sortable field="title" header="Title"></Column>
-            <Column sortable field="company" header="Company"></Column>
-            <Column sortable field="jobUrl" header="Job Link"></Column>
-            <Column sortable field="location" header="Location"></Column>
-        </DataTable>
-    </>
+            {selectedJob && (
+                <div className="p-6 max-w-2xl">
+                    <h2 className="text-xl font-bold mb-4">{selectedJob.title}</h2>
+                    <div className="space-y-4">
+                        <div>
+                            <h3 className="font-semibold">Company</h3>
+                            <p>{selectedJob.company}</p>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold">Location</h3>
+                            <p>{selectedJob.location}</p>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold">Description</h3>
+                            <p className="whitespace-pre-wrap">{selectedJob.jobDescription}</p>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold">Skills Needed</h3>
+                            <p>{selectedJob.skillsNeeded}</p>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold">Experience Needed</h3>
+                            <p>{selectedJob.experienceNeeded}</p>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold">Job URL</h3>
+                            <a 
+                                href={selectedJob.jobUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 underline break-all"
+                            >
+                                View Job
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </AdminDialog>
+
+        <div className="card p-4">
+            <DataTable
+                totalRecords={100}
+                onPage={(e)=>{
+                    setPage(e.first/e.rows);
+                    setLimit(e.rows);
+                }}
+                editMode="row"
+                first={page*limit}
+                paginator
+                rows={limit}
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                value={jobs}
+                lazy
+                className="p-datatable-sm"
+                tableStyle={{ width: '100%' }}
+                scrollable
+                scrollHeight="calc(100vh - 200px)"
+            >
+                <Column 
+                    sortable 
+                    field="title" 
+                    header="Title" 
+                    className="w-[25%]"
+                    body={(rowData) => textTemplate(rowData, 'title')}
+                />
+                <Column 
+                    sortable 
+                    field="company" 
+                    header="Company" 
+                    className="w-[20%]"
+                    body={(rowData) => textTemplate(rowData, 'company')}
+                />
+                <Column 
+                    sortable 
+                    field="jobUrl" 
+                    header="Job Link" 
+                    className="w-[25%]"
+                    body={urlTemplate}
+                />
+                <Column 
+                    sortable 
+                    field="location" 
+                    header="Location" 
+                    className="w-[15%]"
+                    body={(rowData) => textTemplate(rowData, 'location')}
+                />
+                <Column 
+                    header="Actions" 
+                    className="w-[5%]"
+                    body={viewButton}
+                />
+            </DataTable>
+        </div>
+    </>;
 }

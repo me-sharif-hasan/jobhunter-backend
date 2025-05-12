@@ -7,6 +7,8 @@ export default function IndexPage(){
     const navigate = useNavigate();
     const userService = dicontainer.get<UserService>(UserService);
     useEffect(()=>{
+        navigate("/dashboard");
+        return;
         userService.getLoggedInUser().then(
             (user)=>{
                 if(user.email){
