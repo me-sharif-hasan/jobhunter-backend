@@ -57,6 +57,9 @@ public class Jobs {
     //for facebook and linkedin sourced jobs the job will be private
     private boolean isPrivateJob=false;
 
+    private boolean isDuplicate=false;
+    private boolean isApproved=false;
+
     @ManyToOne
     @JoinColumn(name = "site_id")
     private Site site;
@@ -82,7 +85,7 @@ public class Jobs {
         return job;
     }
     public SimpleJobModel toSimpleJobModel(){
-        return new SimpleJobModel(
+        SimpleJobModel simpleJobModel= new SimpleJobModel(
                 jobId,
                 title,
                 site.getName(),
@@ -103,5 +106,8 @@ public class Jobs {
                 skillsNeeded,
                 experienceNeeded
         );
+        simpleJobModel.setDuplicate(isDuplicate);
+        simpleJobModel.setApproved(isApproved);
+        return simpleJobModel;
     }
 }

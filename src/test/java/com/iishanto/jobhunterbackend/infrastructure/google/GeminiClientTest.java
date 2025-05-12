@@ -1,4 +1,4 @@
-package com.iishanto.jobhunterbackend.infrastructure.gemini;
+package com.iishanto.jobhunterbackend.infrastructure.google;
 
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import org.junit.jupiter.api.Test;

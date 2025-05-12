@@ -1,6 +1,5 @@
-package com.iishanto.jobhunterbackend.infrastructure.gemini;
+package com.iishanto.jobhunterbackend.infrastructure.google;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.CharMatcher;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
