@@ -4,5 +4,5 @@ export default new class Constants {
     userInfoUrl: string='/api/user';
     getAllSitesAsAdminUrl: string="/admin/site";
     addSiteAsAdmin: string='/admin/site';
-    getAllJobAdminUrl: string='/api/jobs';
+    getAllJobAdminUrl: string='/admin/jobs';
 }

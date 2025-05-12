@@ -158,7 +158,7 @@ export default function JobIndex(){
 
         <div className="card p-4">
             <DataTable
-                totalRecords={100}
+                totalRecords={totalPage??100}
                 onPage={(e)=>{
                     setPage(e.first/e.rows);
                     setLimit(e.rows);
