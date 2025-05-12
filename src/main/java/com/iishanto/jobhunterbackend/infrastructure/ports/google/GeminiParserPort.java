@@ -1,4 +1,4 @@
-package com.iishanto.jobhunterbackend.infrastructure.ports.gemini;
+package com.iishanto.jobhunterbackend.infrastructure.ports.google;
 
 import com.iishanto.jobhunterbackend.domain.adapter.JobParserAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;

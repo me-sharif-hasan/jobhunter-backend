@@ -1,6 +1,7 @@
 package com.iishanto.jobhunterbackend.domain.service;
 
 import com.iishanto.jobhunterbackend.config.security.JwtUtil;
+import com.iishanto.jobhunterbackend.domain.adapter.GoogleClientAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.UserDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
 import com.iishanto.jobhunterbackend.domain.usecase.AddUserUseCase;
@@ -17,6 +18,7 @@ import java.util.Objects;
 public class UserService implements AddUserUseCase, GetUserUseCase, UserLoginUseCase {
     UserDataAdapter userDataAdapter;
     JwtUtil jwtUtil;
+    GoogleClientAdapter googleClientAdapter;
     @Override
     public Long addUser(SimpleUserModel user) {
         if(user.getPassword()==null || user.getPassword().length()<8){
@@ -45,6 +47,16 @@ public class UserService implements AddUserUseCase, GetUserUseCase, UserLoginUse
             user.setId(simpleUserModel.getId());
         }
         return userDataAdapter.addUser(user);
+    }
+
+    @Override
+    public SimpleUserModel authorizeUsingGoogleToken(String googleToken) throws IllegalArgumentException{
+        SimpleUserModel simpleUserModel = googleClientAdapter.getUserFromIdToken(googleToken);
+        if (simpleUserModel == null) {
+            throw new IllegalArgumentException("Invalid Google token");
+        }
+        Long userId = addUserFromGoogle(simpleUserModel);
+        return userDataAdapter.getUserById(userId);
     }
 
     @Override
