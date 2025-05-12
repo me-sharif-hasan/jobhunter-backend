@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.security.Principal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @AllArgsConstructor
@@ -32,6 +33,12 @@ public class UserDataPort implements UserDataAdapter {
         String email=user.getUsername();
         User dbUser=userRepository.findByEmail(email);
         return dbUser.toUserModel();
+    }
+
+    @Override
+    public SimpleUserModel getUserById(Long id) {
+        Optional<User> user=userRepository.findById(id);
+        return user.map(User::toUserModel).orElse(null);
     }
 
     @Override

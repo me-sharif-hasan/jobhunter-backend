@@ -2,6 +2,7 @@ package com.iishanto.jobhunterbackend.infrastructure.ports.database;
 
 import com.iishanto.jobhunterbackend.domain.adapter.SubscriptionDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.UserDataAdapter;
+import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteDataAdapter;
 import com.iishanto.jobhunterbackend.infrastructure.crawler.WebCrawler;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
@@ -19,7 +20,7 @@ import java.util.Optional;
 
 @Component
 @AllArgsConstructor
-public class SiteDataPort implements SiteDataAdapter {
+public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
     private final WebCrawler webCrawler;
     private final SubscriptionDataPort subscriptionDataPort;
     private final SiteRepository siteRepository;
@@ -79,5 +80,15 @@ public class SiteDataPort implements SiteDataAdapter {
         return sites.stream().map(Site::toDomain).peek(simpleSiteModel -> simpleSiteModel.setSubscribed(
                 subscribedSitesMap.getOrDefault(simpleSiteModel.getId(),false)
         )).toList();
+    }
+
+    @Override
+    public List<SimpleSiteModel> getAllSitesForAdmin(int page, int limit, String query) {
+        return siteRepository.findAllByNameContainingOrDescriptionContainingOrderByCreatedAtDesc(query,query,PageRequest.of(page,limit)).stream().map(Site::toDomain).toList();
+    }
+
+    @Override
+    public long countAllSites() {
+        return siteRepository.count();
     }
 }

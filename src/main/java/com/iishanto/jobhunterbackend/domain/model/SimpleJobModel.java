@@ -1,6 +1,5 @@
 package com.iishanto.jobhunterbackend.domain.model;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -27,6 +26,8 @@ public class SimpleJobModel {
     public Timestamp jobUpdatedAt;
     public String skillsNeeded;
     public String experienceNeeded;
+    public boolean isDuplicate=false;
+    public boolean isApproved=false;
 
 
     private SimpleSiteModel site;
