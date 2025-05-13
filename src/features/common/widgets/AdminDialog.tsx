@@ -14,7 +14,6 @@ type AdminDialogProps = {
 export default function AdminDialog({
     children, 
     showModalButtonText='Show Modal', 
-    hideModalButtonText='Hide Modal',
     visible: externalVisible,
     onHide: externalOnHide,
     showButton = true
@@ -26,8 +25,8 @@ export default function AdminDialog({
 
     return <>
         {showButton && (
-            <Button onClick={() => setInternalShowModal(true)} type="button">
-                {showModal ? showModalButtonText : hideModalButtonText}
+            <Button disabled={showModal} onClick={() => setInternalShowModal(true)} type="button">
+                {showModalButtonText}
             </Button>
         )}
         <Dialog 

@@ -19,4 +19,9 @@ export default class JobDatasource {
         }
         throw new Error(`Error getting all jobs as admin.`);
     }
+
+    
+    async runIndexer() {
+        return this.backend.get<null>(Constants.refreshJobIndexUrl);
+    }
 }

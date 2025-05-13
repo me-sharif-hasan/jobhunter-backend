@@ -9,6 +9,6 @@ export enum SystemStatusName {
 
 export enum SystemStatusNameValue {
     JOB_INDEXING = 'JOB_INDEXING',
-    JOB_INDEXING_IDLE = 'JOB_INDEXING_IDLE',
+    JOB_INDEXER_IDLE = 'JOB_INDEXER_IDLE',
     JOB_INDEXER_ERROR = 'JOB_INDEXER_ERROR',
 }

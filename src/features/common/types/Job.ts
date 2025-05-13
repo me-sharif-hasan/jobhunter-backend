@@ -1,20 +1,20 @@
 export default class Job {
-    jobId: number;
-    title: string;
-    company: string;
-    companyWebsite: string;
-    jobUrl: string;
-    location: string;
-    salary: string;
-    jobType: string;
-    jobCategory: string;
-    jobDescription: string;
-    jobPostedDate: string;
-    jobLastDate: string;
-    jobApplyLink: string;
-    jobApplyEmail: string;
-    jobParsedAt: Date;
-    jobUpdatedAt: Date;
-    skillsNeeded: string;
-    experienceNeeded: string;
+    jobId: number | undefined;
+    title: string | undefined;
+    company: string | undefined;
+    companyWebsite: string | undefined;
+    jobUrl: string | undefined;
+    location: string | undefined;
+    salary: string | undefined;
+    jobType: string | undefined;
+    jobCategory: string | undefined;
+    jobDescription: string | undefined;
+    jobPostedDate: string | undefined;
+    jobLastDate: string | undefined;
+    jobApplyLink: string | undefined;
+    jobApplyEmail: string | undefined;
+    jobParsedAt: Date | undefined;
+    jobUpdatedAt: Date | undefined;
+    skillsNeeded: string | undefined;
+    experienceNeeded: string | undefined;
 }
