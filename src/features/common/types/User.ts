@@ -1,5 +1,5 @@
 export default class User {
-    name: string;
-    email: string;
-    picture: string;
+    name: string='';
+    email: string='';
+    picture: string='';
 }
