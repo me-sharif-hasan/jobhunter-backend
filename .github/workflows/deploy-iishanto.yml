@@ -1,0 +1,34 @@
+name: Build and Deploy React App to FTP
+
+on:
+  push:
+    branches:
+      - admin
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build React App
+        run: npm run build
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4
+        with:
+          server: ${{ secrets.IISHANTO_FTP_HOST }}
+          username: ${{ secrets.IISHANTO_FTP_USER }}
+          password: ${{ secrets.IISHANTO_FTP_PASS }}
+          local-dir: build
+          server-dir: /
