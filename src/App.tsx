@@ -4,6 +4,7 @@ import './App.css'
 import {router} from "./config/routing_widget/RecursiveRouterRenderer.tsx";
 import 'primeicons/primeicons.css';
 import 'primereact/resources/primereact.min.css';
+import "primereact/resources/themes/lara-light-indigo/theme.css";
 
 function App() {
 

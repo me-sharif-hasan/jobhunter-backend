@@ -4,7 +4,6 @@ import {useEffect, useState} from "react";
 import Site from "../../common/types/Site.ts";
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
-import "primereact/resources/themes/lara-light-indigo/theme.css";
 import AdminDialog from "../../common/widgets/AdminDialog.tsx";
 import {FloatLabel} from "primereact/floatlabel";
 import {InputText} from "primereact/inputtext";

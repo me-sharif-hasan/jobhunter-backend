@@ -1,7 +1,6 @@
 import {useEffect, useState} from "react";
 import {DataTable, DataTableStateEvent} from "primereact/datatable";
 import {Column} from "primereact/column";
-import "primereact/resources/themes/lara-light-indigo/theme.css";
 import {FloatLabel} from "primereact/floatlabel";
 import {InputText} from "primereact/inputtext";
 import {Button} from "primereact/button";
@@ -53,15 +52,36 @@ export default function JobIndex(){
     };
 
     const viewButton = (rowData: Job) => {
+        console.log(rowData);
         return (
-            <Button 
-                icon="pi pi-eye" 
-                className="p-button-text p-button-rounded p-button-info"
-                onClick={() => {
-                    setSelectedJob(rowData);
-                    setShowViewDialog(true);
-                }}
-            />
+            <div className="flex gap-2">  
+                <Button 
+                    icon="pi pi-eye" 
+                    className="p-button-text p-button-rounded p-button-info"
+                    onClick={() => {
+                        setSelectedJob(rowData);
+                        setShowViewDialog(true);
+                    }}
+                />
+                {
+                    rowData.isApproved?
+                    <Button 
+                        icon="pi pi-check" 
+                        className="p-button-text p-button-rounded p-button-success"
+                        onClick={() => {
+                            setSelectedJob(rowData);
+                            setShowViewDialog(true);
+                        }}
+                    />
+                    :<Button 
+                        icon="pi pi-hammer" 
+                        className="p-button-text p-button-rounded p-button-info"
+                        onClick={() => {
+                            jobController.approveJob(rowData.jobId);
+                        }}
+                    />
+                }
+            </div>
         );
     };
 

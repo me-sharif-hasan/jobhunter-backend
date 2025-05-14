@@ -17,4 +17,6 @@ export default class Job {
     jobUpdatedAt: Date | undefined;
     skillsNeeded: string | undefined;
     experienceNeeded: string | undefined;
+    isApproved: boolean | undefined;
+    isDuplicate: boolean | undefined;
 }

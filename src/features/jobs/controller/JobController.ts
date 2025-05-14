@@ -37,4 +37,8 @@ export default class JobController{
             alert("Error running indexer");
         });
     }
+    
+    approveJob(jobId: number | undefined) {
+        throw new Error("Method not implemented.");
+    }
 }
