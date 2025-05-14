@@ -233,7 +233,6 @@ export default function JobIndex(){
                     </div>
                 )}
                 <DataTable
-                    loading={loading}
                     totalRecords={totalPage??100}
                     onPage={(e: DataTableStateEvent)=>{
                         setPage(e.first/e.rows);

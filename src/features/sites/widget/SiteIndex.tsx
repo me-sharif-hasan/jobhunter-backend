@@ -131,7 +131,6 @@ export default function SiteIndex(){
                     </div>
                 )}
                 <DataTable
-                    loading={loading}
                     totalRecords={totalPage}
                     onPage={(e)=>{
                         setPage(e.first/e.rows);
