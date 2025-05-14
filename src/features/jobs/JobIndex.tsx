@@ -63,6 +63,16 @@ export default function JobIndex(){
                         setShowViewDialog(true);
                     }}
                 />
+                <Button 
+                            icon="pi pi-copy"
+                            title="Mark as Duplicate"
+                            tooltip="Mark as Duplicate" 
+                            className="p-button-text p-button-rounded p-button-success"
+                            onClick={() => {
+                                setSelectedJob(rowData);
+                                setShowViewDialog(true);
+                            }}
+                        />
                 {
                     rowData.isApproved?
                     <Button 
@@ -148,6 +158,30 @@ export default function JobIndex(){
                         <span className="font-medium">
                             {jobIndexingState === SystemStatusNameValue.JOB_INDEXING ? "Stop Indexer" : "Start Indexer"}
                         </span>
+                    </Button>
+                    <Button 
+                        className="p-button-raised items-center gap-2 colo"
+                        icon="pi pi-refresh"
+                        loading={loading}
+                        onClick={() => {
+                            setLoading(true);
+                            jobController.getAllJobs(page, limit, "").then(
+                                ({jobs, total}) => {
+                                    jobs.sort((a,b) => {
+                                        if(a.jobParsedAt && b.jobParsedAt){
+                                            return new Date(b.jobParsedAt).getTime() - new Date(a.jobParsedAt).getTime();
+                                        }
+                                        return 0;
+                                    });
+                                    setJobs(jobs);
+                                    setTotalPage(total);
+                                }
+                            ).finally(() => {
+                                setLoading(false);
+                            });
+                        }}
+                    >
+                        <span className="font-medium">Reload</span>
                     </Button>
                 </div>
                 <div className="flex items-center gap-4">
@@ -237,13 +271,6 @@ export default function JobIndex(){
                         header="Job Link" 
                         className="w-[6%]"
                         body={(rowData: Job) => urlTemplate(rowData)}
-                    />
-                    <Column 
-                        sortable 
-                        field="location" 
-                        header="Location" 
-                        className="w-[15%]"
-                        // body={(rowData: Job) => textTemplate(rowData, 'location')}
                     />
                     <Column 
                         sortable 
