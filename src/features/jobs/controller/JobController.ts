@@ -39,6 +39,6 @@ export default class JobController{
     }
     
     approveJob(jobId: number | undefined) {
-        throw new Error("Method not implemented.");
+        throw new Error(`Method not implemented. ${jobId}`);
     }
 }
