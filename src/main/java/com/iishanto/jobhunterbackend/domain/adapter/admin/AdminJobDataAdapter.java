@@ -8,4 +8,5 @@ public interface AdminJobDataAdapter {
     List<SimpleJobModel> getAllJobsForAdmin(int page, int limit, String query);
 
     long getTotalJobsCount();
+    void updateJobDuplicateStatus(String jobId, boolean isDuplicate);
 }
