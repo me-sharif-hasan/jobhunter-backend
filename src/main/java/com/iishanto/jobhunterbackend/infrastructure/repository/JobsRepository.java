@@ -1,7 +1,6 @@
 package com.iishanto.jobhunterbackend.infrastructure.repository;
 
 import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
-import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,5 +21,5 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
 
     List<Jobs> findAllByJobIdIn(List<String> jobIds);
 
-    List<Jobs> findAllByJobDescriptionContainingOrTitleContainingOrLocationContainingOrderByJobParsedAt(String description,String title,String location, Pageable pageable);
+    List<Jobs> findAllByJobDescriptionContainingOrTitleContainingOrLocationContainingOrderByJobParsedAtDesc(String description, String title, String location, Pageable pageable);
 }
