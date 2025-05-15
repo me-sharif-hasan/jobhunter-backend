@@ -21,9 +21,9 @@ public class AdminJobController {
         System.out.println("Jobs Refreshed");
     }
 
-    @PatchMapping("/mark-duplicate/{jobId}")
+    @PatchMapping("/mark-duplicate")
     public ApiResponse updateJob(
-            @PathVariable String jobId
+            @RequestParam String jobId
     ){
         jobUpdateUseCase.updateDuplicateStatus(jobId,true);
         return new ApiResponse(
@@ -33,9 +33,9 @@ public class AdminJobController {
         );
     }
 
-    @PatchMapping("/unmark-duplicate/{jobId}")
+    @PatchMapping("/unmark-duplicate")
     public ApiResponse unmarkJob(
-            @PathVariable String jobId
+            @RequestParam String jobId
     ){
         jobUpdateUseCase.updateDuplicateStatus(jobId,false);
         return new ApiResponse(
