@@ -42,6 +42,7 @@ public class NotificationHandlerPort implements NotificationAdapter {
         for (Site site:groupedJobs.keySet()){
             List<Subscription> subscriptions=subscriptionRepository.findAllBySite(site);
             List < PushNotificationToken> pushNotificationTokens=processSubscription(subscriptions);
+            if(pushNotificationTokens.isEmpty()) continue;
             firebaseHandler.sendPushNotification(
                     createNewJobNotificationPayload(groupedJobs.get(site),site,pushNotificationTokens)
             );
