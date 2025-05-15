@@ -35,4 +35,13 @@ public class AdminJobService implements GetAllJobsUseCase, JobUpdateUseCase {
     public void approveJob(String jobId) {
 
     }
+
+    @Override
+    public void updateJob(String jobId, SimpleJobModel simpleJobModel) {
+        simpleJobModel.setJobId(jobId);
+        if(jobId == null || jobId.isEmpty()) {
+            throw new IllegalArgumentException("Job ID cannot be null or empty");
+        }
+        adminJobDataAdapter.updateJob(simpleJobModel);
+    }
 }

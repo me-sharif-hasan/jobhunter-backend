@@ -1,11 +1,12 @@
 package com.iishanto.jobhunterbackend.web.controller.admin;
 
-import com.iishanto.jobhunterbackend.domain.usecase.IndexJobs;
 import com.iishanto.jobhunterbackend.domain.usecase.admin.GetAllJobsUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.admin.JobUpdateUseCase;
 import com.iishanto.jobhunterbackend.scheduled.ScheduledJobIndexRefresher;
+import com.iishanto.jobhunterbackend.web.dto.request.JobUpdateDto;
 import com.iishanto.jobhunterbackend.web.dto.response.ApiResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,8 +16,9 @@ public class AdminJobController {
     ScheduledJobIndexRefresher refreshJobUseCase;
     GetAllJobsUseCase getAllJobsUseCase;
     JobUpdateUseCase jobUpdateUseCase;
+
     @GetMapping("/refresh")
-    public void refreshJobs(){
+    public void refreshJobs() {
         refreshJobUseCase.refreshJobIndex();
         System.out.println("Jobs Refreshed");
     }
@@ -24,8 +26,8 @@ public class AdminJobController {
     @PatchMapping("/mark-duplicate")
     public ApiResponse updateJob(
             @RequestParam String jobId
-    ){
-        jobUpdateUseCase.updateDuplicateStatus(jobId,true);
+    ) {
+        jobUpdateUseCase.updateDuplicateStatus(jobId, true);
         return new ApiResponse(
                 true,
                 jobId,
@@ -36,8 +38,18 @@ public class AdminJobController {
     @PatchMapping("/unmark-duplicate")
     public ApiResponse unmarkJob(
             @RequestParam String jobId
-    ){
-        jobUpdateUseCase.updateDuplicateStatus(jobId,false);
+    ) {
+        jobUpdateUseCase.updateDuplicateStatus(jobId, false);
+        return new ApiResponse(
+                true,
+                jobId,
+                "Job updated successfully"
+        );
+    }
+
+    @PutMapping
+    public ApiResponse updateJobRecord(@RequestParam String jobId,@Validated @RequestBody JobUpdateDto jobUpdateDto) {
+        jobUpdateUseCase.updateJob(jobId,jobUpdateDto.toSimpleJobModel());
         return new ApiResponse(
                 true,
                 jobId,
@@ -51,14 +63,14 @@ public class AdminJobController {
             @RequestParam(defaultValue = "") String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "1") int limit
-    ){
-        if(page<0||limit<0||limit>50){
+    ) {
+        if (page < 0 || limit < 0 || limit > 50) {
             throw new IllegalArgumentException("Invalid query parameters");
         }
         ApiResponse apiResponse = new ApiResponse(
                 true,
                 getAllJobsUseCase.getAllJobs(
-                        page,limit,query
+                        page, limit, query
                 ),
                 "Jobs fetched successfully"
         );

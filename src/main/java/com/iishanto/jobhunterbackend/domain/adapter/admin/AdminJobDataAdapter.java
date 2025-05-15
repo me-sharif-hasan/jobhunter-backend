@@ -9,4 +9,6 @@ public interface AdminJobDataAdapter {
 
     long getTotalJobsCount();
     void updateJobDuplicateStatus(String jobId, boolean isDuplicate);
+
+    void updateJob(SimpleJobModel simpleJobModel);
 }
