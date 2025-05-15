@@ -21,14 +21,14 @@ import java.util.List;
 import java.util.Queue;
 
 @Service
-public class JobIndexRefresherPort implements JobIndexingAdapter {
+public class JobIndexEngine implements JobIndexingAdapter {
     private final SiteRepository siteRepository;
     private final JobsRepository jobsRepository;
     HunterUtility hunterUtility;
     private final SystemStatusService systemStatusService;
     private final
     GeminiClient geminiClient;
-    public JobIndexRefresherPort(SiteRepository siteRepository, JobsRepository jobsRepository,GeminiClient geminiClient,HunterUtility hunterUtility,SystemStatusService systemStatusService) {
+    public JobIndexEngine(SiteRepository siteRepository, JobsRepository jobsRepository, GeminiClient geminiClient, HunterUtility hunterUtility, SystemStatusService systemStatusService) {
         this.siteRepository=siteRepository;
         this.geminiClient=geminiClient;
         this.jobsRepository=jobsRepository;
