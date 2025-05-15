@@ -28,6 +28,7 @@ public class FirebaseHandler {
     }
 
     public void sendPushNotification(NotificationPayload notificationPayload){
+        if(notificationPayload.token.isEmpty()) return;
         System.out.printf("Sending push notification %s \n %s \n %d%n", notificationPayload.title,notificationPayload.body,notificationPayload.token.size());
         MulticastMessage multicastMessage = MulticastMessage.builder()
 //                .setNotification(Notification.builder()
