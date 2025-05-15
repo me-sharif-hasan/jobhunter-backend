@@ -19,7 +19,7 @@ public class JobDataPort implements AdminJobDataAdapter {
     @Override
     public List<SimpleJobModel> getAllJobsForAdmin(int page, int limit, String query) {
         Pageable pageable = PageRequest.of(page, limit);
-        List<Jobs> jobs = jobsRepository.findAllByJobDescriptionContainingOrTitleContainingOrLocationContaining(query,query,query,pageable);
+        List<Jobs> jobs = jobsRepository.findAllByJobDescriptionContainingOrTitleContainingOrLocationContainingOrderByJobParsedAt(query,query,query,pageable);
         return jobs.stream().map(Jobs::toSimpleJobModel).collect(Collectors.toList());
     }
 
