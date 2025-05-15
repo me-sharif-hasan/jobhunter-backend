@@ -1,5 +1,6 @@
 export default new class Constants {
     baseUrl:string='https://jobhunterbackend.gentlesmoke-d65a2350.westus2.azurecontainerapps.io';
+    // baseUrl:string='http://localhost:8080';
     googleLoginUrl:string='/auth/google/registration';
     userInfoUrl: string='/api/user';
     getAllSitesAsAdminUrl: string="/admin/site";
@@ -7,4 +8,5 @@ export default new class Constants {
     getAllJobAdminUrl: string='/admin/job';
     getSystemStatus: string = '/admin/system-status'
     refreshJobIndexUrl: string= '/admin/job/refresh';
+    updateJobDuplicationStatusUrl: string= '/admin/job/mark-duplicate';
 }

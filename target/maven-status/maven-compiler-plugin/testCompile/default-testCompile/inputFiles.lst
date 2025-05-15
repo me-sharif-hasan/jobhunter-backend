@@ -1,0 +1,6 @@
+/workspaces/jobhunter-backend/src/test/java/com/iishanto/jobhunterbackend/JobAggragatorApplicationTests.java
+/workspaces/jobhunter-backend/src/test/java/com/iishanto/jobhunterbackend/infrastructure/gemini/GeminiClientTest.java
+/workspaces/jobhunter-backend/src/test/java/com/iishanto/jobhunterbackend/infrastructure/ports/firebase/NotificationHandlerPortTest.java
+/workspaces/jobhunter-backend/src/test/java/com/iishanto/jobhunterbackend/infrastructure/repository/JobsRepositoryTest.java
+/workspaces/jobhunter-backend/src/test/java/com/iishanto/jobhunterbackend/web/controller/JobControllerTest.java
+/workspaces/jobhunter-backend/src/test/java/com/iishanto/jobhunterbackend/web/controller/SiteControllerTest.java

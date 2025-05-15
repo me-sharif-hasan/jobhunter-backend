@@ -1,5 +1,5 @@
 export default class Job {
-    jobId: number | undefined;
+    jobId: string | undefined;
     title: string | undefined;
     company: string | undefined;
     companyWebsite: string | undefined;

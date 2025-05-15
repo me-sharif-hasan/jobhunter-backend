@@ -20,6 +20,14 @@ export default class JobDatasource {
         throw new Error(`Error getting all jobs as admin.`);
     }
 
+    async updateJobDuplicationStatus(jobId:string): Promise<void> {
+        const {data} = await this.backend.patch<ApiResponse<string>>(Constants.updateJobDuplicationStatusUrl+`?jobId=${jobId}`);
+        if(data.success&&data.data==jobId){
+            return;
+        }
+        throw new Error(`Error updating job duplication status.`);
+    }
+
     
     async runIndexer() {
         return this.backend.get<null>(Constants.refreshJobIndexUrl);

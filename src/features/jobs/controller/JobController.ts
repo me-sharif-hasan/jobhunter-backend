@@ -37,8 +37,20 @@ export default class JobController{
             alert("Error running indexer");
         });
     }
+
+    async markJobAsDuplicate(jobId: string) {
+        try{
+            if (!jobId) {
+                throw new Error("Job ID is undefined");
+            }
+            await this.jobDatasource.updateJobDuplicationStatus(jobId);
+        }catch (error) {
+            console.error("Error marking job as duplicate", error);
+            alert("Error marking job as duplicate");
+        }
+    }
     
-    approveJob(jobId: number | undefined) {
+    approveJob(jobId: string | undefined) {
         throw new Error(`Method not implemented. ${jobId}`);
     }
 }

@@ -1,0 +1,6 @@
+com/iishanto/jobhunterbackend/web/controller/SiteControllerTest.class
+com/iishanto/jobhunterbackend/infrastructure/repository/JobsRepositoryTest.class
+com/iishanto/jobhunterbackend/infrastructure/gemini/GeminiClientTest.class
+com/iishanto/jobhunterbackend/web/controller/JobControllerTest.class
+com/iishanto/jobhunterbackend/infrastructure/ports/firebase/NotificationHandlerPortTest.class
+com/iishanto/jobhunterbackend/JobAggragatorApplicationTests.class

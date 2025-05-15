@@ -66,11 +66,20 @@ export default function JobIndex(){
                 <Button 
                             icon="pi pi-copy"
                             title="Mark as Duplicate"
-                            tooltip="Mark as Duplicate" 
                             className="p-button-text p-button-rounded p-button-success"
                             onClick={() => {
-                                setSelectedJob(rowData);
-                                setShowViewDialog(true);
+                                jobController.markJobAsDuplicate(rowData.jobId??"").then(()=>{
+                                    setJobs((prevJobs) => {
+                                        const updatedJobs = prevJobs.map((job) => {
+                                            if (job.jobId === rowData.jobId) {
+                                                return { ...job, isDuplicate: true };
+                                            }
+                                            return job;
+                                        });
+                                        return updatedJobs;
+                                    }
+                                    );
+                                })
                             }}
                         />
                 {
@@ -100,7 +109,7 @@ export default function JobIndex(){
             <div className="break-words line-clamp-2 min-w-0" style={{
                 color: rowData.jobLastDate&&new Date(rowData.jobLastDate).getTime() < new Date().getTime() ? "red" : "black",
             }}>
-                {truncateText(rowData[field] as string)}
+                {rowData.isDuplicate ? <span className="text-red-500">[Duplicate]</span> : null} {truncateText(rowData[field] as string)}
             </div>
         );
     };
@@ -276,6 +285,7 @@ export default function JobIndex(){
                         field="jobParsedAt" 
                         header="Parsed At" 
                         className="w-[15%]"
+                        body={(rowData: Job) => new Date(rowData.jobParsedAt??0).toLocaleString()}
                         // body={(rowData: Job) => textTemplate(rowData, 'jobParsedAt')}
                     />
                     <Column 
