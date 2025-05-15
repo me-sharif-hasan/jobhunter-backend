@@ -38,7 +38,7 @@ export default function JobIndex(){
         ).finally(() => {
             setLoading(false);
         });
-    }, [page,limit,totalPage]);
+    }, [page,limit]);
 
     useEffect(() =>{
         jobController.getJobIndexingStatus().then(
@@ -65,8 +65,8 @@ export default function JobIndex(){
                 />
                 <Button 
                             icon="pi pi-copy"
-                            title="Mark as Duplicate"
-                            className="p-button-text p-button-rounded p-button-success"
+                            title={!rowData.isDuplicate?"Mark as Duplicate":"Not Duplicate"}
+                            className={!rowData.isDuplicate?"p-button-text p-button-rounded p-button-success":"p-button-text p-button-rounded !bg-red-500 !text-white p-button-danger"}
                             onClick={() => {
                                 jobController.markJobAsDuplicate(rowData.jobId??"").then(()=>{
                                     setJobs((prevJobs) => {
