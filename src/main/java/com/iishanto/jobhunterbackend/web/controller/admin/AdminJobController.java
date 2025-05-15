@@ -23,16 +23,28 @@ public class AdminJobController {
 
     @PatchMapping("/mark-duplicate")
     public ApiResponse updateJob(
-            @RequestParam String jobId,
-            @RequestParam boolean isDuplicate
+            @RequestParam String jobId
     ){
-        jobUpdateUseCase.updateDuplicateStatus(jobId,isDuplicate);
+        jobUpdateUseCase.updateDuplicateStatus(jobId,true);
         return new ApiResponse(
                 true,
                 jobId,
                 "Job updated successfully"
         );
     }
+
+    @PatchMapping("/unmark-duplicate")
+    public ApiResponse unmarkJob(
+            @RequestParam String jobId
+    ){
+        jobUpdateUseCase.updateDuplicateStatus(jobId,false);
+        return new ApiResponse(
+                true,
+                jobId,
+                "Job updated successfully"
+        );
+    }
+
 
     @GetMapping
     public ApiResponse getAllJobs(
