@@ -22,5 +22,5 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
 
     List<Jobs> findAllByJobIdIn(List<String> jobIds);
 
-    List<Jobs> findAllByJobDescriptionContainingOrTitleContainingOrLocationContaining(String description,String title,String location, Pageable pageable);
+    List<Jobs> findAllByJobDescriptionContainingOrTitleContainingOrLocationContainingOrderByJobParsedAt(String description,String title,String location, Pageable pageable);
 }
