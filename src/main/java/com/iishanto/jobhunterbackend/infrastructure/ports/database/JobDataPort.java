@@ -27,4 +27,11 @@ public class JobDataPort implements AdminJobDataAdapter {
     public long getTotalJobsCount() {
         return jobsRepository.count();
     }
+
+    @Override
+    public void updateJobDuplicateStatus(String jobId, boolean isDuplicate) {
+        Jobs job = jobsRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
+        job.setDuplicate(isDuplicate);
+        jobsRepository.save(job);
+    }
 }

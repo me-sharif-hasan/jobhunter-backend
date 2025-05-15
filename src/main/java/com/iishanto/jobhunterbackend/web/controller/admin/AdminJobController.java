@@ -2,6 +2,7 @@ package com.iishanto.jobhunterbackend.web.controller.admin;
 
 import com.iishanto.jobhunterbackend.domain.usecase.IndexJobs;
 import com.iishanto.jobhunterbackend.domain.usecase.admin.GetAllJobsUseCase;
+import com.iishanto.jobhunterbackend.domain.usecase.admin.JobUpdateUseCase;
 import com.iishanto.jobhunterbackend.scheduled.ScheduledJobIndexRefresher;
 import com.iishanto.jobhunterbackend.web.dto.response.ApiResponse;
 import lombok.AllArgsConstructor;
@@ -13,10 +14,24 @@ import org.springframework.web.bind.annotation.*;
 public class AdminJobController {
     ScheduledJobIndexRefresher refreshJobUseCase;
     GetAllJobsUseCase getAllJobsUseCase;
+    JobUpdateUseCase jobUpdateUseCase;
     @GetMapping("/refresh")
     public void refreshJobs(){
         refreshJobUseCase.refreshJobIndex();
         System.out.println("Jobs Refreshed");
+    }
+
+    @PatchMapping("/mark-duplicate")
+    public ApiResponse updateJob(
+            @RequestParam String jobId,
+            @RequestParam boolean isDuplicate
+    ){
+        jobUpdateUseCase.updateDuplicateStatus(jobId,isDuplicate);
+        return new ApiResponse(
+                true,
+                jobId,
+                "Job updated successfully"
+        );
     }
 
     @GetMapping
