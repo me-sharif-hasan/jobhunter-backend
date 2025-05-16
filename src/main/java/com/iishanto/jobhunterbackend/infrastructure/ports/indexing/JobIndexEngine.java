@@ -15,10 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 @Service
 public class JobIndexEngine implements JobIndexingAdapter {
@@ -96,14 +93,45 @@ public class JobIndexEngine implements JobIndexingAdapter {
                                 jobEntity=this.getJobMetadata(jobEntity);
                                 jobEntity.setJobUrl(preservedUrl);
                             }
+                            jobEntity.setJobUrl(cleanJobId(jobEntity.getJobUrl()));
                             jobsRepository.save(jobEntity);
                             newJobIds.add(jobEntity.getJobId());
                         }else{
+                            Optional<Jobs> optionalJob=jobsRepository.findById(jobEntity.getJobId());
+                            if(optionalJob.isPresent()){
+                                Jobs existingJob=optionalJob.get();
+                                existingJob.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
+                                //if deadline is extended, update the last seen date
+                                if(
+                                    !StringUtils.isBlank(existingJob.getJobLastDate())
+                                    &&!StringUtils.isBlank(jobEntity.getJobLastDate())
+                                    &&!existingJob.getJobLastDate().equals(jobEntity.getJobLastDate())
+                                ) {
+                                    existingJob.setJobLastDate(jobEntity.getJobLastDate());
+                                }
+                                jobsRepository.save(existingJob);
+                            }
                             System.out.println("job already exits");
                         }
                     }
                 }catch (Exception e) {
                     e.printStackTrace();
+                }finally {
+                    List<Jobs> jobs=jobsRepository.findAll();
+                    for(Jobs job:jobs){
+                        if(StringUtils.isBlank(job.getJobLastDate())){
+                            Timestamp lastSeenAt=job.getLastSeenAt();
+                            if(lastSeenAt!=null){
+                                long diff = System.currentTimeMillis() - lastSeenAt.getTime();
+                                long diffHours = diff / (60 * 60 * 1000);
+                                if(diffHours>24){
+                                    job.setJobLastDate(job.getLastSeenAt().toString());
+                                    jobsRepository.save(job);
+                                }
+                            }
+
+                        }
+                    }
                 }
             }
             System.out.println("Indexing done");

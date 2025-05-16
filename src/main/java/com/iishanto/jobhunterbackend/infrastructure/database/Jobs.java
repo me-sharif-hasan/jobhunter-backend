@@ -54,11 +54,11 @@ public class Jobs {
             nullable = false
     )
     private boolean isDescriptionIndexed=false;
-    //for facebook and linkedin sourced jobs the job will be private
     private boolean isPrivateJob=false;
 
     private boolean isDuplicate=false;
     private boolean isApproved=false;
+    private Timestamp lastSeenAt;
 
     @ManyToOne
     @JoinColumn(name = "site_id")
