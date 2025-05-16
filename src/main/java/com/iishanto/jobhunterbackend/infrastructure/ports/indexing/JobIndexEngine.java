@@ -99,7 +99,6 @@ public class JobIndexEngine implements JobIndexingAdapter {
                                 jobEntity=this.getJobMetadata(jobEntity);
                                 jobEntity.setJobUrl(preservedUrl);
                             }
-                            jobEntity.setJobUrl(cleanJobId(jobEntity.getJobUrl()));
                             jobEntity.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
                             jobsRepository.save(jobEntity);
                             newJobIds.add(jobEntity.getJobId());
