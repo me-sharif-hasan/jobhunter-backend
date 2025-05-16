@@ -282,6 +282,14 @@ export default function JobIndex(){
                     />
                     <Column 
                         sortable 
+                        field="jobLastDate" 
+                        header="Deadline" 
+                        className="w-[15%]"
+                        body={(rowData: Job) => rowData.jobLastDate?new Date(rowData.jobLastDate).toLocaleString():"N/A"}
+                        // body={(rowData: Job) => textTemplate(rowData, 'jobParsedAt')}
+                    />
+                    <Column 
+                        sortable 
                         field="jobParsedAt" 
                         header="Parsed At" 
                         className="w-[15%]"
