@@ -5,6 +5,7 @@ import com.iishanto.jobhunterbackend.domain.adapter.JobIndexingAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.values.SystemStatusValues;
 import com.iishanto.jobhunterbackend.domain.service.admin.SystemStatusService;
+import com.iishanto.jobhunterbackend.domain.utility.DateNormalizer;
 import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.google.GeminiClient;
@@ -79,6 +80,10 @@ public class JobIndexEngine implements JobIndexingAdapter {
                     if(jobs==null) continue;
                     for(SimpleJobModel job:jobs){
                         System.out.println("Job: "+job);
+                        Timestamp normalizedDate=DateNormalizer.normalizeToTimestamp(job.getJobLastDate());
+                        if (normalizedDate!=null){
+                            job.setJobLastDate(normalizedDate.toString());
+                        }
                         Jobs jobEntity=Jobs.fromSimpleJobModel(job,site);
                         if(jobEntity.getJobId()!=null){
                             jobEntity.setJobId(site.getJobListPageUrl()+"/"+jobEntity.getJobId());
@@ -103,9 +108,8 @@ public class JobIndexEngine implements JobIndexingAdapter {
                                 existingJob.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
                                 //if deadline is extended, update the last seen date
                                 if(
-                                    !StringUtils.isBlank(existingJob.getJobLastDate())
-                                    &&!StringUtils.isBlank(jobEntity.getJobLastDate())
-                                    &&!existingJob.getJobLastDate().equals(jobEntity.getJobLastDate())
+                                    !StringUtils.isBlank(jobEntity.getJobLastDate())
+                                    &&!jobEntity.getJobLastDate().equals(existingJob.getJobLastDate())
                                 ) {
                                     existingJob.setJobLastDate(jobEntity.getJobLastDate());
                                 }
