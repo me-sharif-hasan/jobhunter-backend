@@ -99,7 +99,7 @@ public class JobIndexEngine implements JobIndexingAdapter {
                                 jobEntity=this.getJobMetadata(jobEntity);
                                 if(!StringUtils.isBlank(jobEntity.getJobLastDate())){
                                     Timestamp metaNormalizedDate=DateNormalizer.normalizeToTimestamp(jobEntity.getJobLastDate());
-                                    if (normalizedDate!=null){
+                                    if (metaNormalizedDate!=null){
                                         jobEntity.setJobLastDate(metaNormalizedDate.toString());
                                     }
                                 }
