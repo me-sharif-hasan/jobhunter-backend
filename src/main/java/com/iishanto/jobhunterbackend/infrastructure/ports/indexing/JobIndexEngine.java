@@ -55,11 +55,60 @@ public class JobIndexEngine implements JobIndexingAdapter {
         SimpleJobModel jobModel = geminiClient.getJobMetadata(prompt);
         System.out.println("the job model"+jobModel);
         if(jobModel==null) return job;
-        Jobs jobEntity=Jobs.fromSimpleJobModel(jobModel, job.getSite(),true);
+        Jobs jobEntity=Jobs.fromSimpleJobModel(jobModel, job.getSite());
+        mergeNullFields(jobEntity,job);
         jobEntity.setJobId(job.getJobId());
         jobEntity.setJobUrl(job.getJobUrl());
         jobEntity.setDescriptionIndexed(true);
         return jobEntity;
+    }
+
+    private void mergeNullFields(Jobs jobEntity, Jobs initialJob) {
+        if (jobEntity.getTitle() == null) {
+            jobEntity.setTitle(initialJob.getTitle());
+        }
+        if (jobEntity.getJobUrl() == null) {
+            jobEntity.setJobUrl(initialJob.getJobUrl());
+        }
+        if (jobEntity.getLocation() == null) {
+            jobEntity.setLocation(initialJob.getLocation());
+        }
+        if (jobEntity.getSalary() == null) {
+            jobEntity.setSalary(initialJob.getSalary());
+        }
+        if (jobEntity.getJobType() == null) {
+            jobEntity.setJobType(initialJob.getJobType());
+        }
+        if (jobEntity.getJobCategory() == null) {
+            jobEntity.setJobCategory(initialJob.getJobCategory());
+        }
+        if (jobEntity.getJobDescription() == null) {
+            jobEntity.setJobDescription(initialJob.getJobDescription());
+        }
+        if (jobEntity.getSkillsNeeded() == null) {
+            jobEntity.setSkillsNeeded(initialJob.getSkillsNeeded());
+        }
+        if (jobEntity.getExperienceNeeded() == null) {
+            jobEntity.setExperienceNeeded(initialJob.getExperienceNeeded());
+        }
+        if (jobEntity.getJobPostedDate() == null) {
+            jobEntity.setJobPostedDate(initialJob.getJobPostedDate());
+        }
+        if (jobEntity.getJobLastDate() == null) {
+            jobEntity.setJobLastDate(initialJob.getJobLastDate());
+        }
+        if (jobEntity.getJobApplyLink() == null) {
+            jobEntity.setJobApplyLink(initialJob.getJobApplyLink());
+        }
+        if (jobEntity.getJobApplyEmail() == null) {
+            jobEntity.setJobApplyEmail(initialJob.getJobApplyEmail());
+        }
+        if (jobEntity.getLastSeenAt() == null) {
+            jobEntity.setLastSeenAt(initialJob.getLastSeenAt());
+        }
+        if (jobEntity.getSite() == null) {
+            jobEntity.setSite(initialJob.getSite());
+        }
     }
 
     @Override
