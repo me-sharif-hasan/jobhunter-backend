@@ -63,30 +63,25 @@ public class Jobs {
     @ManyToOne
     @JoinColumn(name = "site_id")
     private Site site;
-    public static Jobs fromSimpleJobModel(SimpleJobModel jobModel,Site site){
-        return fromSimpleJobModel(jobModel,site,false);
-    }
 
-    public static Jobs fromSimpleJobModel(SimpleJobModel jobModel, Site site, boolean ignoreNulls) {
-        Jobs job = new Jobs();
-
-        if (!ignoreNulls || jobModel.getJobId() != null) job.setJobId(jobModel.getJobId());
-        if (!ignoreNulls || jobModel.getTitle() != null) job.setTitle(jobModel.getTitle());
-        if (!ignoreNulls || jobModel.getJobUrl() != null) job.setJobUrl(jobModel.getJobUrl());
-        if (!ignoreNulls || jobModel.getLocation() != null) job.setLocation(jobModel.getLocation());
-        if (!ignoreNulls || jobModel.getSalary() != null) job.setSalary(jobModel.getSalary());
-        if (!ignoreNulls || jobModel.getJobType() != null) job.setJobType(jobModel.getJobType());
-        if (!ignoreNulls || jobModel.getJobCategory() != null) job.setJobCategory(jobModel.getJobCategory());
-        if (!ignoreNulls || jobModel.getJobDescription() != null) job.setJobDescription(jobModel.getJobDescription());
-        if (!ignoreNulls || jobModel.getJobPostedDate() != null) job.setJobPostedDate(jobModel.getJobPostedDate());
-        if (!ignoreNulls || jobModel.getJobLastDate() != null) job.setJobLastDate(jobModel.getJobLastDate());
-        if (!ignoreNulls || jobModel.getJobApplyLink() != null) job.setJobApplyLink(jobModel.getJobApplyLink());
-        if (!ignoreNulls || jobModel.getJobApplyEmail() != null) job.setJobApplyEmail(jobModel.getJobApplyEmail());
-        if (!ignoreNulls || jobModel.getJobParsedAt() != null) job.setJobParsedAt(jobModel.getJobParsedAt());
-        if (!ignoreNulls || jobModel.getJobUpdatedAt() != null) job.setJobUpdatedAt(jobModel.getJobUpdatedAt());
-        if (!ignoreNulls || jobModel.getExperienceNeeded() != null) job.setExperienceNeeded(jobModel.getExperienceNeeded());
-        if (!ignoreNulls || jobModel.getSkillsNeeded() != null) job.setSkillsNeeded(jobModel.getSkillsNeeded());
-
+    public static Jobs fromSimpleJobModel(SimpleJobModel jobModel, Site site) {
+        Jobs job=new Jobs();
+        job.setJobId(jobModel.getJobId());
+        job.setTitle(jobModel.getTitle());
+        job.setJobUrl(jobModel.getJobUrl());
+        job.setLocation(jobModel.getLocation());
+        job.setSalary(jobModel.getSalary());
+        job.setJobType(jobModel.getJobType());
+        job.setJobCategory(jobModel.getJobCategory());
+        job.setJobDescription(jobModel.getJobDescription());
+        job.setJobPostedDate(jobModel.getJobPostedDate());
+        job.setJobLastDate(jobModel.getJobLastDate());
+        job.setJobApplyLink(jobModel.getJobApplyLink());
+        job.setJobApplyEmail(jobModel.getJobApplyEmail());
+        job.setJobParsedAt(jobModel.getJobParsedAt());
+        job.setJobUpdatedAt(jobModel.getJobUpdatedAt());
+        job.setExperienceNeeded(jobModel.getExperienceNeeded());
+        job.setSkillsNeeded(jobModel.getSkillsNeeded());
         job.setSite(site);
         return job;
     }

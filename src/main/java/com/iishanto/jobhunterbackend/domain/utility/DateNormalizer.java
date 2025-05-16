@@ -27,6 +27,14 @@ public class DateNormalizer {
         formatters.add(DateTimeFormatter.ofPattern("d'th' MMM yyyy", Locale.ENGLISH));
         formatters.add(DateTimeFormatter.ofPattern("d'th' MMMM, yyyy", Locale.ENGLISH));
         formatters.add(DateTimeFormatter.ofPattern("d'th' MMM, yyyy", Locale.ENGLISH));
+        formatters.add(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S", Locale.ENGLISH));
+        formatters.add(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH));
+        formatters.add(DateTimeFormatter.ofPattern("yyyy/MM/dd", Locale.ENGLISH));
+        formatters.add(DateTimeFormatter.ofPattern("d-MM-yyyy", Locale.ENGLISH));
+        formatters.add(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX", Locale.ENGLISH));
+        formatters.add(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.ENGLISH));
+        formatters.add(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.ENGLISH));
+        formatters.add(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.ENGLISH));
     }
 
     public static Timestamp normalizeToTimestamp(String input) {
