@@ -55,7 +55,7 @@ public class JobIndexEngine implements JobIndexingAdapter {
         SimpleJobModel jobModel = geminiClient.getJobMetadata(prompt);
         System.out.println("the job model"+jobModel);
         if(jobModel==null) return job;
-        Jobs jobEntity=Jobs.fromSimpleJobModel(jobModel, job.getSite());
+        Jobs jobEntity=Jobs.fromSimpleJobModel(jobModel, job.getSite(),true);
         jobEntity.setJobId(job.getJobId());
         jobEntity.setJobUrl(job.getJobUrl());
         jobEntity.setDescriptionIndexed(true);
