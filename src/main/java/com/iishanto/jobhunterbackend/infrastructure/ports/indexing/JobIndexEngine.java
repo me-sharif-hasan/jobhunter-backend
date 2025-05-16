@@ -97,6 +97,12 @@ public class JobIndexEngine implements JobIndexingAdapter {
                             if(jobEntity.getJobUrl()!=null&&!jobEntity.isDescriptionIndexed()){
                                 String preservedUrl=jobEntity.getJobUrl();
                                 jobEntity=this.getJobMetadata(jobEntity);
+                                if(!StringUtils.isBlank(jobEntity.getJobLastDate())){
+                                    Timestamp metaNormalizedDate=DateNormalizer.normalizeToTimestamp(jobEntity.getJobLastDate());
+                                    if (normalizedDate!=null){
+                                        jobEntity.setJobLastDate(metaNormalizedDate.toString());
+                                    }
+                                }
                                 jobEntity.setJobUrl(preservedUrl);
                             }
                             jobEntity.setLastSeenAt(new Timestamp(System.currentTimeMillis()));

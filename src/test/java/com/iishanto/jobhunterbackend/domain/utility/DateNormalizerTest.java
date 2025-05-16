@@ -13,6 +13,9 @@ class DateNormalizerTest {
         assertEquals(Timestamp.valueOf(LocalDateTime.of(2025, 5, 15, 0, 0)),
                 DateNormalizer.normalizeToTimestamp("15 May, 2025"));
 
+        assertEquals(Timestamp.valueOf(LocalDateTime.of(2025, 5, 30, 0, 0)),
+                DateNormalizer.normalizeToTimestamp("30 May, 2025"));
+
         assertEquals(Timestamp.valueOf(LocalDateTime.of(2025, 3, 10, 0, 0)),
                 DateNormalizer.normalizeToTimestamp("10 March, 2025"));
 
