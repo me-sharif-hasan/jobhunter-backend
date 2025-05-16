@@ -15,6 +15,7 @@ import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -99,19 +100,27 @@ public class JobIndexEngine implements JobIndexingAdapter {
                                 jobEntity.setJobUrl(preservedUrl);
                             }
                             jobEntity.setJobUrl(cleanJobId(jobEntity.getJobUrl()));
+                            jobEntity.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
                             jobsRepository.save(jobEntity);
                             newJobIds.add(jobEntity.getJobId());
                         }else{
                             Optional<Jobs> optionalJob=jobsRepository.findById(jobEntity.getJobId());
+                            if(optionalJob.isEmpty()){
+                                optionalJob=jobsRepository.findByJobUrl(jobEntity.getJobUrl());
+                            }
                             if(optionalJob.isPresent()){
                                 Jobs existingJob=optionalJob.get();
                                 existingJob.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
+                                Timestamp updatedTimeFormat = DateNormalizer.normalizeToTimestamp(existingJob.getJobLastDate());
+
                                 //if deadline is extended, update the last seen date
                                 if(
                                     !StringUtils.isBlank(jobEntity.getJobLastDate())
                                     &&!jobEntity.getJobLastDate().equals(existingJob.getJobLastDate())
                                 ) {
                                     existingJob.setJobLastDate(jobEntity.getJobLastDate());
+                                }else if(updatedTimeFormat!=null&&!updatedTimeFormat.toString().equals(existingJob.getJobLastDate())){
+                                    existingJob.setJobLastDate(updatedTimeFormat.toString());
                                 }
                                 jobsRepository.save(existingJob);
                             }

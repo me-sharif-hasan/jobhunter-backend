@@ -30,6 +30,9 @@ public class DateNormalizer {
     }
 
     public static Timestamp normalizeToTimestamp(String input) {
+        if(input == null || input.isEmpty()) {
+            return null;
+        }
         String cleaned = input.trim()
                 .replaceAll("(?i)(\\d+)(st|nd|rd|th)", "$1")
                 .replaceAll("Open until Filled.*", "")
