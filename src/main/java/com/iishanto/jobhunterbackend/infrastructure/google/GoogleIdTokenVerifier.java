@@ -8,17 +8,17 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import java.net.URI;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 
 @Component
 public class GoogleIdTokenVerifier {
     private static final String ENDPOINT = "https://oauth2.googleapis.com/tokeninfo?id_token=";
     private final RestClient restClient=RestClient.create();
 
-    @Value("${google.auth.api_client_id}")
-    private String clientId;
+    @Value("#{'${google.auth.api_client_ids}'.split(',')}")
+    private List<String> clientIds;
 
     private String getTokenInfoJson(String idToken) {
         String url = ENDPOINT + idToken;
@@ -39,11 +39,11 @@ public class GoogleIdTokenVerifier {
         String picture = jsonObject.get("picture").getAsString();
         boolean emailVerified = jsonObject.get("email_verified").getAsBoolean();
         if(!emailVerified) return null;
-        if(!azp.equals(this.clientId)) {
-            System.out.println(';'+azp+" != "+this.clientId+';');
+        boolean  isAzpValid= clientIds.stream().map(id -> id.equals(azp)).reduce(Boolean::logicalOr).orElse(false);
+        if (!isAzpValid) {
+            System.out.println(';'+azp+" != "+this.clientIds +';');
             return null;
         }
-
         return SimpleUserModel.builder()
                 .email(email)
                 .name(name)
