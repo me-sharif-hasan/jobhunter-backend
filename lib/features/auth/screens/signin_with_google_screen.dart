@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:animate_do/animate_do.dart'; // For animations
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -95,19 +97,20 @@ class _SignInWithGoogleScreenState extends State<SignInWithGoogleScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 40.0),
                         child: GestureDetector(
                           onTap: () {
-                            _googleSignIn.signIn().then((value) {
+                            _googleSignIn.signIn().then((value) async {
                               if (value == null) return;
+                              log("Google SignIn: ${value}");
                               String? email = value.email;
                               String? name = value.displayName;
                               String? photoUrl = value.photoUrl;
-                              String? serverAuthCode = value.serverAuthCode;
+                              String? accessToken = (await value.authentication).idToken;
                               if (name != null) {
                                 UserRegistrationModel userRegistrationModel =
                                     UserRegistrationModel(
                                   email: email,
                                   name: name,
                                   imageUrl: "$photoUrl",
-                                  token: "$serverAuthCode",
+                                  token: "$accessToken",
                                 );
                                 try{
                                   controller

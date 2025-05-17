@@ -23,7 +23,7 @@ class AuthDatasource{
   }
 
   Future<String> registration(UserRegistrationModel registrationModel) async{
-    print('Registering...');
+    print('Registering... ${registrationModel.toJson()}');
     Response response = await client.post(Constants.register, body: registrationModel.toJson());
     log('Response: ${response.body}');
     ApiResponse apiResponse=ApiResponse.fromResponseUtf8(response);
