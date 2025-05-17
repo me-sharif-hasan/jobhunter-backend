@@ -1,0 +1,72 @@
+name: Build and Release APK and AAR
+
+on:
+  push:
+    branches:
+      - frontend
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up JDK 17
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Set up Flutter
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.1'
+          channel: 'stable'
+          cache: true
+
+      # Install dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Add google-services.json from secrets
+      - name: Add Firebase configuration
+        run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
+
+      # Add key.properties for signing
+      - name: Add key.properties
+        run: |
+          echo "storeFile=/tmp/key.jks" >> android/key.properties
+          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+
+      # Add signing key from secrets
+      - name: Add signing key
+        run: echo "${{ secrets.KEYSTORE_JKS }}" | base64 -d > /tmp/key.jks
+
+      # Build APK
+      - name: Build APK
+        run: flutter build apk --release
+
+      # Build AAR
+      - name: Build AAR
+        run: flutter build aar --release
+
+      # Create release and upload artifacts
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Release ${{ github.run_number }}
+          draft: false
+          prerelease: false
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/host/outputs/repo/**/*.aar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
