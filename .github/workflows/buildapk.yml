@@ -51,11 +51,11 @@ jobs:
 
       # Build APK
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release -v
 
       # Build AAR
       - name: Build AAR
-        run: flutter build aar --release
+        run: flutter build aar --release -v
 
       # Create release and upload artifacts
       - name: Create GitHub Release
