@@ -11,7 +11,6 @@ jobs:
 
     env:
       ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
-      FLUTTER_HOME: ${{ github.workspace }}/flutter
       FLUTTER_BUILD_MODE: release
       FLUTTER_VERSION_NAME: 1.0.0
       FLUTTER_VERSION_CODE: 1
@@ -33,23 +32,36 @@ jobs:
 
       # Set up Flutter
       - name: Set up Flutter
+        id: flutter-action
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.1'
           channel: 'stable'
-          cache: true
+          cache: false
 
       # Configure Flutter environment
       - name: Configure Flutter environment
         run: |
+          # Remove any existing local.properties
+          rm -f android/local.properties
+          # Write new local.properties with dynamic paths
           echo "sdk.dir=$ANDROID_SDK_ROOT" >> android/local.properties
-          echo "flutter.sdk=$FLUTTER_HOME" >> flutter.properties
-          echo "flutter.buildMode=$FLUTTER_BUILD_MODE" >> flutter.properties
-          echo "flutter.versionName=$FLUTTER_VERSION_NAME" >> flutter.properties
-          echo "flutter.versionCode=$FLUTTER_VERSION_CODE" >> flutter.properties
-          echo "flutter.minSdkVersion=$FLUTTER_MIN_SDK_VERSION" >> flutter.properties
-          echo "flutter.targetSdkVersion=$FLUTTER_TARGET_SDK_VERSION" >> flutter.properties
-          echo "flutter.compileSdkVersion=$FLUTTER_COMPILE_SDK_VERSION" >> flutter.properties
+          echo "flutter.sdk=$FLUTTER_HOME" >> android/local.properties
+          echo "flutter.buildMode=$FLUTTER_BUILD_MODE" >> android/local.properties
+          echo "flutter.versionName=$FLUTTER_VERSION_NAME" >> android/local.properties
+          echo "flutter.versionCode=$FLUTTER_VERSION_CODE" >> android/local.properties
+          echo "flutter.minSdkVersion=$FLUTTER_MIN_SDK_VERSION" >> android/local.properties
+          echo "flutter.targetSdkVersion=$FLUTTER_TARGET_SDK_VERSION" >> android/local.properties
+          echo "flutter.compileSdkVersion=$FLUTTER_COMPILE_SDK_VERSION" >> android/local.properties
+          # Verify local.properties content
+          echo "Contents of local.properties:"
+          cat android/local.properties
+          # Verify Flutter SDK path
+          echo "Flutter SDK path: $FLUTTER_HOME"
+          ls -la $FLUTTER_HOME
+        env:
+          FLUTTER_HOME: ${{ steps.flutter-action.outputs.FLUTTER_HOME || '/opt/hostedtoolcache/flutter/3.22.1-stable/x64' }}
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
 
       # Install Android SDK
       - name: Install Android SDK
@@ -83,11 +95,11 @@ jobs:
 
       # Build APK
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --stacktrace
 
       # Build AAR
       - name: Build AAR
-        run: flutter build aar --release
+        run: flutter build aar --release --stacktrace
 
       # Create release and upload artifacts
       - name: Create GitHub Release
