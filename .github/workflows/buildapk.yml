@@ -33,29 +33,28 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      # Add google-services.json from secrets
-      - name: Add Firebase configuration
-        run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
+      # Install jq for JSON validation
+      - name: Install jq
+        run: sudo apt-get install -y jq
 
-      # Add key.properties for signing
-      - name: Add key.properties
+      # Validate google-services.json
+      - name: Validate google-services.json
         run: |
-          echo "storeFile=/tmp/key.jks" >> android/key.properties
-          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-
-      # Add signing key from secrets
-      - name: Add signing key
-        run: echo "${{ secrets.KEYSTORE_JKS }}" | base64 -d > /tmp/key.jks
+          if [ -f android/app/google-services.json ]; then
+            jq . android/app/google-services.json > /dev/null || { echo "Invalid JSON in google-services.json"; cat android/app/google-services.json; exit 1; }
+          else
+            echo "google-services.json not found in android/app/"
+            exit 1
+          fi
+        shell: bash
 
       # Build APK
       - name: Build APK
-        run: flutter build apk --release -v
+        run: flutter build apk --release
 
       # Build AAR
       - name: Build AAR
-        run: flutter build aar --release -v
+        run: flutter build aar --release
 
       # Create release and upload artifacts
       - name: Create GitHub Release
