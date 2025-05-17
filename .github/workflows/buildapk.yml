@@ -39,6 +39,22 @@ jobs:
           channel: 'stable'
           cache: false
 
+      # Debug Flutter installation
+      - name: Debug Flutter installation
+        run: |
+          echo "Flutter action outputs:"
+          echo "FLUTTER_HOME: ${{ steps.flutter-action.outputs.FLUTTER_HOME }}"
+          echo "Flutter version:"
+          flutter --version
+          echo "Flutter doctor:"
+          flutter doctor -v
+          echo "Checking possible Flutter SDK paths:"
+          find /opt/hostedtoolcache/flutter -maxdepth 3 -type d 2>/dev/null || echo "No Flutter SDK found in /opt/hostedtoolcache/flutter"
+          echo "Current directory structure:"
+          ls -la
+        env:
+          PATH: ${{ steps.flutter-action.outputs.FLUTTER_HOME }}/bin:$PATH
+
       # Configure Flutter environment
       - name: Configure Flutter environment
         run: |
@@ -58,9 +74,14 @@ jobs:
           cat android/local.properties
           # Verify Flutter SDK path
           echo "Flutter SDK path: $FLUTTER_HOME"
-          ls -la $FLUTTER_HOME
+          if [ -d "$FLUTTER_HOME" ]; then
+            ls -la $FLUTTER_HOME
+          else
+            echo "Error: Flutter SDK directory $FLUTTER_HOME does not exist"
+            exit 1
+          fi
         env:
-          FLUTTER_HOME: ${{ steps.flutter-action.outputs.FLUTTER_HOME || '/opt/hostedtoolcache/flutter/3.22.1-stable/x64' }}
+          FLUTTER_HOME: ${{ steps.flutter-action.outputs.FLUTTER_HOME }}
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
 
       # Install Android SDK
