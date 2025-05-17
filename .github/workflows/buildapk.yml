@@ -9,6 +9,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
+      FLUTTER_HOME: ${{ github.workspace }}/flutter
+      FLUTTER_BUILD_MODE: release
+      FLUTTER_VERSION_NAME: 1.0.0
+      FLUTTER_VERSION_CODE: 1
+      FLUTTER_MIN_SDK_VERSION: 21
+      FLUTTER_TARGET_SDK_VERSION: 34
+      FLUTTER_COMPILE_SDK_VERSION: 34
+
     steps:
       # Checkout the repository
       - name: Checkout code
@@ -28,6 +38,29 @@ jobs:
           flutter-version: '3.22.1'
           channel: 'stable'
           cache: true
+
+      # Configure Flutter environment
+      - name: Configure Flutter environment
+        run: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" >> android/local.properties
+          echo "flutter.sdk=$FLUTTER_HOME" >> flutter.properties
+          echo "flutter.buildMode=$FLUTTER_BUILD_MODE" >> flutter.properties
+          echo "flutter.versionName=$FLUTTER_VERSION_NAME" >> flutter.properties
+          echo "flutter.versionCode=$FLUTTER_VERSION_CODE" >> flutter.properties
+          echo "flutter.minSdkVersion=$FLUTTER_MIN_SDK_VERSION" >> flutter.properties
+          echo "flutter.targetSdkVersion=$FLUTTER_TARGET_SDK_VERSION" >> flutter.properties
+          echo "flutter.compileSdkVersion=$FLUTTER_COMPILE_SDK_VERSION" >> flutter.properties
+
+      # Install Android SDK
+      - name: Install Android SDK
+        run: |
+          mkdir -p $ANDROID_SDK_ROOT
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O commandlinetools.zip
+          unzip -q commandlinetools.zip -d $ANDROID_SDK_ROOT
+          mv $ANDROID_SDK_ROOT/cmdline-tools $ANDROID_SDK_ROOT/latest
+          yes | $ANDROID_SDK_ROOT/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-${FLUTTER_COMPILE_SDK_VERSION}" "build-tools;${FLUTTER_COMPILE_SDK_VERSION}.0.0"
+        env:
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
 
       # Install dependencies
       - name: Install dependencies
