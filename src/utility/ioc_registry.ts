@@ -7,6 +7,8 @@ import SiteController from "../features/sites/controller/SiteController.ts";
 import JobController from "../features/jobs/controller/JobController.ts";
 import JobDatasource from "../features/jobs/datasource/JobDatasource.ts";
 import SystemStatusDatasource from "../features/common/datasource/SystemStatusDatasource.ts";
+import { StatsController } from "../features/statistics/controller/StatsController.ts";
+import { StatisticsDatasource } from "../features/statistics/datasource/StatisticsDatasource.ts";
 
 const dicontainer = new Container();
 dicontainer.bind<LoginController>(LoginController).to(LoginController).inSingletonScope();
@@ -17,5 +19,7 @@ dicontainer.bind<SiteController>(SiteController).to(SiteController).inSingletonS
 dicontainer.bind<JobController>(JobController).to(JobController).inSingletonScope();
 dicontainer.bind<JobDatasource>(JobDatasource).to(JobDatasource).inSingletonScope();
 dicontainer.bind<SystemStatusDatasource>(SystemStatusDatasource).to(SystemStatusDatasource).inSingletonScope();
+dicontainer.bind<StatsController>(StatsController).to(StatsController).inSingletonScope();
+dicontainer.bind<StatisticsDatasource>(StatisticsDatasource).to(StatisticsDatasource).inSingletonScope();
 
 export default dicontainer;

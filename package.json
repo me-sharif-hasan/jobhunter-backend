@@ -20,7 +20,8 @@
     "primereact": "^10.9.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^7.5.3"
+    "react-router-dom": "^7.5.3",
+    "recharts": "^2.15.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
