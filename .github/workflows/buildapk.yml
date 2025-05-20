@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - frontend
+permissions:
+  contents: write
 
 jobs:
   build:
