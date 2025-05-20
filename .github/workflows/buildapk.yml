@@ -9,15 +9,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    env:
-      ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
-      FLUTTER_BUILD_MODE: release
-      FLUTTER_VERSION_NAME: 1.0.0
-      FLUTTER_VERSION_CODE: 1
-      FLUTTER_MIN_SDK_VERSION: 21
-      FLUTTER_TARGET_SDK_VERSION: 34
-      FLUTTER_COMPILE_SDK_VERSION: 34
-
     steps:
       # Checkout the repository
       - name: Checkout code
@@ -32,68 +23,11 @@ jobs:
 
       # Set up Flutter
       - name: Set up Flutter
-        id: flutter-action
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.1'
           channel: 'stable'
-          cache: false
-
-      # Debug Flutter installation
-      - name: Debug Flutter installation
-        run: |
-          echo "Flutter action outputs:"
-          echo "FLUTTER_HOME: ${{ steps.flutter-action.outputs.FLUTTER_HOME }}"
-          echo "Flutter version:"
-          flutter --version
-          echo "Flutter doctor:"
-          flutter doctor -v
-          echo "Checking possible Flutter SDK paths:"
-          find /opt/hostedtoolcache/flutter -maxdepth 3 -type d 2>/dev/null || echo "No Flutter SDK found in /opt/hostedtoolcache/flutter"
-          echo "Current directory structure:"
-          ls -la
-        env:
-          PATH: ${{ steps.flutter-action.outputs.FLUTTER_HOME }}/bin:$PATH
-
-      # Configure Flutter environment
-      - name: Configure Flutter environment
-        run: |
-          # Remove any existing local.properties
-          rm -f android/local.properties
-          # Write new local.properties with dynamic paths
-          echo "sdk.dir=$ANDROID_SDK_ROOT" >> android/local.properties
-          echo "flutter.sdk=$FLUTTER_HOME" >> android/local.properties
-          echo "flutter.buildMode=$FLUTTER_BUILD_MODE" >> android/local.properties
-          echo "flutter.versionName=$FLUTTER_VERSION_NAME" >> android/local.properties
-          echo "flutter.versionCode=$FLUTTER_VERSION_CODE" >> android/local.properties
-          echo "flutter.minSdkVersion=$FLUTTER_MIN_SDK_VERSION" >> android/local.properties
-          echo "flutter.targetSdkVersion=$FLUTTER_TARGET_SDK_VERSION" >> android/local.properties
-          echo "flutter.compileSdkVersion=$FLUTTER_COMPILE_SDK_VERSION" >> android/local.properties
-          # Verify local.properties content
-          echo "Contents of local.properties:"
-          cat android/local.properties
-          # Verify Flutter SDK path
-          echo "Flutter SDK path: $FLUTTER_HOME"
-          if [ -d "$FLUTTER_HOME" ]; then
-            ls -la $FLUTTER_HOME
-          else
-            echo "Error: Flutter SDK directory $FLUTTER_HOME does not exist"
-            exit 1
-          fi
-        env:
-          FLUTTER_HOME: ${{ steps.flutter-action.outputs.FLUTTER_HOME }}
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
-
-      # Install Android SDK
-      - name: Install Android SDK
-        run: |
-          mkdir -p $ANDROID_SDK_ROOT
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O commandlinetools.zip
-          unzip -q commandlinetools.zip -d $ANDROID_SDK_ROOT
-          mv $ANDROID_SDK_ROOT/cmdline-tools $ANDROID_SDK_ROOT/latest
-          yes | $ANDROID_SDK_ROOT/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-${FLUTTER_COMPILE_SDK_VERSION}" "build-tools;${FLUTTER_COMPILE_SDK_VERSION}.0.0"
-        env:
-          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
+          cache: true
 
       # Install dependencies
       - name: Install dependencies
@@ -116,11 +50,7 @@ jobs:
 
       # Build APK
       - name: Build APK
-        run: flutter build apk --release --stacktrace
-
-      # Build AAR
-      - name: Build AAR
-        run: flutter build aar --release --stacktrace
+        run: flutter build apk --release
 
       # Create release and upload artifacts
       - name: Create GitHub Release
@@ -132,6 +62,5 @@ jobs:
           prerelease: false
           files: |
             build/app/outputs/flutter-apk/app-release.apk
-            build/host/outputs/repo/**/*.aar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
