@@ -10,13 +10,16 @@ import '../../webview/inappwebview.dart';
 class ApplyButton extends StatelessWidget {
   final Job job;
   String applyButtonText="";
-  ApplyButton({super.key,required this.job,this.applyButtonText="Apply"});
+  BorderRadius buttonBorder;
+  Icon? icon;
+  static const BorderRadius _defaultBorderRadius = BorderRadius.all(Radius.circular(8));
+  ApplyButton({super.key,required this.job,this.applyButtonText="Apply", this.buttonBorder=_defaultBorderRadius, this.icon});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(left: 12.0),
-      child: ElevatedButton(
+      child: icon==null?ElevatedButton(
         onPressed: () {
           launchBrowser(context,job.jobUrl??job.jobApplyLink!);
         },
@@ -25,7 +28,7 @@ class ApplyButton extends StatelessWidget {
           backgroundColor: Colors.white,
           foregroundColor: const Color(0xFFFFA726),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: this.buttonBorder,
           ),
           elevation: 0,
           textStyle: const TextStyle(
@@ -38,6 +41,28 @@ class ApplyButton extends StatelessWidget {
           ),
         ),
         child: Text(applyButtonText),
+      ):ElevatedButton.icon(
+        onPressed: () {
+          launchBrowser(context,job.jobUrl??job.jobApplyLink!);
+        },
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          backgroundColor: Colors.white,
+          foregroundColor: icon!.color,
+          shape: RoundedRectangleBorder(
+            borderRadius: this.buttonBorder,
+          ),
+          elevation: 0,
+          textStyle: const TextStyle(
+            fontSize: 14,
+          ),
+        ).copyWith(
+          overlayColor: MaterialStateProperty.all(
+            const Color(0xFFFFA726).withOpacity(0.1),
+          ),
+        ),
+        icon: icon!,
+        label: Text(applyButtonText),
       ),
     );
   }
