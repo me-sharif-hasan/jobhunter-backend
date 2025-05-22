@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 @Entity
@@ -63,6 +64,9 @@ public class Jobs {
     @ManyToOne
     @JoinColumn(name = "site_id")
     private Site site;
+
+    @ManyToMany(mappedBy = "appliedJobs",fetch = FetchType.LAZY)
+    List<User> users;
 
     public static Jobs fromSimpleJobModel(SimpleJobModel jobModel, Site site) {
         Jobs job=new Jobs();

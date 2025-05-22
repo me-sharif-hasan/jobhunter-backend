@@ -1,10 +1,12 @@
 package com.iishanto.jobhunterbackend.infrastructure.database;
 
+import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Data
@@ -23,6 +25,14 @@ public class User{
     private Timestamp lastLogin;
     private Timestamp lastLogout;
     private String lastIp;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_applied_jobs",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "job_id")
+    )
+    private List<Jobs> appliedJobs;
 
 //    @OneToMany(mappedBy = "user")
 //    private List<Subscription> subscriptions;
