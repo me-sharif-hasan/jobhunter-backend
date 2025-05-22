@@ -170,8 +170,7 @@ class _JobTimelineCardState extends State<JobTimelineCard> with SingleTickerProv
                               ),
                             ),
                             // Apply button (top-right)
-                            if ((widget.job.jobUrl??widget.job.jobApplyLink) != null)
-                              ApplyButton(job: widget.job),
+                            
                           ],
                         ),
                         const SizedBox(height: 12), // More spacing for height
@@ -201,6 +200,59 @@ class _JobTimelineCardState extends State<JobTimelineCard> with SingleTickerProv
                                 text: widget.job.companyWebsite!,
                                 onTap: () => launchBrowser(widget.job.companyWebsite!),
                               ),
+                            if ((widget.job.jobUrl??widget.job.jobApplyLink) != null)
+                              Center(
+                                child: Row(children: [
+                                  ApplyButton(
+                                    job: widget.job,
+                                    buttonBorder:const BorderRadius.only(topLeft: Radius.circular(8),bottomLeft: Radius.circular(8)),
+                                    icon: const Icon(Icons.arrow_forward,color: Colors.blue,),
+                                    ),
+                                  ElevatedButton.icon(
+                                    onPressed: (){}, 
+                                    label: const Text("Applied"),
+                                    icon: const Icon(Icons.check_circle_outline,color: Colors.green,),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      backgroundColor: Colors.white,
+                                      foregroundColor: Colors.green,
+                                      shape: const RoundedRectangleBorder(
+                                        // borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      elevation: 0,
+                                      textStyle: const TextStyle(
+                                        fontSize: 14,
+                                        // fontWeight: FontWeight.w600,
+                                      ),
+                                    ).copyWith(
+                                      overlayColor: MaterialStateProperty.all(
+                                        const Color(0xFFFFA726).withOpacity(0.1),
+                                      ),
+                                    ),
+                                    ),
+                                    ElevatedButton.icon(onPressed: (){},
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: Colors.pink,
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.only(topRight: Radius.circular(8),bottomRight: Radius.circular(8)),
+                                        ),
+                                        elevation: 0,
+                                        textStyle: const TextStyle(
+                                          fontSize: 14,
+                                          // fontWeight: FontWeight.w600,
+                                        ),
+                                      ).copyWith(
+                                        overlayColor: MaterialStateProperty.all(
+                                          const Color(0xFFFFA726).withOpacity(0.1),
+                                        ),
+                                      ), 
+                                      icon: const Icon(Icons.favorite_outline,color: Colors.pink,),
+                                      label: const Text("Interested"),
+                                    )
+                                ],),
+                              )
                           ],
                         ),
                       ],
