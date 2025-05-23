@@ -7,11 +7,13 @@ import com.iishanto.jobhunterbackend.domain.model.SimpleSubscriptionModel;
 import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.database.Subscription;
+import com.iishanto.jobhunterbackend.infrastructure.projection.PersonalJobProjection;
 import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.SubscriptionRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -40,42 +42,40 @@ public class SubscriptionDataPort implements SubscriptionDataAdapter {
     @Override
     public List<SimpleJobModel> getSubscribedJobsOf(Long userId) {
         return getSubscribedJobsOf(userId,0,500,"");
-//        System.out.println("USERID: "+userId);
-//        List <Subscription> subscriptions=subscriptionRepository.findAllByUserId(userId);
-//        System.out.println("SUBS: "+subscriptions+":"+subscriptions.size());
-//        List <Site> sites=subscriptions.stream().map(Subscription::getSite).toList();
-//        List <Long> siteIds=sites.stream().map(Site::getId).toList();
-//        List <Jobs> jobs = jobsRepository.findTopNBySiteIn(siteIds,70);
-//        System.out.println("REC: "+jobs+":"+jobs.size());
-//        return jobs.stream().map(Jobs::toSimpleJobModel).toList();
     }
 
     @Override
     public List<SimpleJobModel> getSubscribedJobsOf(Long userId, int page, int limit, String query) {
+        List <Site> sites=getSubscribedSites(userId);
+        List <Long> siteIds=sites.stream().map(Site::getId).toList();
+        return getSimpleJobModels(userId, page, limit, query, siteIds);
+    }
+
+    private List<Site> getSubscribedSites(Long userId){
         System.out.println("USERID: "+userId);
         List <Subscription> subscriptions=subscriptionRepository.findAllByUserId(userId);
         System.out.println("SUBS: "+subscriptions+":"+subscriptions.size());
-        List <Site> sites=subscriptions.stream().map(Subscription::getSite).toList();
-        List <Long> siteIds=sites.stream().map(Site::getId).toList();
-        Pageable pageable=PageRequest.of(page,limit);
-        System.out.println(page+" "+limit);
-        List <Jobs> jobs = jobsRepository.findJobs(siteIds,query,pageable).getContent();
-        System.out.println("REC: "+jobs+":"+jobs.size());
-        return jobs.stream().map(Jobs::toSimpleJobModel).toList();
+        return subscriptions.stream().map(Subscription::getSite).toList();
     }
 
     @Override
     public List<SimpleJobModel> getSubscribedJobsOf(Long userId, int page, int limit, String query, int siteId) {
-        System.out.println("USERID: "+userId);
-        List <Subscription> subscriptions=subscriptionRepository.findAllByUserId(userId);
-        System.out.println("SUBS: "+subscriptions+":"+subscriptions.size());
-        List <Site> sites=subscriptions.stream().map(Subscription::getSite).toList();
+        List <Site> sites=getSubscribedSites(userId);
         List <Long> siteIds=siteId>=0?List.of((long)siteId):sites.stream().map(Site::getId).toList();
-        Pageable pageable=PageRequest.of(page,limit);
+        return getSimpleJobModels(userId, page, limit, query, siteIds);
+    }
+
+    @NotNull
+    private List<SimpleJobModel> getSimpleJobModels(Long userId, int page, int limit, String query, List<Long> siteIds) {
+        Pageable pageable= PageRequest.of(page,limit);
         System.out.println(page+" "+limit);
-        List <Jobs> jobs = jobsRepository.findJobs(siteIds,query,pageable).getContent();
-        System.out.println("REC: "+jobs+":"+jobs.size());
-        return jobs.stream().map(Jobs::toSimpleJobModel).toList();
+        List<PersonalJobProjection> personalJobProjections = jobsRepository.findJobs(siteIds,userId,query,pageable)
+                .getContent();
+        return personalJobProjections.stream().map(projection -> {
+            SimpleJobModel jobModel = Jobs.fromProjection(projection).toSimpleJobModel();
+            jobModel.setApplied(projection.getIsApplied() != 0);
+            return jobModel;
+        }).toList();
     }
 
     @Override

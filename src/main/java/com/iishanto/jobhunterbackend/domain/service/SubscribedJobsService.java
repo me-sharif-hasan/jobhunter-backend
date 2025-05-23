@@ -50,22 +50,26 @@ public class SubscribedJobsService implements AddSubscriptionUseCase, GetSubscri
         if (query!=null&&query.length()>25){
             throw new IllegalArgumentException("Too long query");
         }
+        List<SimpleJobModel> simpleJobModels;
+        Long userId = userDataAdapter.getLoggedInUser().getId();
         if(siteId==-1){
-            return subscriptionDataAdapter.getSubscribedJobsOf(
-                    userDataAdapter.getLoggedInUser().getId(),
+            simpleJobModels = subscriptionDataAdapter.getSubscribedJobsOf(
+                    userId,
                     page,
                     limit,
                     query
             );
         }else{
             System.out.println("SITEIDii: "+siteId);
-            return subscriptionDataAdapter.getSubscribedJobsOf(
-                    userDataAdapter.getLoggedInUser().getId(),
+            simpleJobModels = subscriptionDataAdapter.getSubscribedJobsOf(
+                    userId,
                     page,
                     limit,
                     query,
                     siteId
             );
         }
+
+        return simpleJobModels;
     }
 }
