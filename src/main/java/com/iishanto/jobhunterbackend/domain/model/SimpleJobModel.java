@@ -29,6 +29,8 @@ public class SimpleJobModel {
     public boolean isDuplicate=false;
     public boolean isApproved=false;
 
+    public boolean isApplied=false;
+
 
     private SimpleSiteModel site;
     String companyIconUrl;

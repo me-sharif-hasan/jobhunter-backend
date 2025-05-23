@@ -1,10 +1,12 @@
 package com.iishanto.jobhunterbackend.infrastructure.ports.database;
 
+import com.iishanto.jobhunterbackend.domain.adapter.JobDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminJobDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
-import com.iishanto.jobhunterbackend.infrastructure.database.Site;
+import com.iishanto.jobhunterbackend.infrastructure.database.User;
 import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
+import com.iishanto.jobhunterbackend.infrastructure.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,8 +18,9 @@ import java.util.stream.Collectors;
 
 @Component
 @AllArgsConstructor
-public class JobDataPort implements AdminJobDataAdapter {
+public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
     JobsRepository jobsRepository;
+    UserRepository userRepository;
     @Override
     public List<SimpleJobModel> getAllJobsForAdmin(int page, int limit, String query) {
         Pageable pageable = PageRequest.of(page, limit);
@@ -56,6 +59,26 @@ public class JobDataPort implements AdminJobDataAdapter {
             jobsRepository.save(job);
         } else {
             throw new RuntimeException("Job not found");
+        }
+    }
+
+    @Override
+    public void markApplied(String jobId, Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        Jobs job = jobsRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
+        Integer id = jobsRepository.applyIfNotApplied(user.getId(),job.getJobId());
+        if(id == null){
+            throw new RuntimeException("Already applied");
+        }
+    }
+
+    @Override
+    public void unmarkApplied(String jobId, Long id) {
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        Jobs job = jobsRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
+        Integer id1 = jobsRepository.unapplyIfApplied(user.getId(),job.getJobId());
+        if(id1 == null){
+            throw new RuntimeException("No Record Found");
         }
     }
 }

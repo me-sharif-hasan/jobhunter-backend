@@ -1,9 +1,12 @@
 package com.iishanto.jobhunterbackend.infrastructure.database;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -27,15 +30,14 @@ public class User{
     private String lastIp;
 
     @ManyToMany(fetch = FetchType.LAZY)
+    @ToString.Exclude
     @JoinTable(
             name = "user_applied_jobs",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "job_id")
     )
+    @JsonBackReference
     private List<Jobs> appliedJobs;
-
-//    @OneToMany(mappedBy = "user")
-//    private List<Subscription> subscriptions;
 
     public static User fromUserModel(SimpleUserModel userModel){
         User user=new User();
@@ -52,9 +54,6 @@ public class User{
         user.setLastLogout(userModel.getLastLogout());
         user.setLastIp(userModel.getLastIp());
         user.imageUrl=userModel.getImageUrl();
-//        user.setSubscriptions(
-//                userModel.getSubscriptions().stream().map(Subscription::fromSubscriptionModels).toList()
-//        );
         return user;
     }
 
@@ -71,9 +70,6 @@ public class User{
                 .lastLogout(lastLogout)
                 .imageUrl(imageUrl)
                 .lastIp(lastIp)
-//                .subscriptions(
-//                        subscriptions.stream().map(Subscription::toSubscriptionModel).toList()
-//                )
                 .build();
     }
 }
