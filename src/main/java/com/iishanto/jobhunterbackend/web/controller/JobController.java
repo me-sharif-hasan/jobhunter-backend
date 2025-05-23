@@ -1,6 +1,5 @@
 package com.iishanto.jobhunterbackend.web.controller;
 
-import com.iishanto.jobhunterbackend.domain.service.JobAggregatorService;
 import com.iishanto.jobhunterbackend.domain.usecase.GetSubscribedJobsUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.JobApplyManagementUseCase;
 import com.iishanto.jobhunterbackend.scheduled.ScheduledJobIndexRefresher;
@@ -18,10 +17,6 @@ public class JobController {
     private final GetSubscribedJobsUseCase getSubscribedJobsUseCase;
     private final ScheduledJobIndexRefresher scheduledJobIndexRefresher;
     private final JobApplyManagementUseCase jobApplyManagementUseCase;
-//    public JobController(GetSubscribedJobsUseCase getSubscribedJobsUseCase,ScheduledJobIndexRefresher scheduledJobIndexRefresher) {
-//        this.getSubscribedJobsUseCase = getSubscribedJobsUseCase;
-//        this.scheduledJobIndexRefresher = scheduledJobIndexRefresher;
-//    }
 
 
     @GetMapping("/refresh")
@@ -74,6 +69,22 @@ public class JobController {
                 true,
                 null,
                 "Job removed from applied successfully"
+        );
+    }
+
+    @GetMapping("/get-applied-jobs")
+    public ApiResponse getAppliedJobs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "") String query
+    ){
+        if(page<0||limit<0||limit>50){
+            throw new IllegalArgumentException("Invalid query parameters");
+        }
+        return new ApiResponse(
+                true,
+                jobApplyManagementUseCase.getAppliedJobs(page,limit,query),
+                "Applied jobs fetched successfully"
         );
     }
 }
