@@ -83,4 +83,52 @@ class JobTimelineController extends ChangeNotifier{
     loadJobs();
     notifyListeners();
   }
+
+  void applyForJob(Job job){
+    log("Marking started");
+    if(MetaController.mainPageBuildContext!=null){
+      log("Setting main page build context");
+      Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).loadingData = true;
+    }
+    log("${job.applied}");
+    if(!(job.applied??false)){
+      _jobDatasource!.markJobAsApplied(job.jobId).then((apiResponse){
+        if(apiResponse.success){
+          log("Applied successfully!");
+          for(Job aJob in jobs){
+            if(job.jobId==aJob.jobId){
+              aJob.applied=true;
+              notifyListeners();
+              break;
+            }
+          }
+        }else{
+          log("ERROR APPLYING");
+        }
+      }).then((_){
+        if(MetaController.mainPageBuildContext!=null){
+          Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).loadingData = false;
+        }
+      });
+    }else{
+      _jobDatasource!.unmarkAJob(job.jobId).then((apiResponse){
+        if(apiResponse.success){
+          log("Applied successfully!");
+          for(Job aJob in jobs){
+            if(job.jobId==aJob.jobId){
+              aJob.applied=false;
+              notifyListeners();
+              break;
+            }
+          }
+        }else{
+          log("ERROR APPLYING");
+        }
+      }).then((_){
+        if(MetaController.mainPageBuildContext!=null){
+          Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).loadingData = false;
+        }
+      });
+    }
+  }
 }

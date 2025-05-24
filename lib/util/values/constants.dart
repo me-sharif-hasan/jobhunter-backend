@@ -16,6 +16,9 @@ class Constants{
   static const saveFirebasePushToken = "/api/settings/saveFirebaseToken";
   static const inAppNotification = "/api/notifications";
 
+  static const markJobAsApplied = "/api/jobs/mark-applied";
+  static const undoAppliedJob = "/api/jobs/unmark-applied";
+
   static const List<List<int>> themeColor = [
     [0xFF42A5F5, 0xFF79BCFF], // Light Blue to Blue
     [0xFFFFA726, 0xFFFF963C], // Orange to Light Orange

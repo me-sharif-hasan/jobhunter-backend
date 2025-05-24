@@ -15,6 +15,7 @@ class Job{
   final String? experienceNeeded;
   final String? skillsNeeded;
   final String? companyIconUrl;
+  bool? applied;
   Job({
     required this.jobId,
     required this.title,
@@ -28,7 +29,8 @@ class Job{
     this.experienceNeeded,
     this.jobDescription,
     this.skillsNeeded,
-    this.companyIconUrl
+    this.companyIconUrl,
+    this.applied
   });
 
   factory Job.fromJson(Map<String, dynamic> json) {
@@ -46,7 +48,8 @@ class Job{
       experienceNeeded: json['experienceNeeded'],
       jobDescription: json['jobDescription'],
       skillsNeeded: json['skillsNeeded'],
-      companyIconUrl: json['companyIconUrl']
+      companyIconUrl: json['companyIconUrl'],
+      applied: json['applied']
     );
   }
 

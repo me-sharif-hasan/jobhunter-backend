@@ -46,7 +46,7 @@ class ApplyButton extends StatelessWidget {
           launchBrowser(context,job.jobUrl??job.jobApplyLink!);
         },
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
           backgroundColor: Colors.white,
           foregroundColor: icon!.color,
           shape: RoundedRectangleBorder(
