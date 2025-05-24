@@ -16,7 +16,7 @@ class JobTimelineScreen extends StatefulWidget {
 }
 
 class _JobTimelineScreenState extends State<JobTimelineScreen> {
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   int _currentPage=1;
   String _searchQuery = "";
   @override

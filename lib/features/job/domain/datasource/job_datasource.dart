@@ -33,4 +33,22 @@ class JobDatasource{
       }
     });
   }
+
+  Future<ApiResponse> markJobAsApplied(String jobId){
+    return client!.get("${Constants.markJobAsApplied}?job_id=$jobId").then(
+        (response){
+          ApiResponse apiResponse = ApiResponse.fromJson(json.decode(utf8.decode(response.bodyBytes)));
+          return apiResponse;
+        }
+    );
+  }
+
+  Future<ApiResponse> unmarkAJob(String jobId){
+    return client!.get("${Constants.undoAppliedJob}?job_id=$jobId").then(
+            (response){
+          ApiResponse apiResponse = ApiResponse.fromJson(json.decode(utf8.decode(response.bodyBytes)));
+          return apiResponse;
+        }
+    );
+  }
 }
