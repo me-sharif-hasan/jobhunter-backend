@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 class Constants{
-  static const String baseUrl = 'https://jobhunterbackend.gentlesmoke-d65a2350.westus2.azurecontainerapps.io';
-  // static const String baseUrl = 'http://172.16.1.2:8080';
+  // static const String baseUrl = 'https://jobhunterbackend.gentlesmoke-d65a2350.westus2.azurecontainerapps.io';
+  static const String baseUrl = 'http://10.0.2.2:8080';
   static const String token = '';
 
   static const getJobs = '/api/jobs';
@@ -15,6 +15,9 @@ class Constants{
   static const facebookConnect = "/auth/facebook/connect";
   static const saveFirebasePushToken = "/api/settings/saveFirebaseToken";
   static const inAppNotification = "/api/notifications";
+
+  static const markJobAsApplied = "/api/jobs/mark-applied";
+  static const undoAppliedJob = "/api/jobs/unmark-applied";
 
   static const List<List<int>> themeColor = [
     [0xFF42A5F5, 0xFF79BCFF], // Light Blue to Blue

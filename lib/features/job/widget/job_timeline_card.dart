@@ -1,8 +1,12 @@
 // lib/features/jobs/ui/job_timeline_card.dart
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:personalized_job_hunter/features/common/widgets/apply_button.dart';
+import 'package:personalized_job_hunter/features/job/controller/job_timeline_controller.dart';
+import 'package:provider/provider.dart';
 import '../../common/domain/model/job_model.dart';
 import '../../webview/inappwebview.dart';
 import 'job_details_popup.dart';
@@ -170,8 +174,7 @@ class _JobTimelineCardState extends State<JobTimelineCard> with SingleTickerProv
                               ),
                             ),
                             // Apply button (top-right)
-                            if ((widget.job.jobUrl??widget.job.jobApplyLink) != null)
-                              ApplyButton(job: widget.job),
+                            
                           ],
                         ),
                         const SizedBox(height: 12), // More spacing for height
@@ -201,6 +204,68 @@ class _JobTimelineCardState extends State<JobTimelineCard> with SingleTickerProv
                                 text: widget.job.companyWebsite!,
                                 onTap: () => launchBrowser(widget.job.companyWebsite!),
                               ),
+                            if ((widget.job.jobUrl??widget.job.jobApplyLink) != null)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                Flexible(
+                                  child: ApplyButton(
+                                    job: widget.job,
+                                    buttonBorder:const BorderRadius.only(topLeft: Radius.circular(8),bottomLeft: Radius.circular(8)),
+                                    icon: const Icon(Icons.arrow_forward,color: Colors.blue,),
+                                    ),
+                                ),
+                                Flexible(
+                                  child: ElevatedButton.icon(
+                                    onPressed: (){
+                                      log("Marking in progress");
+                                      Provider.of<JobTimelineController>(context,listen: false).applyForJob(widget.job);
+                                    },
+                                    label: const Text("Applied"),
+                                    icon: (widget.job.applied??false)?const Icon(Icons.check_circle,color: Colors.green,):const Icon(Icons.check_circle_outline,color: Colors.green,),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                                      backgroundColor: Colors.white,
+                                      foregroundColor: Colors.green,
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(topRight: Radius.circular(8),bottomRight: Radius.circular(8)),
+                                      ),
+                                      elevation: 0,
+                                      textStyle: const TextStyle(
+                                        fontSize: 14,
+                                        // fontWeight: FontWeight.w600,
+                                      ),
+                                    ).copyWith(
+                                      overlayColor: MaterialStateProperty.all(
+                                        const Color(0xFFFFA726).withOpacity(0.1),
+                                      ),
+                                    ),
+                                    ),
+                                ),
+                                  // Flexible(
+                                  //   child: ElevatedButton.icon(onPressed: (){},
+                                  //     style: ElevatedButton.styleFrom(
+                                  //       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+                                  //       backgroundColor: Colors.white,
+                                  //       foregroundColor: Colors.pink,
+                                  //       shape: const RoundedRectangleBorder(
+                                  //         borderRadius: BorderRadius.only(topRight: Radius.circular(8),bottomRight: Radius.circular(8)),
+                                  //       ),
+                                  //       elevation: 0,
+                                  //       textStyle: const TextStyle(
+                                  //         fontSize: 14,
+                                  //         // fontWeight: FontWeight.w600,
+                                  //       ),
+                                  //     ).copyWith(
+                                  //       overlayColor: MaterialStateProperty.all(
+                                  //         const Color(0xFFFFA726).withOpacity(0.1),
+                                  //       ),
+                                  //     ),
+                                  //     icon: const Icon(Icons.favorite_outline,color: Colors.pink,),
+                                  //     label: const Text("Interested"),
+                                  //   ),
+                                  // )
+                              ],)
                           ],
                         ),
                       ],
