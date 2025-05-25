@@ -148,7 +148,7 @@ class _JobTimelineScreenState extends State<JobTimelineScreen> with SingleTicker
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       decoration: const BoxDecoration(
-        color: Color(0xFFAB47BC), // Solid purple for flat, modern look
+        color: Color(0xFFFDA626), // Solid purple for flat, modern look
       ),
       child: Column(
         children: [
@@ -175,7 +175,7 @@ class _JobTimelineScreenState extends State<JobTimelineScreen> with SingleTicker
                 onTap: () {
                   _tabController.animateTo(0);
                   _currentPage = 1;
-                  controller.loadJobs(searchQuery: _searchQuery);
+                  controller.filter = "all";
                 },
               ),
               const SizedBox(width: 8),
@@ -188,7 +188,7 @@ class _JobTimelineScreenState extends State<JobTimelineScreen> with SingleTicker
                 onTap: () {
                   _tabController.animateTo(1);
                   _currentPage = 1;
-                  controller.loadJobs(searchQuery: _searchQuery); // Adjust logic if needed
+                  controller.filter="subscribed";
                 },
               ),
               const SizedBox(width: 8),
@@ -201,7 +201,7 @@ class _JobTimelineScreenState extends State<JobTimelineScreen> with SingleTicker
                 onTap: () {
                   _tabController.animateTo(2);
                   _currentPage = 1;
-                  controller.loadJobs(searchQuery: _searchQuery); // Adjust logic if needed
+                  controller.filter="applied";
                 },
               ),
             ],
@@ -224,7 +224,7 @@ class _JobTimelineScreenState extends State<JobTimelineScreen> with SingleTicker
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFE1BEE7) : Colors.white.withOpacity(0.2),
+          color: isSelected ? const Color(0xFFFFFFFF) : Colors.white.withOpacity(0.2),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
