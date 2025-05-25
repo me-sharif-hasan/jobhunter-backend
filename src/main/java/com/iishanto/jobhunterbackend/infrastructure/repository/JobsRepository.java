@@ -37,6 +37,50 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
     """, nativeQuery = true)
     Page<PersonalJobProjection> findJobs(@Param("siteIds") List<Long> siteIds, @Param("userId") Long userId, @Param("keyword") String keyword, Pageable pageable);
 
+    @Query(value = """
+        SELECT
+            jobs.*,
+            site.*,
+            IF(user_applied_jobs.user_id, true, false) AS is_applied
+        FROM jobs
+        JOIN site ON site.id = jobs.site_id
+        JOIN user_applied_jobs
+            ON user_applied_jobs.job_id = jobs.job_id
+            AND user_applied_jobs.user_id = :userId
+        WHERE
+            jobs.is_duplicate = false
+            AND jobs.site_id IN :siteIds
+            AND (
+                jobs.title LIKE %:keyword%
+                OR jobs.job_description LIKE %:keyword%
+                OR site.name LIKE %:keyword%
+            )
+        ORDER BY jobs.job_parsed_at DESC
+    """, nativeQuery = true)
+    Page<PersonalJobProjection> findAppliedJobs(@Param("siteIds") List<Long> siteIds, @Param("userId") Long userId, @Param("keyword") String keyword, Pageable pageable);
+
+
+    @Query(value = """
+        SELECT
+            jobs.*,
+            site.*,
+            IF(user_applied_jobs.user_id, true, false) AS is_applied
+        FROM jobs
+        JOIN site ON site.id = jobs.site_id
+        JOIN user_applied_jobs
+            ON user_applied_jobs.job_id = jobs.job_id
+            AND user_applied_jobs.user_id = :userId
+        WHERE
+            jobs.is_duplicate = false
+            AND (
+                jobs.title LIKE %:keyword%
+                OR jobs.job_description LIKE %:keyword%
+                OR site.name LIKE %:keyword%
+            )
+        ORDER BY jobs.job_parsed_at DESC
+    """, nativeQuery = true)
+    Page<PersonalJobProjection> findAppliedJobs(@Param("userId") Long userId, @Param("keyword") String keyword, Pageable pageable);
+
     @Override
     boolean existsById(@NotNull String id);
 
@@ -67,4 +111,25 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
         WHERE user_id = :userId AND job_id = :jobId
         """, nativeQuery = true)
     Integer unapplyIfApplied(Long userId, String jobId);
+
+    @Query(value = """
+        SELECT
+            jobs.*,
+            site.*,
+            IF(user_applied_jobs.user_id, true, false) AS is_applied
+        FROM jobs
+        LEFT JOIN site ON site.id = jobs.site_id
+        LEFT JOIN user_applied_jobs
+            ON user_applied_jobs.job_id = jobs.job_id
+            AND user_applied_jobs.user_id = :userId
+        WHERE
+            jobs.is_duplicate = false
+            AND (
+                jobs.title LIKE %:keyword%
+                OR jobs.job_description LIKE %:keyword%
+                OR site.name LIKE %:keyword%
+            )
+        ORDER BY jobs.job_parsed_at DESC
+    """, nativeQuery = true)
+    List<PersonalJobProjection> findAllJobs(String keyword,Long userId, Pageable pageable);
 }
