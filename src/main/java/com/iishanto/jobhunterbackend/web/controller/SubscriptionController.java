@@ -2,7 +2,7 @@ package com.iishanto.jobhunterbackend.web.controller;
 
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.usecase.AddSubscriptionUseCase;
-import com.iishanto.jobhunterbackend.domain.usecase.GetSubscribedJobsUseCase;
+import com.iishanto.jobhunterbackend.domain.usecase.UserJobAccessUseCase;
 import com.iishanto.jobhunterbackend.web.dto.request.SubscriptionDto;
 import com.iishanto.jobhunterbackend.web.dto.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -16,7 +16,7 @@ import java.util.List;
 @RequestMapping("/api/subscription")
 public class SubscriptionController {
     private final AddSubscriptionUseCase addSubscriptionUseCase;
-    private final GetSubscribedJobsUseCase getSubscribedJobsUseCase;
+    private final UserJobAccessUseCase userJobAccessUseCase;
     @PostMapping
     public ApiResponse subscribe(@Valid @RequestBody SubscriptionDto subscriptionDto){
         System.out.println("Subscribed to site id: "+ subscriptionDto.getSite_id()+"\n");
@@ -29,7 +29,7 @@ public class SubscriptionController {
 
     @GetMapping
     public ApiResponse getSubscriptions(){
-        List<SimpleJobModel> subscriptions= getSubscribedJobsUseCase.getSubscribedJobs();
+        List<SimpleJobModel> subscriptions= userJobAccessUseCase.getSubscribedJobs();
         return new ApiResponse(true,subscriptions,"List of all subscribed jobs");
     }
 

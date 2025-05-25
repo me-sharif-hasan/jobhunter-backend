@@ -1,6 +1,6 @@
 package com.iishanto.jobhunterbackend.infrastructure.ports.database;
 
-import com.iishanto.jobhunterbackend.domain.adapter.SubscriptionDataAdapter;
+import com.iishanto.jobhunterbackend.domain.adapter.UserJobAccessDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleSubscriptionModel;
@@ -22,7 +22,7 @@ import java.util.List;
 
 @Component
 @AllArgsConstructor
-public class SubscriptionDataPort implements SubscriptionDataAdapter {
+public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
     private final SubscriptionRepository subscriptionRepository;
     private final SiteRepository siteRepository;
     private final UserRepository userRepository;
@@ -90,4 +90,45 @@ public class SubscriptionDataPort implements SubscriptionDataAdapter {
         subscriptionRepository.deleteById(subscription.getId());
         System.out.println("Deleted: "+subscription);
     }
+
+    @Override
+    public List<SimpleJobModel> getAppliedJobs(int page, int limit, String query, int siteId, Long userId) {
+        Pageable pageable= PageRequest.of(page,limit);
+        if(siteId>=0){
+            List<Long> siteIds=List.of((long)siteId);
+            return jobsRepository.findAppliedJobs(
+                    siteIds,
+                    (long) limit,
+                    query,
+                    pageable
+            ).stream().map(personalJobProjection -> {
+                SimpleJobModel jobModel = Jobs.fromProjection(personalJobProjection).toSimpleJobModel();
+                jobModel.setApplied(personalJobProjection.getIsApplied() != 0);
+                return jobModel;
+            }).toList();
+        }else{
+            return jobsRepository.findAppliedJobs(
+                    userId,
+                    query,
+                    pageable
+            ).stream().map(personalJobProjection -> {
+                SimpleJobModel jobModel = Jobs.fromProjection(personalJobProjection).toSimpleJobModel();
+                jobModel.setApplied(personalJobProjection.getIsApplied() != 0);
+                return jobModel;
+            }).toList();
+        }
+    }
+
+    @Override
+    public List <SimpleJobModel> getAllJobs(int page, int limit, String query, Long userId) {
+        Pageable pageable= PageRequest.of(page,limit);
+        List <PersonalJobProjection> projectedJobs = jobsRepository.findAllJobs(query, userId, pageable);
+        return projectedJobs.stream().map(projectedJob->{
+            SimpleJobModel jobModel = Jobs.fromProjection(projectedJob).toSimpleJobModel();
+            jobModel.setApplied(projectedJob.getIsApplied() != 0);
+            return jobModel;
+        }).toList();
+    }
+
+
 }
