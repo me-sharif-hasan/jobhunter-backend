@@ -15,8 +15,8 @@ class JobDatasource{
   JobDatasource() {
     client = locator<BackendClient>();
   }
-  Future <List<Job>> getJobByLimit(int limit, currentPage, String searchQuery, int siteId) {
-    return client!.get("${Constants.getJobs}?limit=$limit&page=$currentPage&query=$searchQuery&siteId=$siteId").then((response) {
+  Future <List<Job>> getJobByLimit(int limit, currentPage, String searchQuery, int siteId,String variant) {
+    return client!.get("${Constants.getJobs}?limit=$limit&page=$currentPage&query=$searchQuery&siteId=$siteId&variant=$variant").then((response) {
       if (response.statusCode == HttpStatus.ok) {
         log("--->${response.body}");
         final dynamic data = jsonDecode(utf8.decode(response.bodyBytes));
@@ -32,5 +32,23 @@ class JobDatasource{
         throw Exception('Failed to load jobs');
       }
     });
+  }
+
+  Future<ApiResponse> markJobAsApplied(String jobId){
+    return client!.get("${Constants.markJobAsApplied}?job_id=$jobId").then(
+        (response){
+          ApiResponse apiResponse = ApiResponse.fromJson(json.decode(utf8.decode(response.bodyBytes)));
+          return apiResponse;
+        }
+    );
+  }
+
+  Future<ApiResponse> unmarkAJob(String jobId){
+    return client!.get("${Constants.undoAppliedJob}?job_id=$jobId").then(
+            (response){
+          ApiResponse apiResponse = ApiResponse.fromJson(json.decode(utf8.decode(response.bodyBytes)));
+          return apiResponse;
+        }
+    );
   }
 }

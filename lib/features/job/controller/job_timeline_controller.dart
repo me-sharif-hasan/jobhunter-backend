@@ -12,6 +12,11 @@ import '../domain/datasource/job_datasource.dart';
 class JobTimelineController extends ChangeNotifier{
   int siteId=-1;
   String currentlyFilteredSite="All";
+  String _currentFilterParam="all";
+  set filter(String filterValue){
+    _currentFilterParam=filterValue;
+    loadJobs();
+  }
   final List<Job> _jobs = [
   ];
 
@@ -45,7 +50,7 @@ class JobTimelineController extends ChangeNotifier{
           Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).loadingData = true;
         }
       }
-      final List<Job> jobs = await _jobDatasource!.getJobByLimit(10,currentPage,searchQuery,siteId);
+      final List<Job> jobs = await _jobDatasource!.getJobByLimit(10,currentPage,searchQuery,siteId,_currentFilterParam);
       if(jobs.isEmpty&&isSilent){
         throw Exception("No more jobs");
       }
@@ -82,5 +87,53 @@ class JobTimelineController extends ChangeNotifier{
     MetaController.notificationPayload = {};
     loadJobs();
     notifyListeners();
+  }
+
+  void applyForJob(Job job){
+    log("Marking started");
+    if(MetaController.mainPageBuildContext!=null){
+      log("Setting main page build context");
+      Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).loadingData = true;
+    }
+    log("${job.applied}");
+    if(!(job.applied??false)){
+      _jobDatasource!.markJobAsApplied(job.jobId).then((apiResponse){
+        if(apiResponse.success){
+          log("Applied successfully!");
+          for(Job aJob in jobs){
+            if(job.jobId==aJob.jobId){
+              aJob.applied=true;
+              notifyListeners();
+              break;
+            }
+          }
+        }else{
+          log("ERROR APPLYING");
+        }
+      }).then((_){
+        if(MetaController.mainPageBuildContext!=null){
+          Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).loadingData = false;
+        }
+      });
+    }else{
+      _jobDatasource!.unmarkAJob(job.jobId).then((apiResponse){
+        if(apiResponse.success){
+          log("Applied successfully!");
+          for(Job aJob in jobs){
+            if(job.jobId==aJob.jobId){
+              aJob.applied=false;
+              notifyListeners();
+              break;
+            }
+          }
+        }else{
+          log("ERROR APPLYING");
+        }
+      }).then((_){
+        if(MetaController.mainPageBuildContext!=null){
+          Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).loadingData = false;
+        }
+      });
+    }
   }
 }
