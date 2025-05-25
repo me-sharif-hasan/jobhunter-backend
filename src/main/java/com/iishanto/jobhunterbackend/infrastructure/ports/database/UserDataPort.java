@@ -1,10 +1,16 @@
 package com.iishanto.jobhunterbackend.infrastructure.ports.database;
 
 import com.iishanto.jobhunterbackend.domain.adapter.UserDataAdapter;
+import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
+import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
 import com.iishanto.jobhunterbackend.infrastructure.database.User;
+import com.iishanto.jobhunterbackend.infrastructure.database.UserAppliedJobs;
+import com.iishanto.jobhunterbackend.infrastructure.repository.UserAppliedJobsRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +23,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class UserDataPort implements UserDataAdapter {
     private final UserRepository userRepository;
+    UserAppliedJobsRepository userAppliedJobsRepository;
     @Override
     public Long addUser(SimpleUserModel userModel) {
         System.out.println("User Added: "+userModel.toString());
@@ -29,10 +36,14 @@ public class UserDataPort implements UserDataAdapter {
 
     @Override
     public SimpleUserModel getLoggedInUser() {
-        org.springframework.security.core.userdetails.User user = (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String email=user.getUsername();
+        String email = getCurrentUserEmail();
         User dbUser=userRepository.findByEmail(email);
         return dbUser.toUserModel();
+    }
+
+    private static String getCurrentUserEmail() {
+        org.springframework.security.core.userdetails.User user = (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return user.getUsername();
     }
 
     @Override
