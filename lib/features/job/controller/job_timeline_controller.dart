@@ -12,6 +12,11 @@ import '../domain/datasource/job_datasource.dart';
 class JobTimelineController extends ChangeNotifier{
   int siteId=-1;
   String currentlyFilteredSite="All";
+  String _currentFilterParam="all";
+  set filter(String filterValue){
+    _currentFilterParam=filterValue;
+    loadJobs();
+  }
   final List<Job> _jobs = [
   ];
 
@@ -45,7 +50,7 @@ class JobTimelineController extends ChangeNotifier{
           Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).loadingData = true;
         }
       }
-      final List<Job> jobs = await _jobDatasource!.getJobByLimit(10,currentPage,searchQuery,siteId);
+      final List<Job> jobs = await _jobDatasource!.getJobByLimit(10,currentPage,searchQuery,siteId,_currentFilterParam);
       if(jobs.isEmpty&&isSilent){
         throw Exception("No more jobs");
       }
