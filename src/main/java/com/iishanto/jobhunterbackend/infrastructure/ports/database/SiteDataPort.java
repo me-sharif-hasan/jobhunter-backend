@@ -1,6 +1,6 @@
 package com.iishanto.jobhunterbackend.infrastructure.ports.database;
 
-import com.iishanto.jobhunterbackend.domain.adapter.SubscriptionDataAdapter;
+import com.iishanto.jobhunterbackend.domain.adapter.UserJobAccessDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.UserDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteDataAdapter;
 import com.iishanto.jobhunterbackend.infrastructure.crawler.WebCrawler;
@@ -22,9 +22,9 @@ import java.util.Optional;
 @AllArgsConstructor
 public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
     private final WebCrawler webCrawler;
-    private final SubscriptionDataPort subscriptionDataPort;
+    private final UserJobAccessDataPort subscriptionDataPort;
     private final SiteRepository siteRepository;
-    private final SubscriptionDataAdapter subscriptionDataAdapter;
+    private final UserJobAccessDataAdapter userJobAccessDataAdapter;
     private final UserDataAdapter userDataAdapter;
 //    public SiteDataPort(WebCrawler webCrawler, SiteRepository siteRepository){
 //        this.webCrawler = webCrawler;

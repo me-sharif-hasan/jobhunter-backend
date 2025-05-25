@@ -1,6 +1,6 @@
 package com.iishanto.jobhunterbackend.web.controller;
 
-import com.iishanto.jobhunterbackend.domain.usecase.GetSubscribedJobsUseCase;
+import com.iishanto.jobhunterbackend.domain.usecase.UserJobAccessUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.JobApplyManagementUseCase;
 import com.iishanto.jobhunterbackend.scheduled.ScheduledJobIndexRefresher;
 import com.iishanto.jobhunterbackend.web.dto.response.ApiResponse;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/jobs")
 @AllArgsConstructor
 public class JobController {
-    private final GetSubscribedJobsUseCase getSubscribedJobsUseCase;
+    private final UserJobAccessUseCase userJobAccessUseCase;
     private final ScheduledJobIndexRefresher scheduledJobIndexRefresher;
     private final JobApplyManagementUseCase jobApplyManagementUseCase;
 
@@ -34,16 +34,25 @@ public class JobController {
             @RequestParam(defaultValue = "") String query,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "1") int limit,
-            @RequestParam(defaultValue = "-1") int siteId
+            @RequestParam(defaultValue = "-1") int siteId,
+            @RequestParam(defaultValue = "all") String variant
     ){
         if(page<0||limit<0||limit>50){
             throw new IllegalArgumentException("Invalid query parameters");
         }
         return new ApiResponse(
                 true,
-                getSubscribedJobsUseCase.getSubscribedJobs(
-                        page,limit,query,siteId
-                ),
+                switch (variant){
+                    case "all"-> userJobAccessUseCase.getAllJobs(
+                            page,limit,query,siteId
+                    );
+                    case "applied" -> userJobAccessUseCase.getAppliedJobs(
+                      page, limit, query, siteId
+                    );
+                    default -> userJobAccessUseCase.getSubscribedJobs(
+                            page, limit, query, siteId
+                    );
+                },
                 "Jobs fetched successfully"
         );
     }
