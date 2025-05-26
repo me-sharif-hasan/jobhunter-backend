@@ -242,29 +242,7 @@ class _JobTimelineCardState extends State<JobTimelineCard> with SingleTickerProv
                                     ),
                                     ),
                                 ),
-                                  // Flexible(
-                                  //   child: ElevatedButton.icon(onPressed: (){},
-                                  //     style: ElevatedButton.styleFrom(
-                                  //       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
-                                  //       backgroundColor: Colors.white,
-                                  //       foregroundColor: Colors.pink,
-                                  //       shape: const RoundedRectangleBorder(
-                                  //         borderRadius: BorderRadius.only(topRight: Radius.circular(8),bottomRight: Radius.circular(8)),
-                                  //       ),
-                                  //       elevation: 0,
-                                  //       textStyle: const TextStyle(
-                                  //         fontSize: 14,
-                                  //         // fontWeight: FontWeight.w600,
-                                  //       ),
-                                  //     ).copyWith(
-                                  //       overlayColor: MaterialStateProperty.all(
-                                  //         const Color(0xFFFFA726).withOpacity(0.1),
-                                  //       ),
-                                  //     ),
-                                  //     icon: const Icon(Icons.favorite_outline,color: Colors.pink,),
-                                  //     label: const Text("Interested"),
-                                  //   ),
-                                  // )
+                                  
                               ],)
                           ],
                         ),
