@@ -27,9 +27,15 @@ public class UserDataPort implements UserDataAdapter {
     @Override
     public Long addUser(SimpleUserModel userModel) {
         System.out.println("User Added: "+userModel.toString());
+        User dbUser;
+        if (userModel.getId() != null) {
+            dbUser = userRepository.findById(userModel.getId()).orElse(new User());
+        } else {
+            dbUser = new User();
+        }
         userModel.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         userModel.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
-        User user=User.fromUserModel(userModel);
+        User user=User.fromUserModel(userModel,dbUser);
         userRepository.save(user);
         return user.getId();
     }
