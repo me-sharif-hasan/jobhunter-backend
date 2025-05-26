@@ -174,7 +174,7 @@ class _JobTimelineCardState extends State<JobTimelineCard> with SingleTickerProv
                               ),
                             ),
                             // Apply button (top-right)
-                            
+                            IconButton(onPressed: (){}, icon: Icon(Icons.favorite_outline,color: Colors.red.withOpacity(0.9),)),
                           ],
                         ),
                         const SizedBox(height: 12), // More spacing for height
@@ -221,7 +221,7 @@ class _JobTimelineCardState extends State<JobTimelineCard> with SingleTickerProv
                                       log("Marking in progress");
                                       Provider.of<JobTimelineController>(context,listen: false).applyForJob(widget.job);
                                     },
-                                    label: const Text("Applied"),
+                                    label: Text((widget.job.applied??false)==false?"Mark as applied":"Applied"),
                                     icon: (widget.job.applied??false)?const Icon(Icons.check_circle,color: Colors.green,):const Icon(Icons.check_circle_outline,color: Colors.green,),
                                     style: ElevatedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
@@ -236,7 +236,7 @@ class _JobTimelineCardState extends State<JobTimelineCard> with SingleTickerProv
                                         // fontWeight: FontWeight.w600,
                                       ),
                                     ).copyWith(
-                                      overlayColor: MaterialStateProperty.all(
+                                      overlayColor: WidgetStateProperty.all(
                                         const Color(0xFFFFA726).withOpacity(0.1),
                                       ),
                                     ),

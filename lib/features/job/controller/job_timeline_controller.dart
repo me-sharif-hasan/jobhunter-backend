@@ -43,7 +43,9 @@ class JobTimelineController extends ChangeNotifier{
       log("is silent $isSilent $currentPage");
       if(!isSilent){
         _isLoading = true;
-        notifyListeners();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+        });
       }
       if(isSilent){
         if(MetaController.mainPageBuildContext!=null){
