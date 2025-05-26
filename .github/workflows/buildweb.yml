@@ -3,7 +3,7 @@ name: Build and Release Job Hunter Web
 on:
   push:
     branches:
-      - *
+      - "*"
 
 permissions:
   contents: write
