@@ -10,5 +10,5 @@ public interface UserJobAccessUseCase {
 
     List<SimpleJobModel> getAppliedJobs(int page, int limit, String query, int siteId);
 
-    List<SimpleJobModel> getAllJobs(int page, int limit, String query, int siteId);
+    List<SimpleJobModel> getAllJobs(int page, int limit, String query, Long siteId);
 }

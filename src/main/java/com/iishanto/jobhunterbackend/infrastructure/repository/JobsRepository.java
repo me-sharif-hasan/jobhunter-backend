@@ -45,8 +45,7 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
         FROM jobs
         JOIN site ON site.id = jobs.site_id
         JOIN user_applied_jobs
-            ON user_applied_jobs.job_id = jobs.job_id
-            AND user_applied_jobs.user_id = :userId
+            ON (user_applied_jobs.job_id = jobs.job_id AND user_applied_jobs.user_id = :userId)
         WHERE
             jobs.is_duplicate = false
             AND jobs.site_id IN :siteIds
@@ -123,6 +122,8 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
             ON user_applied_jobs.job_id = jobs.job_id
             AND user_applied_jobs.user_id = :userId
         WHERE
+            (jobs.site_id = :siteId OR :siteId IS NULL OR :siteId <0)
+            AND
             jobs.is_duplicate = false
             AND (
                 jobs.title LIKE %:keyword%
@@ -131,5 +132,5 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
             )
         ORDER BY jobs.job_parsed_at DESC
     """, nativeQuery = true)
-    List<PersonalJobProjection> findAllJobs(String keyword,Long userId, Pageable pageable);
+    List<PersonalJobProjection> findAllJobs(String keyword,Long userId,Long siteId, Pageable pageable);
 }

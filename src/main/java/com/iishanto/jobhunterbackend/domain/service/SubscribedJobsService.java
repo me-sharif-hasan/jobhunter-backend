@@ -50,7 +50,8 @@ public class SubscribedJobsService implements AddSubscriptionUseCase, UserJobAcc
                     userId,
                     page,
                     limit,
-                    query
+                    query,
+                    siteId
             );
         }else{
             System.out.println("SITEIDii: "+siteId);
@@ -80,9 +81,9 @@ public class SubscribedJobsService implements AddSubscriptionUseCase, UserJobAcc
     }
 
     @Override
-    public List<SimpleJobModel> getAllJobs(int page, int limit, String query, int siteId) {
+    public List<SimpleJobModel> getAllJobs(int page, int limit, String query, Long siteId) {
         Long userId = userDataAdapter.getLoggedInUser().getId();
-        return userJobAccessDataAdapter.getAllJobs(page,limit,query,userId);
+        return userJobAccessDataAdapter.getAllJobs(page,limit,query,userId, siteId);
     }
 
     private static void validateRequest(int page, int limit, String query) {

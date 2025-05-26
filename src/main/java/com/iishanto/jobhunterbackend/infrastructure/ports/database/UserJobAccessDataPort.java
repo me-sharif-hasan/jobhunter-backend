@@ -61,7 +61,9 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
     @Override
     public List<SimpleJobModel> getSubscribedJobsOf(Long userId, int page, int limit, String query, int siteId) {
         List <Site> sites=getSubscribedSites(userId);
-        List <Long> siteIds=siteId>=0?List.of((long)siteId):sites.stream().map(Site::getId).toList();
+        List <Long> siteIds=sites.stream().map(Site::getId).filter(
+                id -> siteId < 0 || id == siteId
+        ).toList();
         return getSimpleJobModels(userId, page, limit, query, siteIds);
     }
 
@@ -96,9 +98,9 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
         Pageable pageable= PageRequest.of(page,limit);
         if(siteId>=0){
             List<Long> siteIds=List.of((long)siteId);
-            return jobsRepository.findAppliedJobs(
+            List<SimpleJobModel> sjm = jobsRepository.findAppliedJobs(
                     siteIds,
-                    (long) limit,
+                    userId,
                     query,
                     pageable
             ).stream().map(personalJobProjection -> {
@@ -106,6 +108,8 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
                 jobModel.setApplied(personalJobProjection.getIsApplied() != 0);
                 return jobModel;
             }).toList();
+
+            return sjm;
         }else{
             return jobsRepository.findAppliedJobs(
                     userId,
@@ -120,9 +124,9 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
     }
 
     @Override
-    public List <SimpleJobModel> getAllJobs(int page, int limit, String query, Long userId) {
+    public List <SimpleJobModel> getAllJobs(int page, int limit, String query, Long userId, Long siteId) {
         Pageable pageable= PageRequest.of(page,limit);
-        List <PersonalJobProjection> projectedJobs = jobsRepository.findAllJobs(query, userId, pageable);
+        List <PersonalJobProjection> projectedJobs = jobsRepository.findAllJobs(query, userId,siteId, pageable);
         return projectedJobs.stream().map(projectedJob->{
             SimpleJobModel jobModel = Jobs.fromProjection(projectedJob).toSimpleJobModel();
             jobModel.setApplied(projectedJob.getIsApplied() != 0);

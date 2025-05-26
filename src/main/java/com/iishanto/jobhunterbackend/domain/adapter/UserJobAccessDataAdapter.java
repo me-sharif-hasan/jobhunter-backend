@@ -17,5 +17,5 @@ public interface UserJobAccessDataAdapter {
 
     List<SimpleJobModel> getAppliedJobs(int page, int limit, String query,int siteId,Long userId);
 
-    List<SimpleJobModel> getAllJobs(int page, int limit, String query, Long userId);
+    List<SimpleJobModel> getAllJobs(int page, int limit, String query, Long userId, Long siteId);
 }
