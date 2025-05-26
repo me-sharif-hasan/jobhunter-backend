@@ -49,7 +49,7 @@ jobs:
       - name: Publish Web Build as zip
         run: |
           cd build/web
-          zip -r ../../jobhunterweb.zip
+          zip -r ../../jobhunterweb.zip .
 
       - name: Publishing Web Page
         uses: softprops/action-gh-release@v2
