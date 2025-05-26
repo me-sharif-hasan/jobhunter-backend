@@ -3,7 +3,7 @@ name: Build and Release Job Hunter Web
 on:
   push:
     branches:
-      - "*"
+      - '**'
 
 permissions:
   contents: write
@@ -13,18 +13,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Set up JDK 17
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # Set up Flutter
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -32,19 +29,14 @@ jobs:
           channel: 'stable'
           cache: true
 
-      # Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
-      # Install jq for JSON validation
       - name: Install jq
         run: sudo apt-get install -y jq
 
-      # Build APK
       - name: Build Web App
         run: flutter build web --release
-
-      # Call jobhunter.iishanto.com/getsource.php with the zip folder from build/web
 
       - name: Publish Web Build as zip
         run: |
@@ -61,11 +53,12 @@ jobs:
           files: jobhunterweb.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # https://github.com/me-sharif-hasan/jobhunter-backend/releases/download/v3/jobhunterweb.zip
+
       - name: Ping frontend host with url
         run: |
           VERSION=v${{ github.run_number }}
-          ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${{ VERSION }}/jobhunterweb.zip"
+          ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${VERSION}/jobhunterweb.zip"
+          echo "ZIP URL: $ZIP_URL"
           curl -X POST "https://jobhunter.iishanto.com/getsource.php" \
                -H "Content-Type: application/json" \
                -d "{\"version\": \"$VERSION\", \"url\": \"$ZIP_URL\"}"
