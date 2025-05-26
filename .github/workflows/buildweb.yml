@@ -61,11 +61,11 @@ jobs:
           files: jobhunterweb.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      # https://github.com/me-sharif-hasan/jobhunter-backend/releases/download/v3/jobhunterweb.zip
       - name: Ping frontend host with url
         run: |
           VERSION=v${{ github.run_number }}
-          ZIP_URL="https://github.com/${{ github.repository }}/releases/download/$VERSION/web-release.zip"
+          ZIP_URL="https://github.com/${{ github.repository }}/releases/download/${{ VERSION }}/jobhunterweb.zip"
           curl -X POST "https://jobhunter.iishanto.com/getsource.php" \
                -H "Content-Type: application/json" \
                -d "{\"version\": \"$VERSION\", \"url\": \"$ZIP_URL\"}"
