@@ -10,6 +10,7 @@ import lombok.ToString;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -36,11 +37,14 @@ public class User{
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "job_id")
     )
-    @JsonBackReference
+    @JsonManagedReference
     private List<Jobs> appliedJobs;
 
     public static User fromUserModel(SimpleUserModel userModel){
-        User user=new User();
+        return fromUserModel(userModel, null);
+    }
+    public static User fromUserModel(SimpleUserModel userModel,User existingUser) {
+        User user=existingUser==null?new User():existingUser;
         if (userModel.getId()!=null){
             user.setId(userModel.getId());
         }
