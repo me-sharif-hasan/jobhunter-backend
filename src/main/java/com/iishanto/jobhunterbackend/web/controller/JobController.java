@@ -44,7 +44,7 @@ public class JobController {
                 true,
                 switch (variant){
                     case "all"-> userJobAccessUseCase.getAllJobs(
-                            page,limit,query,siteId
+                            page,limit,query, (long) siteId
                     );
                     case "applied" -> userJobAccessUseCase.getAppliedJobs(
                       page, limit, query, siteId
