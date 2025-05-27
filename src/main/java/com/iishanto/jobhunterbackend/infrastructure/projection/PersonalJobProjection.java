@@ -27,7 +27,7 @@ public interface PersonalJobProjection {
     Boolean getIsDuplicate();
     Boolean getIsApproved();
 
-    Long getIsApplied();
+    Boolean getIsApplied();
 
     Long getSiteId();
 
@@ -36,4 +36,6 @@ public interface PersonalJobProjection {
     String getName();
 
     String getIconUrl();
+
+    Timestamp getAppliedAt();
 }

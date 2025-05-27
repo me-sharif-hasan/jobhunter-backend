@@ -40,11 +40,14 @@ public class UserAppliedJobs {
         @UpdateTimestamp
         private Timestamp updatedAt;
 
+        private boolean isApplied=false;
         private Timestamp appliedAt;
-
         @Enumerated(EnumType.STRING)
         @Column(nullable = false)
-        private JobApplicationStatus applicationStatus = JobApplicationStatus.APPLIED;
+        private JobApplicationStatus applicationStatus = JobApplicationStatus.DEFAULT;
+
+        private boolean isFavourite=false;
+        private boolean isHidden=false;
 
         @PrePersist
         protected void onCreate() {

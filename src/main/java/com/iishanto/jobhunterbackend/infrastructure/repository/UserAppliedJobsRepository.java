@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserAppliedJobsRepository extends JpaRepository<UserAppliedJobs, Long> {
     @Transactional
@@ -21,4 +22,6 @@ public interface UserAppliedJobsRepository extends JpaRepository<UserAppliedJobs
             String jobLocation,
             Pageable pageable
     );
+
+    Optional<UserAppliedJobs> findByJob_JobIdAndUser_Id(String jobId,Long userId);
 }

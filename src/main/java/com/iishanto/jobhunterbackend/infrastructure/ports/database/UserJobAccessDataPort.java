@@ -75,7 +75,7 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
                 .getContent();
         return personalJobProjections.stream().map(projection -> {
             SimpleJobModel jobModel = Jobs.fromProjection(projection).toSimpleJobModel();
-            jobModel.setApplied(projection.getIsApplied() != 0);
+            jobModel.setApplied(projection.getIsApplied()!=null&&projection.getIsApplied());
             return jobModel;
         }).toList();
     }
@@ -105,7 +105,8 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
                     pageable
             ).stream().map(personalJobProjection -> {
                 SimpleJobModel jobModel = Jobs.fromProjection(personalJobProjection).toSimpleJobModel();
-                jobModel.setApplied(personalJobProjection.getIsApplied() != 0);
+                jobModel.setApplied(personalJobProjection.getIsApplied()!=null&&personalJobProjection.getIsApplied());
+                jobModel.setAppliedAt(personalJobProjection.getAppliedAt());
                 return jobModel;
             }).toList();
 
@@ -117,7 +118,8 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
                     pageable
             ).stream().map(personalJobProjection -> {
                 SimpleJobModel jobModel = Jobs.fromProjection(personalJobProjection).toSimpleJobModel();
-                jobModel.setApplied(personalJobProjection.getIsApplied() != 0);
+                jobModel.setApplied(personalJobProjection.getIsApplied()!=null&&personalJobProjection.getIsApplied());
+                jobModel.setAppliedAt(personalJobProjection.getAppliedAt());
                 return jobModel;
             }).toList();
         }
@@ -129,7 +131,7 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
         List <PersonalJobProjection> projectedJobs = jobsRepository.findAllJobs(query, userId,siteId, pageable);
         return projectedJobs.stream().map(projectedJob->{
             SimpleJobModel jobModel = Jobs.fromProjection(projectedJob).toSimpleJobModel();
-            jobModel.setApplied(projectedJob.getIsApplied() != 0);
+            jobModel.setApplied(projectedJob.getIsApplied()!=null&&projectedJob.getIsApplied());
             return jobModel;
         }).toList();
     }
