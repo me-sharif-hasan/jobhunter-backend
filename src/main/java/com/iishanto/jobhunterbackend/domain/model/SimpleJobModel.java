@@ -28,7 +28,7 @@ public class SimpleJobModel {
     public String experienceNeeded;
     public boolean isDuplicate=false;
     public boolean isApproved=false;
-
+    public Timestamp appliedAt;
     public boolean isApplied=false;
 
 
