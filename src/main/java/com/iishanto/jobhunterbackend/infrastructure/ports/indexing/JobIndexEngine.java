@@ -183,22 +183,6 @@ public class JobIndexEngine implements JobIndexingAdapter {
                     }
                 }catch (Exception e) {
                     e.printStackTrace();
-                }finally {
-                    List<Jobs> jobs=jobsRepository.findAll();
-                    for(Jobs job:jobs){
-                        if(StringUtils.isBlank(job.getJobLastDate())){
-                            Timestamp lastSeenAt=job.getLastSeenAt();
-                            if(lastSeenAt!=null){
-                                long diff = System.currentTimeMillis() - lastSeenAt.getTime();
-                                long diffHours = diff / (60 * 60 * 1000);
-                                if(diffHours>24){
-                                    job.setJobLastDate(job.getLastSeenAt().toString());
-                                    jobsRepository.save(job);
-                                }
-                            }
-
-                        }
-                    }
                 }
             }
             System.out.println("Indexing done");
