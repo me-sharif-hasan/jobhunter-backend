@@ -37,7 +37,7 @@ if (targetSdk == null) {
 
 android {
     namespace "com.iishanto.personalized_job_hunter"
-    compileSdkVersion flutter.compileSdkVersion
+    compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
     compileOptions {
