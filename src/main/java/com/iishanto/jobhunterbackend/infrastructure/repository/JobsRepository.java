@@ -19,7 +19,10 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
         SELECT
             jobs.*,
             site.*,
-            IF(user_applied_jobs.user_id, true, false) AS is_applied
+            user_applied_jobs.is_applied as is_applied,
+            user_applied_jobs.applied_at as applied_at,
+            user_applied_jobs.is_favourite as is_favourite,
+            user_applied_jobs.is_hidden as is_hidden
         FROM jobs
         JOIN site ON site.id = jobs.site_id
         LEFT JOIN user_applied_jobs
@@ -41,7 +44,10 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
         SELECT
             jobs.*,
             site.*,
-            IF(user_applied_jobs.user_id, true, false) AS is_applied
+            user_applied_jobs.is_applied as is_applied,
+            user_applied_jobs.applied_at as applied_at,
+            user_applied_jobs.is_favourite as is_favourite,
+            user_applied_jobs.is_hidden as is_hidden
         FROM jobs
         JOIN site ON site.id = jobs.site_id
         JOIN user_applied_jobs
@@ -63,12 +69,16 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
         SELECT
             jobs.*,
             site.*,
-            IF(user_applied_jobs.user_id, true, false) AS is_applied
+            user_applied_jobs.is_applied as is_applied,
+            user_applied_jobs.applied_at as applied_at,
+            user_applied_jobs.is_favourite as is_favourite,
+            user_applied_jobs.is_hidden as is_hidden
         FROM jobs
         JOIN site ON site.id = jobs.site_id
         JOIN user_applied_jobs
             ON user_applied_jobs.job_id = jobs.job_id
             AND user_applied_jobs.user_id = :userId
+            AND user_applied_jobs.is_applied = true
         WHERE
             jobs.is_duplicate = false
             AND (
@@ -91,31 +101,34 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
 
     Optional<Jobs> findByJobUrl(String jobUrl);
 
-    @Modifying
-    @Transactional
-    @Query(value = """
-    INSERT INTO user_applied_jobs(user_id, job_id)
-    SELECT :userId, :jobId FROM DUAL
-    WHERE NOT EXISTS (
-        SELECT 1 FROM user_applied_jobs
-        WHERE user_id = :userId AND job_id = :jobId
-    )
-    """, nativeQuery = true)
-    Integer applyIfNotApplied(@Param("userId") Long userId, @Param("jobId") String jobId);
-
-    @Modifying
-    @Transactional
-    @Query(value = """
-        DELETE FROM user_applied_jobs
-        WHERE user_id = :userId AND job_id = :jobId
-        """, nativeQuery = true)
-    Integer unapplyIfApplied(Long userId, String jobId);
+//    @Modifying
+//    @Transactional
+//    @Query(value = """
+//    INSERT INTO user_applied_jobs(user_id, job_id)
+//    SELECT :userId, :jobId FROM DUAL
+//    WHERE NOT EXISTS (
+//        SELECT 1 FROM user_applied_jobs
+//        WHERE user_id = :userId AND job_id = :jobId
+//    )
+//    """, nativeQuery = true)
+//    Integer applyIfNotApplied(@Param("userId") Long userId, @Param("jobId") String jobId);
+//
+//    @Modifying
+//    @Transactional
+//    @Query(value = """
+//        DELETE FROM user_applied_jobs
+//        WHERE user_id = :userId AND job_id = :jobId
+//        """, nativeQuery = true)
+//    Integer unapplyIfApplied(Long userId, String jobId);
 
     @Query(value = """
         SELECT
             jobs.*,
             site.*,
-            IF(user_applied_jobs.user_id, true, false) AS is_applied
+            user_applied_jobs.is_applied as is_applied,
+            user_applied_jobs.applied_at as applied_at,
+            user_applied_jobs.is_favourite as is_favourite,
+            user_applied_jobs.is_hidden as is_hidden
         FROM jobs
         LEFT JOIN site ON site.id = jobs.site_id
         LEFT JOIN user_applied_jobs

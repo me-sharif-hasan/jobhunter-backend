@@ -1,6 +1,7 @@
 package com.iishanto.jobhunterbackend.domain.model.values;
 
 public enum JobApplicationStatus {
+    DEFAULT("DEFAULT"),
     APPLIED("APPLIED"),
     CALLED("CALLED"),
     INTERVIEWED("INTERVIEWED"),
