@@ -15,6 +15,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -71,18 +73,28 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
         try{
             User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
             Jobs job = jobsRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
-            UserAppliedJobs userAppliedJobs = new UserAppliedJobs();
+            Optional<UserAppliedJobs> optionalUserAppliedJobs = userAppliedJobsRepository.findByJob_JobIdAndUser_Id(jobId,userId);
+            UserAppliedJobs userAppliedJobs = optionalUserAppliedJobs.orElseGet(UserAppliedJobs::new);
             userAppliedJobs.setJob(job);
             userAppliedJobs.setUser(user);
+            userAppliedJobs.setAppliedAt(Timestamp.from(Instant.now()));
+            userAppliedJobs.setApplied(true);
             userAppliedJobsRepository.save(userAppliedJobs);
         }catch (Exception e){
+            e.printStackTrace();
             throw new RuntimeException("Already Applied");
         }
     }
 
     @Override
     public void unmarkApplied(String jobId, Long id) {
-        userAppliedJobsRepository.deleteByJob_JobIdAndUser_Id(jobId,id);
+        Optional<UserAppliedJobs> optionalUserAppliedJobs = userAppliedJobsRepository.findByJob_JobIdAndUser_Id(jobId,id);
+        if (optionalUserAppliedJobs.isPresent()) {
+            UserAppliedJobs userAppliedJobs = optionalUserAppliedJobs.get();
+            userAppliedJobs.setApplied(false);
+            userAppliedJobs.setAppliedAt(null);
+            userAppliedJobsRepository.save(userAppliedJobs);
+        }
     }
 
     @Override
