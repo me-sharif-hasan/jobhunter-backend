@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:personalized_job_hunter/features/common/domain/model/job_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:io' show Platform;
 
 import '../../webview/inappwebview.dart';
@@ -28,7 +29,7 @@ class ApplyButton extends StatelessWidget {
           backgroundColor: Colors.white,
           foregroundColor: const Color(0xFFFFA726),
           shape: RoundedRectangleBorder(
-            borderRadius: this.buttonBorder,
+            borderRadius: buttonBorder,
           ),
           elevation: 0,
           textStyle: const TextStyle(
@@ -36,7 +37,7 @@ class ApplyButton extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ).copyWith(
-          overlayColor: MaterialStateProperty.all(
+          overlayColor: WidgetStateProperty.all(
             const Color(0xFFFFA726).withOpacity(0.1),
           ),
         ),
@@ -50,14 +51,14 @@ class ApplyButton extends StatelessWidget {
           backgroundColor: Colors.white,
           foregroundColor: icon!.color,
           shape: RoundedRectangleBorder(
-            borderRadius: this.buttonBorder,
+            borderRadius: buttonBorder,
           ),
           elevation: 0,
           textStyle: const TextStyle(
             fontSize: 14,
           ),
         ).copyWith(
-          overlayColor: MaterialStateProperty.all(
+          overlayColor: WidgetStateProperty.all(
             const Color(0xFFFFA726).withOpacity(0.1),
           ),
         ),
@@ -77,7 +78,10 @@ class ApplyButton extends StatelessWidget {
       );
     }else{
       if(kIsWeb){
-        // js.context.callMethod('open', [url]);
+        launchUrl(
+          Uri.parse(url),
+          mode: LaunchMode.externalApplication,
+        );
       }else{
         // launchUrl(
         //     Uri.parse(url)

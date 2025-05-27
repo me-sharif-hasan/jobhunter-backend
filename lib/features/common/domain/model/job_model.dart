@@ -1,6 +1,9 @@
 
 import 'dart:developer';
 
+import 'package:intl/intl.dart';
+import 'package:personalized_job_hunter/util/time/time_util.dart';
+
 class Job{
   final String jobId;
   final String title;
@@ -15,6 +18,7 @@ class Job{
   final String? experienceNeeded;
   final String? skillsNeeded;
   final String? companyIconUrl;
+  final String? appliedAt;
   bool? applied;
   Job({
     required this.jobId,
@@ -30,11 +34,14 @@ class Job{
     this.jobDescription,
     this.skillsNeeded,
     this.companyIconUrl,
-    this.applied
+    this.applied,
+    this.appliedAt
   });
 
   factory Job.fromJson(Map<String, dynamic> json) {
     log('iishanto: '+json.toString());
+    log("jooo: ${json['appliedAt']}");
+
     return Job(
       jobId: json['jobId'] ?? '',
       title: json['title'] ?? 'Untitled Job',
@@ -49,7 +56,8 @@ class Job{
       jobDescription: json['jobDescription'],
       skillsNeeded: json['skillsNeeded'],
       companyIconUrl: json['companyIconUrl'],
-      applied: json['applied']
+      applied: json['applied'],
+      appliedAt: json['appliedAt']!=null && json['appliedAt'].toString().isNotEmpty ? toLocalTime(DateTime.parse(json['appliedAt'])): null
     );
   }
 

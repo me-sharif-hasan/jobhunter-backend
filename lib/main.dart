@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:personalized_job_hunter/features/job/controller/job_timeline_controller.dart';
@@ -45,11 +46,27 @@ void setupLocator() {
 }
 
 
+_getPlatform(){
+  if(kIsWeb){
+    return const FirebaseOptions(
+      apiKey: "AIzaSyBGnoSfEUJHKk35JyBSH44VsBDFY0dlWQw",
+      authDomain: "session-1-46a86.firebaseapp.com",
+      databaseURL: "${FIREBASE_REALTIME_DATABASE_URL}",
+      projectId: "session-1-46a86",
+      storageBucket: "session-1-46a86.firebasestorage.app",
+      messagingSenderId: "742827419889",
+      appId: "1:742827419889:web:23434e6ea6afb425bf2150",
+      measurementId: "G-TTY3BVV8JG"
+      );
+  }else{
+    return DefaultFirebaseOptions.currentPlatform;
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: _getPlatform(),
   );
 
   setupLocator();

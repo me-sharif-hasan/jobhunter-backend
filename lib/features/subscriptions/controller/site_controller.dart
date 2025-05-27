@@ -26,7 +26,9 @@ class SiteController extends ChangeNotifier {
     try{
       if(!isSilent){
         _isLoading = true;
-        notifyListeners();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+        });
       }
       if(isSilent){
         if(MetaController.mainPageBuildContext!=null){

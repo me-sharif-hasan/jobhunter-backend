@@ -3,6 +3,7 @@ import 'dart:ui';
 class Constants{
   static const String baseUrl = 'https://jobhunterbackend.gentlesmoke-d65a2350.westus2.azurecontainerapps.io';
   // static const String baseUrl = 'http://10.0.2.2:8080';
+  // static const String baseUrl = 'http://172.16.1.2:8080';
   static const String token = '';
 
   static const getJobs = '/api/jobs';
