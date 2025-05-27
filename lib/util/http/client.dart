@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:http/http.dart' as http;
 import 'package:personalized_job_hunter/features/auth/controller/auth_controller.dart';
 import 'package:personalized_job_hunter/main.dart';
@@ -13,10 +14,11 @@ class BackendClient {
 
   BackendClient(this.token);
 
-  String getTimezoneId(){
+  Future<String> getTimezoneId() async{
     //get system timezone
-    String timezone = DateTime.now().timeZoneName;
-    return timezone;
+    // String timezone = DateTime.now().timeZoneName;
+    final String currentTimeZone = await FlutterTimezone.getLocalTimezone();
+    return currentTimeZone;
   }
 
   Future<http.Response> get(String path) async {
@@ -27,7 +29,7 @@ class BackendClient {
       Uri.parse(Constants.baseUrl + path),
       headers: {
         'Authorization': 'Bearer $token',
-        'Time-Zone': getTimezoneId(),
+        'Time-Zone': await getTimezoneId(),
       },
     );
     if(response.statusCode==403){
@@ -45,7 +47,7 @@ class BackendClient {
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
-        'Time-Zone': getTimezoneId(),
+        'Time-Zone': await getTimezoneId(),
       },
       body: jsonEncode(body),
     );

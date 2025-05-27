@@ -20,11 +20,15 @@ class InAppNotificationController extends ChangeNotifier{
   Future loadNotifications({int page = 0, int limit = 20}) async {
     try{
       isLoading = true;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
       List<InAppNotification> loadedNotifications = await notificationDatasource!.getNotifications(limit,page);
       log("Loaded notifications: $loadedNotifications");
       notifications = loadedNotifications;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }catch(e){
       log("error loading notification: $e");
     }finally{
