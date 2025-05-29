@@ -51,7 +51,7 @@ dependencies:
   animate_do: ^4.2.0
   shared_preferences: ^2.2.3
   intl: ^0.20.2
-  flutter_login_facebook: ^2.0.1
+  # flutter_login_facebook: ^2.0.1
   cached_network_image: ^3.4.0
   firebase_messaging: ^15.1.0
   flutter_local_notifications: ^18.0.1

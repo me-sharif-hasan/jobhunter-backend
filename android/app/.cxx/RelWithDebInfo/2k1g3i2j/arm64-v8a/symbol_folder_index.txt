@@ -1,0 +1,1 @@
+C:\Users\BJIT\jobhunterfrontend\jobhunter-backend\build\app\intermediates\cxx\RelWithDebInfo\2k1g3i2j\obj\arm64-v8a
