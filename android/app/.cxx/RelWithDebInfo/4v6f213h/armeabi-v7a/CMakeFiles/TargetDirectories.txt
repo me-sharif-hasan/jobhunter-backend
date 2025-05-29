@@ -1,0 +1,2 @@
+C:/Users/BJIT/jobhunterfrontend/jobhunter-backend/android/app/.cxx/RelWithDebInfo/4v6f213h/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/BJIT/jobhunterfrontend/jobhunter-backend/android/app/.cxx/RelWithDebInfo/4v6f213h/armeabi-v7a/CMakeFiles/rebuild_cache.dir

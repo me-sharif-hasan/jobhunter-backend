@@ -1,0 +1,55 @@
+name: Build and Release APK and AAR
+
+on:
+  pull_request:
+    branches:
+      - frontend
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up JDK 17
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '24'
+          distribution: 'temurin'
+
+      # Set up Flutter
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.3'
+          channel: 'stable'
+          cache: true
+
+      # Install dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Install jq for JSON validation
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      # Validate google-services.json
+      - name: Validate google-services.json
+        run: |
+          if [ -f android/app/google-services.json ]; then
+            jq . android/app/google-services.json > /dev/null || { echo "Invalid JSON in google-services.json"; cat android/app/google-services.json; exit 1; }
+          else
+            echo "google-services.json not found in android/app/"
+            exit 1
+          fi
+        shell: bash
+
+      # Build APK
+      - name: Build APK
+        run: flutter build apk --release
