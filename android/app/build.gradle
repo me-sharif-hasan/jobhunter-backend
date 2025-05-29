@@ -29,10 +29,7 @@ def minSdk = localProperties.getProperty('flutter.minSdkVersion')
 if (minSdk == null) {
     minSdk = '16'
 }
-def compileSdk = localProperties.getProperty('flutter.compileSdkVersion')
-if(compileSdk == null){
-    compileSdk='35'
-}
+
 def targetSdk = localProperties.getProperty('flutter.targetSdkVersion')
 if (targetSdk == null) {
     targetSdk = '28'
@@ -40,6 +37,7 @@ if (targetSdk == null) {
 
 android {
     namespace "com.iishanto.personalized_job_hunter"
+    compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -59,11 +57,11 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.iishanto.personalized_job_hunter"
+        multiDexEnabled true
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion minSdk.toInteger()
         targetSdkVersion targetSdk.toInteger()
-        compileSdkVersion compileSdk.toInteger()
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -104,5 +102,5 @@ flutter {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
 }
