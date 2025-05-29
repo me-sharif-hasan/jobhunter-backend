@@ -29,7 +29,10 @@ def minSdk = localProperties.getProperty('flutter.minSdkVersion')
 if (minSdk == null) {
     minSdk = '16'
 }
-
+def compileSdk = localProperties.getProperty('flutter.compileSdkVersion')
+if(compileSdk == null){
+    compileSdk='35'
+}
 def targetSdk = localProperties.getProperty('flutter.targetSdkVersion')
 if (targetSdk == null) {
     targetSdk = '28'
@@ -37,10 +40,10 @@ if (targetSdk == null) {
 
 android {
     namespace "com.iishanto.personalized_job_hunter"
-    compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
@@ -60,6 +63,7 @@ android {
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion minSdk.toInteger()
         targetSdkVersion targetSdk.toInteger()
+        compileSdkVersion compileSdk.toInteger()
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -99,4 +103,6 @@ flutter {
     source '../..'
 }
 
-dependencies {}
+dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+}
