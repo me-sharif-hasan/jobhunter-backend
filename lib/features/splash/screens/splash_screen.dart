@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:personalized_job_hunter/features/auth/controller/auth_controller.dart';
 import 'package:personalized_job_hunter/features/auth/screens/signin_with_google_screen.dart';
 import 'package:personalized_job_hunter/features/common/screens/main_page.dart';
+import 'package:personalized_job_hunter/util/values/constants.dart';
 import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -19,7 +20,11 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    Provider.of<AuthController>(context, listen: false).getCurrentUser();
+    Constants.loadBaseUrl().then((_) {
+      if(context.mounted){
+        Provider.of<AuthController>(context, listen: false).getCurrentUser();
+      }
+    });
     super.initState();
   }
 
