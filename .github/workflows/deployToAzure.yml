@@ -52,19 +52,19 @@ jobs:
       # Build and push Docker image
       - name: Build and push Docker image
         env:
-          TAG: latest #${{ github.sha }}
+          TAG: ${{ github.sha }}
         run: |
           docker build -t ${{ env.DOCKER_IMAGE }}:${TAG} .
           docker push ${{ env.DOCKER_IMAGE }}:${TAG}
 
       # Deploy to Azure Container Apps
-      # - name: Deploy to Azure Container Apps
-      #   env:
-      #     TAG: ${{ github.sha }}
-      #   run: |
-      #     # Note: --os-type is not needed for Azure Container Apps as it only supports Linux containers.
-      #     # Ensure the Docker image (${{ env.DOCKER_IMAGE }}:${TAG}) is Linux-based.
-      #     az containerapp update \
-      #       --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
-      #       --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-      #       --image ${{ env.DOCKER_IMAGE }}:${TAG} \
+      - name: Deploy to Azure Container Apps
+        env:
+          TAG: ${{ github.sha }}
+        run: |
+          # Note: --os-type is not needed for Azure Container Apps as it only supports Linux containers.
+          # Ensure the Docker image (${{ env.DOCKER_IMAGE }}:${TAG}) is Linux-based.
+          az containerapp update \
+            --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --image ${{ env.DOCKER_IMAGE }}:${TAG} \
