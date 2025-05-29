@@ -1,7 +1,7 @@
 name: Build and Release APK and AAR
 
 on:
-  push:
+  pull_request:
     branches:
       - frontend
 permissions:
