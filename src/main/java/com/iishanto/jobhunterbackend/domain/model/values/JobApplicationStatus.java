@@ -11,7 +11,8 @@ public enum JobApplicationStatus {
     WITHDRAWN("WITHDRAWN"),
     ARCHIVED("ARCHIVED"),
     UNAPPLIED("UNAPPLIED"),
-    SHORTLISTED("SHORTLISTED");
+    SHORTLISTED("SHORTLISTED"),
+    UNKNOWN("UNKNOWN");
 
     public final String label;
     JobApplicationStatus(String label) {

@@ -4,6 +4,7 @@ import com.iishanto.jobhunterbackend.domain.adapter.JobDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.UserDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserAppliedJobsModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
+import com.iishanto.jobhunterbackend.domain.model.values.JobApplicationStatus;
 import com.iishanto.jobhunterbackend.domain.usecase.JobApplyManagementUseCase;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,15 @@ public class JobService implements JobApplyManagementUseCase {
                 page,
                 limit,
                 query
+        );
+    }
+
+    @Override
+    public void updateJobApplicationStatus(String jobId, JobApplicationStatus status) {
+        jobDataAdapter.updateJobApplicationStatus(
+                jobId,
+                userDataAdapter.getLoggedInUser().getId(),
+                status
         );
     }
 }

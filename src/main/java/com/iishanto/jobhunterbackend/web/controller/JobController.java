@@ -1,5 +1,6 @@
 package com.iishanto.jobhunterbackend.web.controller;
 
+import com.iishanto.jobhunterbackend.domain.model.values.JobApplicationStatus;
 import com.iishanto.jobhunterbackend.domain.usecase.UserJobAccessUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.JobApplyManagementUseCase;
 import com.iishanto.jobhunterbackend.scheduled.ScheduledJobIndexRefresher;
@@ -94,6 +95,19 @@ public class JobController {
                 true,
                 jobApplyManagementUseCase.getAppliedJobs(page,limit,query),
                 "Applied jobs fetched successfully"
+        );
+    }
+
+    @GetMapping("/update-job-application-status")
+    public ApiResponse updateJobApplicationStatus(
+            @RequestParam(name = "job_id") String jobId,
+            @RequestParam(name = "status") JobApplicationStatus status
+    ){
+        jobApplyManagementUseCase.updateJobApplicationStatus(jobId, status);
+        return new ApiResponse(
+                true,
+                status,
+                "Job application status updated successfully"
         );
     }
 }
