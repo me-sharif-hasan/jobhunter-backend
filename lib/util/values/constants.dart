@@ -11,7 +11,7 @@ class Constants{
   // static const String baseUrl = 'http://10.0.2.2:8080';
   static String baseUrl = 'http://172.16.1.2:8080';
   static Future loadBaseUrl() async{
-    if(!kReleaseMode){
+    if(!kReleaseMode&&!kIsWeb){
       log("Running on debug, using default base URL: $baseUrl");
       return;
     }
