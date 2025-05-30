@@ -6,13 +6,13 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class Constants{
-  static String baseUrl = 'https://jobhunterbackend.gentlesmoke-d65a2350.westus2.azurecontainerapps.io';
+  // static String baseUrl = 'https://jobhunterbackend.gentlesmoke-d65a2350.westus2.azurecontainerapps.io';
   static const String _ipStoreGist = 'https://gist.githubusercontent.com/me-sharif-hasan/3cef53fc292b780057371902e4f0ee68/raw/c0ec071e04eac46246ccfe8830c1e3450d1ae469/hunterenginelocation.txt';
   // static const String baseUrl = 'http://10.0.2.2:8080';
-  // static const String baseUrl = 'http://172.16.1.2:8080';
+  static String baseUrl = 'http://172.16.1.2:8080';
   static Future loadBaseUrl() async{
-    if(kIsWeb){
-      log("Running on web, using default base URL: $baseUrl");
+    if(!kReleaseMode){
+      log("Running on debug, using default base URL: $baseUrl");
       return;
     }
     try{
@@ -55,6 +55,10 @@ class Constants{
     [0xFF26A69A, 0xFF00897B], // Teal to Deep Teal
     [0xFF78909C, 0xFF546E7A], // Blue Grey to Dark Blue Grey
   ];
+
+  static const String getJobAppliedOptions="/api/settings/job-applied-options";
+
+  static var updateJobApplicationStatus= "/api/jobs/update-job-application-status";
 
   static List <Color> getThemeColor(int index) {
     List <Color> colors = [

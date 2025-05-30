@@ -4,6 +4,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:personalized_job_hunter/features/common/domain/datasource/backend_meta_datasource.dart';
+import 'package:personalized_job_hunter/features/common/domain/model/api_response.dart';
+import 'package:personalized_job_hunter/features/common/domain/model/job_model.dart';
 import 'package:personalized_job_hunter/util/values/constants.dart';
 
 import '../../job/screens/job_timelime_screen.dart';
@@ -14,6 +16,8 @@ import '../../subscriptions/screens/company_subscription_screen.dart';
 class MetaController extends ChangeNotifier {
   int _currentPage = 1;
   bool _loadingData = false;
+  bool isMetadataLoaded = false;
+  List<JobApplyStatus> jobAppliedOptions = [];
 
   bool get loadingData => _loadingData;
   static Map<String, dynamic> notificationPayload = {};
@@ -88,5 +92,21 @@ class MetaController extends ChangeNotifier {
     } catch (e) {
       log('Error getting FCM token: $e');
     }
+  }
+
+
+  void getJobAppliedOptions()async{
+    ApiResponse apiResponse = await _backendMetaDatasource!.getJobAppliedOptions();
+    List<String> options = apiResponse.data.cast<String>();
+    List<JobApplyStatus> jobApplyStatuses = options.map((option) {
+      return JobApplyStatus.values.firstWhere(
+        (status) => status.toString().split('.').last == option,
+        orElse: () => JobApplyStatus.UNKNOWN, // Default value if not found
+      );
+    }).toList();
+    log("Job applied options: $options");
+    isMetadataLoaded = true;
+    jobAppliedOptions = jobApplyStatuses;
+    notifyListeners();
   }
 }
