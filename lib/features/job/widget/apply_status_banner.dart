@@ -46,7 +46,7 @@ class _ApplyStatusBannerState extends State<ApplyStatusBanner> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _isUpdating
+            _isUpdating || Provider.of<MetaController>(context).jobAppliedOptions.isEmpty
                 ? const SizedBox(
                     width: 14,
                     height: 14,
@@ -92,8 +92,7 @@ class _ApplyStatusBannerState extends State<ApplyStatusBanner> {
                       ),
                   dropdownColor: const Color(0xFF3A3A3A), // Matches container
                   borderRadius: BorderRadius.circular(12),
-                  items: _statusOptions
-                      .map<DropdownMenuItem<JobApplyStatus>>(
+                  items: Provider.of<MetaController>(context).jobAppliedOptions.map<DropdownMenuItem<JobApplyStatus>>(
                           (JobApplyStatus value) {
                     return DropdownMenuItem<JobApplyStatus>(
                       value: value,

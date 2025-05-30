@@ -95,7 +95,7 @@ class MetaController extends ChangeNotifier {
   }
 
 
-  void getJobAppliedOptions()async{
+  Future getJobAppliedOptions()async{
     ApiResponse apiResponse = await _backendMetaDatasource!.getJobAppliedOptions();
     List<String> options = apiResponse.data.cast<String>();
     List<JobApplyStatus> jobApplyStatuses = options.map((option) {
