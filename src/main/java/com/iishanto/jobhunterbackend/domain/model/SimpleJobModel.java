@@ -1,5 +1,6 @@
 package com.iishanto.jobhunterbackend.domain.model;
 
+import com.iishanto.jobhunterbackend.domain.model.values.JobApplicationStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -30,6 +31,7 @@ public class SimpleJobModel {
     public boolean isApproved=false;
     public Timestamp appliedAt;
     public boolean isApplied=false;
+    public JobApplicationStatus applicationStatus = JobApplicationStatus.UNKNOWN;
 
 
     private SimpleSiteModel site;

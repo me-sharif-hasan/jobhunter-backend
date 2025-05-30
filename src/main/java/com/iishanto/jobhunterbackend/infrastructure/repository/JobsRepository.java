@@ -72,7 +72,8 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
             user_applied_jobs.is_applied as is_applied,
             user_applied_jobs.applied_at as applied_at,
             user_applied_jobs.is_favourite as is_favourite,
-            user_applied_jobs.is_hidden as is_hidden
+            user_applied_jobs.is_hidden as is_hidden,
+            user_applied_jobs.application_status as application_status
         FROM jobs
         JOIN site ON site.id = jobs.site_id
         JOIN user_applied_jobs
