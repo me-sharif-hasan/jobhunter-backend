@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:personalized_job_hunter/features/common/widgets/apply_button.dart';
 import '../../common/domain/model/job_model.dart';
-import '../../webview/inappwebview.dart';
 
 class JobDetailsPopup extends StatelessWidget {
   final Job job;

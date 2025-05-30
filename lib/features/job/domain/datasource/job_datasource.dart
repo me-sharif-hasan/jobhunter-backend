@@ -51,4 +51,17 @@ class JobDatasource{
         }
     );
   }
+
+  Future updateJobApplicationStatus(String jobId, JobApplyStatus status) {
+    return client!.get("${Constants.updateJobApplicationStatus}?job_id=$jobId&status=${status.name}").then((response) {
+      if (response.statusCode == HttpStatus.ok) {
+        final dynamic data = jsonDecode(utf8.decode(response.bodyBytes));
+        ApiResponse apiResponse = ApiResponse.fromJson(data);
+        log("Update Job Application Status: ${apiResponse.message}");
+        return apiResponse;
+      } else {
+        throw Exception('Failed to update job application status');
+      }
+    });
+  }
 }
