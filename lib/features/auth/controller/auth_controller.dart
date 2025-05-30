@@ -22,7 +22,7 @@ class AuthController extends ChangeNotifier {
   bool isLoading = false;
   get status => _status;
 
-  void getCurrentUser() async {
+  Future getCurrentUser() async {
     _status = AuthStatus.uninitialized;
     try {
       userDataModel = await authDatasource.getCurrentUser();

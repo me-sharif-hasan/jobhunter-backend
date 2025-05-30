@@ -1,11 +1,9 @@
 import 'dart:developer';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:personalized_job_hunter/features/auth/controller/auth_controller.dart';
 import 'package:personalized_job_hunter/features/auth/screens/signin_with_google_screen.dart';
-import 'package:personalized_job_hunter/features/common/controller/meta_controller.dart';
 import 'package:personalized_job_hunter/features/common/screens/main_page.dart';
 import 'package:personalized_job_hunter/util/values/constants.dart';
 import 'package:provider/provider.dart';
@@ -21,10 +19,9 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    Constants.loadBaseUrl().then((_) {
+    Constants.loadBaseUrl().then((_) async{
       if(context.mounted){
-        Provider.of<AuthController>(context, listen: false).getCurrentUser();
-        Provider.of<MetaController>(context, listen: false).getJobAppliedOptions();
+        await Provider.of<AuthController>(context, listen: false).getCurrentUser();
       }
     });
     super.initState();
@@ -33,16 +30,16 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     print('SplashScreen: build');
-    return Consumer2<AuthController,MetaController>(
-      builder: (context, authController, metaController, _) {
-        return getScreen(authController,metaController);
+    return Consumer<AuthController>(
+      builder: (context, authController, _) {
+        return getScreen(authController);
       },
     );
   }
 
-  Widget getScreen(AuthController controller, MetaController metaController) {
+  Widget getScreen(AuthController controller) {
     log('Status iix: ${controller.status} ${widget.initialPayload} hhl');
-    if(controller.status == AuthStatus.authenticated && metaController.isMetadataLoaded){
+    if(controller.status == AuthStatus.authenticated){
       return const MainScreen();
     }
     if(controller.status == AuthStatus.unauthenticated){
