@@ -6,6 +6,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Configuration
@@ -22,6 +23,11 @@ public class BeanConfigs {
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--user-data-dir=/tmp/chrome-user-data-" + UUID.randomUUID());
+        options.addArguments("--lang=en-US");
+        options.setExperimentalOption("prefs", Map.of(
+                "intl.accept_languages", "en-US"
+        ));
+
         return new ChromeDriver(options);
     }
 }
