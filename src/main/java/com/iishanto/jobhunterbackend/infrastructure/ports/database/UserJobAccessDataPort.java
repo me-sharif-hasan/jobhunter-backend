@@ -107,6 +107,7 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
                 SimpleJobModel jobModel = Jobs.fromProjection(personalJobProjection).toSimpleJobModel();
                 jobModel.setApplied(personalJobProjection.getIsApplied()!=null&&personalJobProjection.getIsApplied());
                 jobModel.setAppliedAt(personalJobProjection.getAppliedAt());
+                jobModel.setApplicationStatus(personalJobProjection.getApplicationStatus());
                 return jobModel;
             }).toList();
 
@@ -120,6 +121,7 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
                 SimpleJobModel jobModel = Jobs.fromProjection(personalJobProjection).toSimpleJobModel();
                 jobModel.setApplied(personalJobProjection.getIsApplied()!=null&&personalJobProjection.getIsApplied());
                 jobModel.setAppliedAt(personalJobProjection.getAppliedAt());
+                jobModel.setApplicationStatus(personalJobProjection.getApplicationStatus());
                 return jobModel;
             }).toList();
         }
