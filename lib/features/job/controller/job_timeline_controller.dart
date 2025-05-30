@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:personalized_job_hunter/features/common/domain/model/job_model.dart';
@@ -137,5 +136,25 @@ class JobTimelineController extends ChangeNotifier{
         }
       });
     }
+  }
+
+  Future <void> updateJobApplicationStatus(Job job, JobApplyStatus applyStatus) async {
+    log("Updating job application status: ${job.jobId}, isApplied: $applyStatus");
+    await _jobDatasource!.updateJobApplicationStatus(job.jobId, applyStatus).then((apiResponse) {
+      if (apiResponse.success) {
+        log("Job application status updated successfully");
+        for (Job aJob in jobs) {
+          if (job.jobId == aJob.jobId) {
+            aJob.applicationStatus = applyStatus;
+            notifyListeners();
+            break;
+          }
+        }
+      } else {
+        log("Error updating job application status");
+      }
+    }).catchError((error) {
+      log("Error updating job application status: $error");
+    });
   }
 }

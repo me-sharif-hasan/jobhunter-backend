@@ -17,7 +17,6 @@ class UserSignupScreen extends StatefulWidget {
 
 class _UserSignupScreenState extends State<UserSignupScreen> {
   final _formKey = GlobalKey<FormState>();
-  String? _confirmPassword; // Temporary storage for confirm password validation
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +59,6 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                           hint: 'Re-enter your password',
                           onChanged: (value) {
                             setState(() {
-                              _confirmPassword = value;
                             });
                           },
                           isPassword: true,

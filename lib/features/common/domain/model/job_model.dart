@@ -1,7 +1,6 @@
 
 import 'dart:developer';
 
-import 'package:intl/intl.dart';
 import 'package:personalized_job_hunter/util/time/time_util.dart';
 
 class Job{
@@ -20,6 +19,7 @@ class Job{
   final String? companyIconUrl;
   final String? appliedAt;
   bool? applied;
+  JobApplyStatus applicationStatus;
   Job({
     required this.jobId,
     required this.title,
@@ -35,11 +35,12 @@ class Job{
     this.skillsNeeded,
     this.companyIconUrl,
     this.applied,
-    this.appliedAt
+    this.appliedAt,
+    this.applicationStatus=JobApplyStatus.UNKNOWN
   });
 
   factory Job.fromJson(Map<String, dynamic> json) {
-    log('iishanto: '+json.toString());
+    log('iishanto: $json');
     log("jooo: ${json['appliedAt']}");
 
     return Job(
@@ -57,7 +58,11 @@ class Job{
       skillsNeeded: json['skillsNeeded'],
       companyIconUrl: json['companyIconUrl'],
       applied: json['applied'],
-      appliedAt: json['appliedAt']!=null && json['appliedAt'].toString().isNotEmpty ? toLocalTime(DateTime.parse(json['appliedAt'])): null
+      appliedAt: json['appliedAt']!=null && json['appliedAt'].toString().isNotEmpty ? toLocalTime(DateTime.parse(json['appliedAt'])): null,
+      applicationStatus: JobApplyStatus.values.firstWhere(
+        (status) => status.toString().split('.').last.toUpperCase() == (json['applicationStatus'] ?? 'UNKNOWN').toUpperCase(),
+        orElse: () => JobApplyStatus.UNKNOWN,
+      ),
     );
   }
 
@@ -69,4 +74,19 @@ class Job{
     }
   }
 
+}
+enum JobApplyStatus {
+  DEFAULT,
+  APPLIED,
+  CALLED,
+  INTERVIEWED,
+  OFFERED,
+  REJECTED,
+  ACCEPTED,
+  WITHDRAWN,
+  ARCHIVED,
+  UNAPPLIED,
+  SHORTLISTED,
+  JOINED,
+  UNKNOWN;
 }
