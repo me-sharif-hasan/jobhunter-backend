@@ -1,6 +1,8 @@
 package com.iishanto.jobhunterbackend.infrastructure.projection;
 
 
+import com.iishanto.jobhunterbackend.domain.model.values.JobApplicationStatus;
+
 import java.sql.Timestamp;
 
 public interface PersonalJobProjection {
@@ -38,4 +40,5 @@ public interface PersonalJobProjection {
     String getIconUrl();
 
     Timestamp getAppliedAt();
+    JobApplicationStatus getApplicationStatus();
 }

@@ -4,6 +4,7 @@ import com.iishanto.jobhunterbackend.domain.adapter.JobDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminJobDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserAppliedJobsModel;
+import com.iishanto.jobhunterbackend.domain.model.values.JobApplicationStatus;
 import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
 import com.iishanto.jobhunterbackend.infrastructure.database.User;
 import com.iishanto.jobhunterbackend.infrastructure.database.UserAppliedJobs;
@@ -79,6 +80,7 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
             userAppliedJobs.setUser(user);
             userAppliedJobs.setAppliedAt(Timestamp.from(Instant.now()));
             userAppliedJobs.setApplied(true);
+            userAppliedJobs.setApplicationStatus(JobApplicationStatus.APPLIED);
             userAppliedJobsRepository.save(userAppliedJobs);
         }catch (Exception e){
             e.printStackTrace();
@@ -111,5 +113,18 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
                 pageable
         );
         return userAppliedJobs.stream().map(UserAppliedJobs::toUserAppliedJobsModel).toList();
+    }
+
+    @Override
+    public void updateJobApplicationStatus(String jobId, Long userId, JobApplicationStatus status) {
+        userAppliedJobsRepository.findByJob_JobIdAndUser_Id(jobId,userId).ifPresentOrElse(
+                userAppliedJobs -> {
+                    userAppliedJobs.setApplicationStatus(status);
+                    userAppliedJobsRepository.save(userAppliedJobs);
+                },
+                () -> {
+                    throw new RuntimeException("Job application not found for the user");
+                }
+        );
     }
 }
