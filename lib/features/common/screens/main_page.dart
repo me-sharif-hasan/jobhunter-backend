@@ -18,6 +18,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     Provider.of<MetaController>(context,listen: false).getFcmPushToken();
+    Provider.of<MetaController>(context, listen: false).getJobAppliedOptions();
   }
   @override
   Widget build(BuildContext context) {
