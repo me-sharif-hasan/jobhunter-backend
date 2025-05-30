@@ -5,9 +5,6 @@ import 'package:personalized_job_hunter/features/common/widgets/bottom_navigatio
 import 'package:personalized_job_hunter/util/values/constants.dart';
 import 'package:provider/provider.dart';
 
-import '../../job/screens/job_timelime_screen.dart';
-import '../../profile/screens/user_profile_screen.dart';
-import '../../subscriptions/screens/company_subscription_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -21,6 +18,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     Provider.of<MetaController>(context,listen: false).getFcmPushToken();
+    Provider.of<MetaController>(context, listen: false).getJobAppliedOptions();
   }
   @override
   Widget build(BuildContext context) {
