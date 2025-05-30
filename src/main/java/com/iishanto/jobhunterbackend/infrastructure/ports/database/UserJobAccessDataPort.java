@@ -98,7 +98,8 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
         Pageable pageable= PageRequest.of(page,limit);
         if(siteId>=0){
             List<Long> siteIds=List.of((long)siteId);
-            List<SimpleJobModel> sjm = jobsRepository.findAppliedJobs(
+
+            return jobsRepository.findAppliedJobs(
                     siteIds,
                     userId,
                     query,
@@ -110,8 +111,6 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
                 jobModel.setApplicationStatus(personalJobProjection.getApplicationStatus());
                 return jobModel;
             }).toList();
-
-            return sjm;
         }else{
             return jobsRepository.findAppliedJobs(
                     userId,
