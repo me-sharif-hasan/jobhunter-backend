@@ -28,7 +28,7 @@ class _ModernSearchBarState extends State<ModernSearchBar> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFFB2DFDB), // Light teal
+            Color.fromARGB(255, 250, 250, 250), // Light teal
             Color(0xFFFFF7E6), // Soft cream
           ],
         ),

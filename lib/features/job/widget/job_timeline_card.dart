@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:personalized_job_hunter/features/job/controller/job_timeline_controller.dart';
+import 'package:provider/provider.dart';
 import '../../common/domain/model/job_model.dart';
 import 'job_details_popup.dart';
 import 'timeline_dot.dart';
@@ -99,7 +101,7 @@ class _JobTimelineCardState extends State<JobTimelineCard>
                       child: Container(
                         margin: const EdgeInsets.symmetric(
                             vertical: 12.0, horizontal: 18.0),
-                        padding: const EdgeInsets.all(20.0),
+                        padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             begin: Alignment.topLeft,
@@ -129,16 +131,20 @@ class _JobTimelineCardState extends State<JobTimelineCard>
                                 const SizedBox(width: 12.0),
                                 JobTitleCard(job: widget.job),
                                 IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(
-                                    Icons.favorite_outline,
-                                    color: Colors.red.withOpacity(0.9),
+                                  onPressed: () {
+                                    Provider.of<JobTimelineController>(context, listen: false)
+                                        .toggleFavorite(widget.job);
+                                  },
+                                  icon: const Icon(
+                                    Icons.insights,
+                                    color: Color.fromARGB(255, 255, 255, 255), // Dark color for contrast
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 12),
                             JobMetadataChips(job: widget.job),
+                            const SizedBox(height: 12),
                             ApplyActionButtons(job: widget.job),
                             const SizedBox(height: 12),
                             ApplyStatusBanner(job: widget.job),

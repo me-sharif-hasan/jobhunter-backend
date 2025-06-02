@@ -185,4 +185,6 @@ class JobTimelineController extends ChangeNotifier{
       Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).unsetLoading(WidgetLoadingRegistry.apply_button);
     }
   }
+
+  void toggleFavorite(Job job) {}
 }
