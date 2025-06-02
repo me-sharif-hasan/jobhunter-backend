@@ -2,7 +2,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:personalized_job_hunter/features/common/controller/meta_controller.dart';
 import 'package:personalized_job_hunter/features/common/widgets/apply_button.dart';
-import 'package:personalized_job_hunter/features/common/widgets/component_loader.dart';
 import 'package:personalized_job_hunter/features/job/controller/job_timeline_controller.dart';
 import 'package:personalized_job_hunter/util/values/widget_loading_registry.dart';
 import 'package:provider/provider.dart';
@@ -41,7 +40,7 @@ class ApplyActionButtons extends StatelessWidget {
                 Provider.of<JobTimelineController>(context, listen: false)
                     .applyForJob(job);
               },
-              label: Text((job.applied ?? false) == false ? "Mark as applied" : "Applied"),
+              label: Text((job.applied ?? false) == false ? "Mark applied" : "Applied"),
               icon: controller.getComponentLoading(WidgetLoadingRegistry.apply_button)&&controller.getComponentLoadingMeta(WidgetLoadingRegistry.apply_button)==job.jobId?
               const SizedBox(
                 width: 14,
