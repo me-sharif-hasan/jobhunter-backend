@@ -147,7 +147,7 @@ class _JobTimelineScreenState extends State<JobTimelineScreen> with SingleTicker
 
   Widget _buildHeader(BuildContext context, JobTimelineController controller) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
       decoration: const BoxDecoration(
         color: Color(0xFFFDA626), // Solid purple for flat, modern look
       ),

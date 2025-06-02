@@ -1,8 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:personalized_job_hunter/features/common/controller/meta_controller.dart';
 import 'package:personalized_job_hunter/features/common/widgets/bottom_navigation_bar.dart';
-import 'package:personalized_job_hunter/util/values/constants.dart';
 import 'package:provider/provider.dart';
 
 
