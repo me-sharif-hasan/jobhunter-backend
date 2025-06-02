@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:personalized_job_hunter/features/common/widgets/loader.dart';
 import 'package:personalized_job_hunter/features/common/widgets/search_bar.dart';
 import 'package:personalized_job_hunter/features/job/controller/job_timeline_controller.dart';
+import 'package:personalized_job_hunter/features/job/widget/job_card_shimmer.dart';
 import 'package:provider/provider.dart';
 
 import '../widget/job_timeline_card.dart';
@@ -126,7 +127,7 @@ class _JobTimelineScreenState extends State<JobTimelineScreen> with SingleTicker
                         itemCount: controller.jobs.length,
                         controller: _scrollController,
                         itemBuilder: (context, index) {
-                          return JobTimelineCard(
+                          return controller.jobs[index].title=='Loading...'?const JobCardShimmer():JobTimelineCard(
                             job: controller.jobs[index],
                             isFirst: index == 0,
                             isLast: index == controller.jobs.length - 1,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:personalized_job_hunter/features/auth/controller/auth_controller.dart';
 import 'package:personalized_job_hunter/features/auth/screens/signin_with_google_screen.dart';
+import 'package:personalized_job_hunter/features/common/controller/meta_controller.dart';
 import 'package:personalized_job_hunter/features/common/screens/main_page.dart';
 import 'package:personalized_job_hunter/util/values/constants.dart';
 import 'package:provider/provider.dart';
@@ -30,17 +31,20 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     print('SplashScreen: build');
-    return Consumer<AuthController>(
-      builder: (context, authController, _) {
-        return getScreen(authController);
+    return Consumer2<AuthController,MetaController >(
+      builder: (context, authController,MetaController metaController, _) {
+        return getScreen(authController,metaController);
       },
     );
   }
 
-  Widget getScreen(AuthController controller) {
+  Widget getScreen(AuthController controller,MetaController metaController) {
     log('Status iix: ${controller.status} ${widget.initialPayload} hhl');
     if(controller.status == AuthStatus.authenticated){
-      return const MainScreen();
+      return Container(
+        color: Color(Constants.themeColor[metaController.currentPage][0]),
+        child: SafeArea(child: const MainScreen()),
+      );
     }
     if(controller.status == AuthStatus.unauthenticated){
       return const SignInWithGoogleScreen();
