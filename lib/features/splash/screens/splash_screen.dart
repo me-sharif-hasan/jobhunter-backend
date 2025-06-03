@@ -31,19 +31,19 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     print('SplashScreen: build');
-    return Consumer2<AuthController, MetaController>(
-      builder: (context, authController, metaController, _) {
-        return getScreen(authController, metaController);
+    return Consumer<AuthController>(
+      builder: (context, authController, _) {
+        return getScreen(authController);
       },
     );
   }
 
-  Widget getScreen(AuthController authController, MetaController metaController) {
+  Widget getScreen(AuthController authController) {
     log('Status iix: ${authController.status} ${widget.initialPayload} hhl');
     
     // Only rebuild authenticated screen when currentPage changes
     if(authController.status == AuthStatus.authenticated){
-      return _buildAuthenticatedScreen(metaController);
+      return _buildAuthenticatedScreen();
     }
     
     if(authController.status == AuthStatus.unauthenticated){
@@ -54,10 +54,10 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   // Separate widget to isolate color changes
-  Widget _buildAuthenticatedScreen(MetaController metaController) {
+  Widget _buildAuthenticatedScreen() {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150), // Smooth color transition
-      color: Color(Constants.themeColor[metaController.currentPage][0]),
+      color: Color(0xff00ffA),
       child: const SafeArea(child: MainScreen()),
     );
   }
