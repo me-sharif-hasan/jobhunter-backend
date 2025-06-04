@@ -7,6 +7,7 @@ import 'package:personalized_job_hunter/features/common/domain/datasource/backen
 import 'package:personalized_job_hunter/features/common/domain/model/api_response.dart';
 import 'package:personalized_job_hunter/features/common/domain/model/job_model.dart';
 import 'package:personalized_job_hunter/util/values/constants.dart';
+import 'package:personalized_job_hunter/util/values/widget_loading_registry.dart';
 
 import '../../job/screens/job_timelime_screen.dart';
 import '../../notification/screens/in_app_notification_screen.dart';
@@ -20,6 +21,33 @@ class MetaController extends ChangeNotifier {
   List<JobApplyStatus> jobAppliedOptions = [];
 
   bool get loadingData => _loadingData;
+  Map<WidgetLoadingRegistry,dynamic> componentWiseLoader={};
+  void setLoading(WidgetLoadingRegistry key,{String meta=''}){
+    componentWiseLoader[key]={
+      'meta': meta,
+      'loading': true
+    };
+    notifyListeners();
+  }
+  void unsetLoading(WidgetLoadingRegistry key){
+    if(componentWiseLoader[key]==null){
+      componentWiseLoader[key] = {'loading': false, 'meta': ''};
+    }
+    componentWiseLoader[key]['loading']=false;
+    notifyListeners();
+  }
+  bool getComponentLoading(WidgetLoadingRegistry key){
+    if(componentWiseLoader[key]==null){
+      componentWiseLoader[key] = {'loading': false, 'meta': ''};
+    }
+    return componentWiseLoader[key]['loading']??false;
+  }
+  dynamic getComponentLoadingMeta(WidgetLoadingRegistry key){
+    if(componentWiseLoader[key]==null){
+      componentWiseLoader[key] = {'loading': false, 'meta': ''};
+    }
+    return componentWiseLoader[key]['meta']??"";
+  }
   static Map<String, dynamic> notificationPayload = {};
   GetIt locator = GetIt.instance;
   BackendMetaDatasource? _backendMetaDatasource;

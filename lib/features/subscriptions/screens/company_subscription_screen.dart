@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:personalized_job_hunter/features/common/controller/meta_controller.dart';
 import 'package:personalized_job_hunter/features/common/widgets/loader.dart';
 import 'package:personalized_job_hunter/features/subscriptions/controller/site_controller.dart';
 import 'package:personalized_job_hunter/features/subscriptions/widget/site_card.dart';
@@ -40,18 +41,25 @@ class _CompanySubscriptionScreenState extends State<CompanySubscriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    int currentPage = Provider.of<MetaController>(context).currentPage;
     return Consumer<SiteController>(
       builder: (context, controller, _) {
         return Scaffold(
             extendBody: true,
             body: Column(
               children: [
-                ModernSearchBar(
-                  onSearch: (query) {
-                    log('search query: $query');
-                    _currentPage = 1;
-                    controller.getSites(searchQuery: query);
-                  },
+                Container(
+                  color: Provider.of<MetaController>(context).getThemeColor()[
+                    0
+                  ],
+                  padding: const EdgeInsets.all(16.0),
+                  child: ModernSearchBar(
+                    onSearch: (query) {
+                      log('search query: $query');
+                      _currentPage = 1;
+                      controller.getSites(searchQuery: query);
+                    },
+                  ),
                 ),
                 Expanded(
                   child: Loader(
