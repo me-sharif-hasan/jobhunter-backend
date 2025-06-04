@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:personalized_job_hunter/features/common/domain/model/job_model.dart';
+import 'package:personalized_job_hunter/util/values/widget_loading_registry.dart';
 import 'package:provider/provider.dart';
 
 import '../../common/controller/meta_controller.dart';
@@ -51,7 +52,26 @@ class JobTimelineController extends ChangeNotifier{
           Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).loadingData = true;
         }
       }
+      Job loadingJob = Job(
+        jobId: "loading...",
+        title: "Loading...",
+        company: "Loading...",
+        jobUrl: "",
+        jobPostedDate: "",
+        jobLastDate: "",
+        location: "",
+        experienceNeeded: "",
+        applied: false,
+      );
+      //if not added already
+      if(!_jobs.any((job) => job.jobId == "loading...")){
+        _jobs.add(loadingJob);
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
       final List<Job> jobs = await _jobDatasource!.getJobByLimit(10,currentPage,searchQuery,siteId,_currentFilterParam);
+      _jobs.removeWhere((job) => job.jobId == "loading...");
       if(jobs.isEmpty&&isSilent){
         throw Exception("No more jobs");
       }
@@ -95,6 +115,8 @@ class JobTimelineController extends ChangeNotifier{
     if(MetaController.mainPageBuildContext!=null){
       log("Setting main page build context");
       Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).loadingData = true;
+      Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).setLoading(WidgetLoadingRegistry.apply_button,
+          meta: job.jobId);
     }
     log("${job.applied}");
     if(!(job.applied??false)){
@@ -114,6 +136,7 @@ class JobTimelineController extends ChangeNotifier{
       }).then((_){
         if(MetaController.mainPageBuildContext!=null){
           Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).loadingData = false;
+                Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).unsetLoading(WidgetLoadingRegistry.apply_button);
         }
       });
     }else{
@@ -133,6 +156,7 @@ class JobTimelineController extends ChangeNotifier{
       }).then((_){
         if(MetaController.mainPageBuildContext!=null){
           Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).loadingData = false;
+          Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).unsetLoading(WidgetLoadingRegistry.apply_button);
         }
       });
     }
@@ -156,5 +180,11 @@ class JobTimelineController extends ChangeNotifier{
     }).catchError((error) {
       log("Error updating job application status: $error");
     });
+    
+    if(MetaController.mainPageBuildContext!=null){
+      Provider.of<MetaController>(MetaController.mainPageBuildContext!, listen: false).unsetLoading(WidgetLoadingRegistry.apply_button);
+    }
   }
+
+  void toggleFavorite(Job job) {}
 }

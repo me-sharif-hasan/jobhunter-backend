@@ -36,24 +36,28 @@ class JobMetadataChips extends StatelessWidget {
           text: job.location != null && job.location!.isNotEmpty
               ? "${job.location}"
               : 'Not specified',
+          context: context,
         ),
         _buildAttributeChip(
           icon: Icons.calendar_today_outlined,
           text: job.jobLastDate != null && job.jobLastDate!.isNotEmpty
               ? (job.jobLastDate ?? "")
               : 'Unknown',
+          context: context,
         ),
         _buildAttributeChip(
           icon: Icons.history,
           text: (job.jobPostedDate != null && job.jobPostedDate!.isNotEmpty)
               ? job.jobPostedDate ?? ""
               : "Not Available",
+          context: context,
         ),
         _buildAttributeChip(
           icon: Icons.work,
           text: (job.experienceNeeded != null && job.experienceNeeded!.isNotEmpty)
               ? job.experienceNeeded ?? ""
               : "Not specified",
+          context: context,
         ),
         if (job.companyWebsite != null)
           _buildWebsiteChip(
@@ -64,7 +68,7 @@ class JobMetadataChips extends StatelessWidget {
     );
   }
 
-  Widget _buildAttributeChip({required IconData icon, required String text}) {
+  Widget _buildAttributeChip({required IconData icon, required String text,required BuildContext context}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
@@ -76,7 +80,7 @@ class JobMetadataChips extends StatelessWidget {
           Icon(icon, size: 16, color: Colors.white.withOpacity(0.9)),
           const SizedBox(width: 6),
           SizedBox(
-            width: 250,
+            width: MediaQuery.of(context).size.width * 0.6, // Adjust width as needed
             child: Text(
               text,
               style: const TextStyle(
