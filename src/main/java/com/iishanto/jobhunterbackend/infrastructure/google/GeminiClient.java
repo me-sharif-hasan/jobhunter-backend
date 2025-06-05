@@ -110,6 +110,7 @@ public class GeminiClient {
             }
             return null;
         }catch (Exception e){
+            e.printStackTrace();
             System.out.println("An error happened while parsing the response: "+e.getMessage());
             return null;
         }
