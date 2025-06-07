@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:personalized_job_hunter/features/job/controller/job_timeline_controller.dart';
+import 'package:personalized_job_hunter/features/job/widget/job_comment_widget.dart';
 import 'package:provider/provider.dart';
 import '../../common/domain/model/job_model.dart';
 import 'job_details_popup.dart';
@@ -148,6 +149,7 @@ class _JobTimelineCardState extends State<JobTimelineCard>
                             ApplyActionButtons(job: widget.job),
                             const SizedBox(height: 12),
                             ApplyStatusBanner(job: widget.job),
+                            const JobCommentWidget()
                           ],
                         ),
                       ),
