@@ -9,11 +9,13 @@ import com.iishanto.jobhunterbackend.domain.usecase.UserJobAccessUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.JobApplyManagementUseCase;
 import com.iishanto.jobhunterbackend.scheduled.ScheduledJobIndexRefresher;
 import com.iishanto.jobhunterbackend.web.dto.response.ApiResponse;
+import com.iishanto.jobhunterbackend.web.dto.response.comment.SafeJobCommentDto;
 import jakarta.websocket.server.PathParam;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/jobs")
@@ -146,9 +148,10 @@ public class JobController {
             @RequestParam(value = "parent_uuid",defaultValue = "") String parentUuid
     ){
         List<SimpleJobCommentModel> comments = jobCommentUseCase.getAllJobComments(jobId,limit,startAt);
+        List<SafeJobCommentDto> safeJobComments = comments.stream().map(SafeJobCommentDto::from).toList();
         return new ApiResponse(
                 true,
-                comments,
+                safeJobComments,
                 "Comment fetched successfully"
         );
     }
