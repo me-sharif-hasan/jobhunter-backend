@@ -34,11 +34,12 @@ public class InAppJobService implements GetPersonalInAppNotificationsUseCase, Jo
         if(StringUtil.isBlank(model.getJobId())){
             throw new IllegalArgumentException("JobId cannot be empty");
         }
-        Long userId = userDataAdapter.getLoggedInUser().getId();
-        if(userId == null){
+        SimpleUserModel user = userDataAdapter.getLoggedInUser();
+        if(user == null){
             throw new IllegalArgumentException("User cannot be null");
         }
-        model.setUserId(userId);
+        model.setUserId(user.getId());
+        model.setUser(user);
         return jobDataAdapter.postComment(model);
     }
 

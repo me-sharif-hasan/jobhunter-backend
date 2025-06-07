@@ -3,6 +3,7 @@ package com.iishanto.jobhunterbackend.infrastructure.database.firebase;
 import com.github.fabiomaffioletti.firebase.document.FirebaseDocument;
 import com.github.fabiomaffioletti.firebase.document.FirebaseId;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobCommentModel;
+import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
 import lombok.Data;
 
 import java.sql.Time;
@@ -22,6 +23,10 @@ public class JobComment {
     private String parentUuid;
     private Boolean isDeleted=false;
 
+    //denormalized username and picture
+    private String userName;
+    private String userPhotoUrl;
+
     public SimpleJobCommentModel toSimpleJobCommentModel() {
         SimpleJobCommentModel simpleJobCommentModel = new SimpleJobCommentModel();
         simpleJobCommentModel.setJobId(jobId);
@@ -31,6 +36,11 @@ public class JobComment {
         simpleJobCommentModel.setUpdateTime(updateAt);
         simpleJobCommentModel.setUuid(uuid);
         simpleJobCommentModel.setParentUuid(parentUuid);
+
+        SimpleUserModel simpleUserModel = new SimpleUserModel();
+        simpleUserModel.setId(userId);
+        simpleUserModel.setName(userName);
+        simpleUserModel.setImageUrl(userPhotoUrl);
         return simpleJobCommentModel;
     }
 
@@ -43,6 +53,9 @@ public class JobComment {
         jobComment.setCreateAt(simpleJobCommentModel.getCreateTime());
         jobComment.setUpdateAt(simpleJobCommentModel.getUpdateTime());
         jobComment.setParentUuid(simpleJobCommentModel.getParentUuid());
+        SimpleUserModel simpleUserModel = simpleJobCommentModel.getUser();
+        jobComment.setUserName(simpleUserModel.getName());
+        jobComment.setUserPhotoUrl(simpleUserModel.getImageUrl());
         return jobComment;
     }
 }
