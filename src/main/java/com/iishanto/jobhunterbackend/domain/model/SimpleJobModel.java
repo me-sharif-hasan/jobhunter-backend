@@ -1,5 +1,6 @@
 package com.iishanto.jobhunterbackend.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.iishanto.jobhunterbackend.domain.model.values.JobApplicationStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;

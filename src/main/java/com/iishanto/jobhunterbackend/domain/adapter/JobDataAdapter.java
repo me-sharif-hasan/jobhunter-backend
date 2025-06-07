@@ -1,5 +1,6 @@
 package com.iishanto.jobhunterbackend.domain.adapter;
 
+import com.iishanto.jobhunterbackend.domain.model.SimpleJobCommentModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserAppliedJobsModel;
 import com.iishanto.jobhunterbackend.domain.model.values.JobApplicationStatus;
 
@@ -13,4 +14,8 @@ public interface JobDataAdapter {
     List<SimpleUserAppliedJobsModel> getAppliedJobs(Long id, int page, int limit, String query);
 
     void updateJobApplicationStatus(String jobId, Long userId, JobApplicationStatus status);
+
+    String postComment(SimpleJobCommentModel model);
+
+    List<SimpleJobCommentModel> getJobComments(String jobId, int limit, Long startAt);
 }
