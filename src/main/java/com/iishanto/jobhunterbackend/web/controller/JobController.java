@@ -1,15 +1,19 @@
 package com.iishanto.jobhunterbackend.web.controller;
 
+import com.iishanto.jobhunterbackend.domain.model.SimpleJobCommentModel;
+import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
+import com.iishanto.jobhunterbackend.domain.model.SimpleUserAppliedJobsModel;
 import com.iishanto.jobhunterbackend.domain.model.values.JobApplicationStatus;
+import com.iishanto.jobhunterbackend.domain.usecase.JobCommentUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.UserJobAccessUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.JobApplyManagementUseCase;
 import com.iishanto.jobhunterbackend.scheduled.ScheduledJobIndexRefresher;
 import com.iishanto.jobhunterbackend.web.dto.response.ApiResponse;
+import jakarta.websocket.server.PathParam;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/jobs")
@@ -17,7 +21,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class JobController {
     private final UserJobAccessUseCase userJobAccessUseCase;
     private final ScheduledJobIndexRefresher scheduledJobIndexRefresher;
+
     private final JobApplyManagementUseCase jobApplyManagementUseCase;
+    private final JobCommentUseCase jobCommentUseCase;
 
 
     @GetMapping("/refresh")
@@ -41,6 +47,9 @@ public class JobController {
         if(page<0||limit<0||limit>50){
             throw new IllegalArgumentException("Invalid query parameters");
         }
+        List dd=userJobAccessUseCase.getAppliedJobs(
+                page, limit, query, siteId
+        );
         return new ApiResponse(
                 true,
                 switch (variant){
@@ -91,9 +100,11 @@ public class JobController {
         if(page<0||limit<0||limit>50){
             throw new IllegalArgumentException("Invalid query parameters");
         }
+        List <SimpleUserAppliedJobsModel> jobs = jobApplyManagementUseCase.getAppliedJobs(page,limit,query);
+        System.out.println(jobs.get(0).getAppliedAt());
         return new ApiResponse(
                 true,
-                jobApplyManagementUseCase.getAppliedJobs(page,limit,query),
+                jobs,
                 "Applied jobs fetched successfully"
         );
     }
@@ -108,6 +119,37 @@ public class JobController {
                 true,
                 status,
                 "Job application status updated successfully"
+        );
+    }
+
+    @PostMapping(
+            path = "/comment"
+    )
+    public ApiResponse postComment(
+            @RequestBody SimpleJobCommentModel comment
+            ){
+        String commentId = jobCommentUseCase.addJobComment(comment);
+        return new ApiResponse(
+                true,
+                commentId,
+                "Comment added successfully"
+        );
+    }
+
+    @GetMapping(
+            path = "/comment"
+    )
+    public ApiResponse getComment(
+            @RequestParam(value = "job_id") String jobId,
+            @RequestParam(value = "start_at",defaultValue = "0") Long startAt,
+            @RequestParam(value = "limit",defaultValue = "20") Integer limit,
+            @RequestParam(value = "parent_uuid",defaultValue = "") String parentUuid
+    ){
+        List<SimpleJobCommentModel> comments = jobCommentUseCase.getAllJobComments(jobId,limit,startAt);
+        return new ApiResponse(
+                true,
+                comments,
+                "Comment fetched successfully"
         );
     }
 }
