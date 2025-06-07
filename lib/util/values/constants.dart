@@ -64,7 +64,9 @@ class Constants{
 
   static const String getJobAppliedOptions="/api/settings/job-applied-options";
 
-  static var updateJobApplicationStatus= "/api/jobs/update-job-application-status";
+  static const String updateJobApplicationStatus= "/api/jobs/update-job-application-status";
+
+  static const String loadJobComments = "/api/jobs/comment";
 
   static List <Color> getThemeColor(int index) {
     List <Color> colors = [

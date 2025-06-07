@@ -7,8 +7,12 @@ class UserDataModel{
   UserDataModel.fromJson(Map<String, dynamic> json)
       : email = json['email'],
         name = json['name'],
-        id = json['id'],
-        photoUrl = json['photoUrl'];
+        id = json['id'] != null
+            ? json['id'] is num
+            ? json['id'].toString()
+            : json['id'].toString()
+            : null,
+        photoUrl = json['photoUrl']??json['imageUrl'];
   Map<String, dynamic> toJson() => {
     'email': email,
     'name': name,
