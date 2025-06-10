@@ -23,6 +23,12 @@ jobs:
           java-version: '24'
           distribution: 'temurin'
 
+      # Set up Node.js (pin to version 18 for stability)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
       # Set up Flutter
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -54,6 +60,17 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
+      # Verify APK exists
+      - name: Verify APK file
+        run: |
+          if [ -f build/app/outputs/flutter-apk/app-release.apk ]; then
+            echo "APK file found"
+          else
+            echo "APK file not found"
+            exit 1
+          fi
+        shell: bash
+
       # Create release and upload artifacts
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -62,7 +79,6 @@ jobs:
           name: Release ${{ github.run_number }}
           draft: false
           prerelease: false
-          files: |
-            build/app/outputs/flutter-apk/app-release.apk
+          files: build/app/outputs/flutter-apk/app-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
