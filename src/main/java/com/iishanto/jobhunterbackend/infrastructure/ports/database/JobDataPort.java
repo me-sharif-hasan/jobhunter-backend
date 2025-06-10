@@ -2,12 +2,15 @@ package com.iishanto.jobhunterbackend.infrastructure.ports.database;
 
 import com.iishanto.jobhunterbackend.domain.adapter.JobDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminJobDataAdapter;
+import com.iishanto.jobhunterbackend.domain.model.SimpleJobCommentModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserAppliedJobsModel;
 import com.iishanto.jobhunterbackend.domain.model.values.JobApplicationStatus;
 import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
 import com.iishanto.jobhunterbackend.infrastructure.database.User;
 import com.iishanto.jobhunterbackend.infrastructure.database.UserAppliedJobs;
+import com.iishanto.jobhunterbackend.infrastructure.database.firebase.JobComment;
+import com.iishanto.jobhunterbackend.infrastructure.repository.JobCommentRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.UserAppliedJobsRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.UserRepository;
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
 public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
     JobsRepository jobsRepository;
     UserRepository userRepository;
+    JobCommentRepository jobCommentRepository;
     UserAppliedJobsRepository userAppliedJobsRepository;
     @Override
     public List<SimpleJobModel> getAllJobsForAdmin(int page, int limit, String query) {
@@ -126,5 +130,18 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
                     throw new RuntimeException("Job application not found for the user");
                 }
         );
+    }
+
+    @Override
+    public SimpleJobCommentModel postComment(SimpleJobCommentModel model) {
+        return jobCommentRepository.set(JobComment.fromSimpleJobCommentModel(model)).toSimpleJobCommentModel();
+    }
+
+    @Override
+    public List<SimpleJobCommentModel> getJobComments(String jobId, int limit, Long startAt) {
+        if(startAt == null){
+            startAt = -1L;
+        }
+        return jobCommentRepository.findByJobId(jobId,startAt,limit).stream().map(JobComment::toSimpleJobCommentModel).collect(Collectors.toList());
     }
 }

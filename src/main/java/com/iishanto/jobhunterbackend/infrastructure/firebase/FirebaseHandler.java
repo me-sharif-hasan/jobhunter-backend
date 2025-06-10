@@ -3,6 +3,7 @@ package com.iishanto.jobhunterbackend.infrastructure.firebase;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.messaging.*;
 import lombok.Builder;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,9 @@ public class FirebaseHandler {
             FirebaseOptions firebaseOptions = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
-            FirebaseApp.initializeApp(firebaseOptions);
+            if(FirebaseApp.getApps().isEmpty()) {
+                FirebaseApp.initializeApp(firebaseOptions);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
