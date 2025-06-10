@@ -133,8 +133,8 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
     }
 
     @Override
-    public String postComment(SimpleJobCommentModel model) {
-        return jobCommentRepository.set(JobComment.fromSimpleJobCommentModel(model)).getUuid();
+    public SimpleJobCommentModel postComment(SimpleJobCommentModel model) {
+        return jobCommentRepository.set(JobComment.fromSimpleJobCommentModel(model)).toSimpleJobCommentModel();
     }
 
     @Override

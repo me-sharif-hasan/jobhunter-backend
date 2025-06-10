@@ -130,10 +130,10 @@ public class JobController {
     public ApiResponse postComment(
             @RequestBody SimpleJobCommentModel comment
             ){
-        String commentId = jobCommentUseCase.addJobComment(comment);
+        SafeJobCommentDto safeComment = SafeJobCommentDto.from(jobCommentUseCase.addJobComment(comment));
         return new ApiResponse(
                 true,
-                commentId,
+                safeComment,
                 "Comment added successfully"
         );
     }

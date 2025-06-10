@@ -15,7 +15,7 @@ public interface JobDataAdapter {
 
     void updateJobApplicationStatus(String jobId, Long userId, JobApplicationStatus status);
 
-    String postComment(SimpleJobCommentModel model);
+    SimpleJobCommentModel postComment(SimpleJobCommentModel model);
 
     List<SimpleJobCommentModel> getJobComments(String jobId, int limit, Long startAt);
 }
