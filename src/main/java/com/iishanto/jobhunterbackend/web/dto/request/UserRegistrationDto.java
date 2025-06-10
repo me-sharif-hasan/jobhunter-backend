@@ -2,14 +2,14 @@ package com.iishanto.jobhunterbackend.web.dto.request;
 
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
-import lombok.Data;
-import lombok.ToString;
+import lombok.*;
 
 import java.sql.Timestamp;
 @Data
 @Builder
 @ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserRegistrationDto {
     @NotBlank
     private String name;
