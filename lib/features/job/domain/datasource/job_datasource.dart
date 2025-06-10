@@ -3,8 +3,11 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:get_it/get_it.dart';
+import 'package:http/src/response.dart';
 import 'package:personalized_job_hunter/features/common/domain/model/api_response.dart';
 import 'package:personalized_job_hunter/features/common/domain/model/job_model.dart';
+import 'package:personalized_job_hunter/features/job/controller/dto/post_comment_dto.dart';
+import 'package:personalized_job_hunter/features/job/domain/model/job_comment_model.dart';
 import 'package:personalized_job_hunter/util/values/constants.dart';
 
 import '../../../../util/http/client.dart';
@@ -62,6 +65,33 @@ class JobDatasource{
       } else {
         throw Exception('Failed to update job application status');
       }
+    });
+  }
+
+  Future<List<JobCommentModel>> loadJobComments(String jobId,int startAt,int limit) {
+    return client!.get("${Constants.loadJobComments}?job_id=$jobId&start_at=$startAt&limit=$limit").then((response) {
+      if (response.statusCode == HttpStatus.ok) {
+        final dynamic data = jsonDecode(utf8.decode(response.bodyBytes));
+        ApiResponse apiResponse = ApiResponse.fromJson(data);
+        log("Update Job Application Status: ${apiResponse.data}");
+        List<dynamic> fetchedData = apiResponse.data;
+        List<JobCommentModel> converted=[];
+        for(dynamic comment in fetchedData){
+          converted.add(JobCommentModel.fromJson(comment));
+        }
+        return converted;
+      } else {
+        throw Exception('Failed to load job status');
+      }
+    });
+  }
+
+  Future<JobCommentModel> postComment(PostCommentDto commentDto) {
+    return client!.post(Constants.postJobComments, body: commentDto.toCommentMap()).then((response){
+      final dynamic data = jsonDecode(utf8.decode(response.bodyBytes));
+      ApiResponse apiResponse = ApiResponse.fromJson(data);
+      JobCommentModel jobCommentModel = JobCommentModel.fromJson(apiResponse.data);
+      return jobCommentModel;
     });
   }
 }

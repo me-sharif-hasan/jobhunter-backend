@@ -1,6 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:personalized_job_hunter/features/job/controller/job_timeline_controller.dart';
+import 'package:personalized_job_hunter/features/job/widget/job_comment_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import '../../common/domain/model/job_model.dart';
 import 'job_details_popup.dart';
 import 'timeline_dot.dart';
@@ -51,111 +55,124 @@ class _JobTimelineCardState extends State<JobTimelineCard>
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => _controller.forward(),
-      onExit: (_) => _controller.reverse(),
-      child: GestureDetector(
-        onTap: () {
-          if (widget.job.jobUrl != null) {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              isDismissible: true,
-              backgroundColor: Colors.transparent,
-              builder: (context) => DraggableScrollableSheet(
-                initialChildSize: widget.job.jobDescription != null &&
-                    widget.job.jobDescription!.isNotEmpty
-                    ? 0.5
-                    : 0.26,
-                minChildSize: 0.1,
-                maxChildSize: widget.job.jobDescription != null &&
-                    widget.job.jobDescription!.isNotEmpty
-                    ? 0.7
-                    : 0.4,
-                builder: (context, scrollController) {
-                  return SingleChildScrollView(
-                    controller: scrollController,
-                    child: JobDetailsPopup(job: widget.job),
-                  );
-                },
-              ),
-            );
-          }
-        },
-        child: AnimatedBuilder(
-          animation: _scaleAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _scaleAnimation.value,
-              child: child,
-            );
+    return VisibilityDetector(
+      key: Key(widget.job.jobId),
+      onVisibilityChanged: (visibilityInfo) {
+        log("widget all comments");
+        var visiblePercentage = visibilityInfo.visibleFraction * 100;
+        if(visiblePercentage>80){
+          Provider.of<JobTimelineController>(context,listen: false).loadComments(widget.job.jobId);
+        }
+        debugPrint(
+            'Widget ${visibilityInfo.key} is $visiblePercentage% visible');
+      },
+      child: MouseRegion(
+        onEnter: (_) => _controller.forward(),
+        onExit: (_) => _controller.reverse(),
+        child: GestureDetector(
+          onTap: () {
+            if (widget.job.jobUrl != null) {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                isDismissible: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => DraggableScrollableSheet(
+                  initialChildSize: widget.job.jobDescription != null &&
+                      widget.job.jobDescription!.isNotEmpty
+                      ? 0.5
+                      : 0.26,
+                  minChildSize: 0.1,
+                  maxChildSize: widget.job.jobDescription != null &&
+                      widget.job.jobDescription!.isNotEmpty
+                      ? 0.7
+                      : 0.4,
+                  builder: (context, scrollController) {
+                    return SingleChildScrollView(
+                      controller: scrollController,
+                      child: JobDetailsPopup(job: widget.job),
+                    );
+                  },
+                ),
+              );
+            }
           },
-          child: Wrap(
-            children: [
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TimelineDot(isFirst: widget.isFirst, isLast: widget.isLast),
-                    Expanded(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 12.0, horizontal: 18.0),
-                        padding: const EdgeInsets.all(10.0),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFFFFA726),
-                              Color(0xFFFF8E29),
-                            ],
-                            stops: [0.0, 1.0],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                CompanyLogo(job: widget.job),
-                                const SizedBox(width: 12.0),
-                                JobTitleCard(job: widget.job),
-                                IconButton(
-                                  onPressed: () {
-                                    Provider.of<JobTimelineController>(context, listen: false)
-                                        .toggleFavorite(widget.job);
-                                  },
-                                  icon: const Icon(
-                                    Icons.insights,
-                                    color: Color.fromARGB(255, 255, 255, 255), // Dark color for contrast
-                                  ),
-                                ),
+          child: AnimatedBuilder(
+            animation: _scaleAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _scaleAnimation.value,
+                child: child,
+              );
+            },
+            child: Wrap(
+              children: [
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TimelineDot(isFirst: widget.isFirst, isLast: widget.isLast),
+                      Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 12.0, horizontal: 18.0),
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color(0xFFFFA726),
+                                Color(0xFFFF8E29),
                               ],
+                              stops: [0.0, 1.0],
                             ),
-                            const SizedBox(height: 12),
-                            JobMetadataChips(job: widget.job),
-                            const SizedBox(height: 12),
-                            ApplyActionButtons(job: widget.job),
-                            const SizedBox(height: 12),
-                            ApplyStatusBanner(job: widget.job),
-                          ],
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CompanyLogo(job: widget.job),
+                                  const SizedBox(width: 12.0),
+                                  JobTitleCard(job: widget.job),
+                                  IconButton(
+                                    onPressed: () {
+                                      Provider.of<JobTimelineController>(context, listen: false)
+                                          .toggleFavorite(widget.job);
+                                    },
+                                    icon: const Icon(
+                                      Icons.insights,
+                                      color: Color.fromARGB(255, 255, 255, 255), // Dark color for contrast
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              JobMetadataChips(job: widget.job),
+                              const SizedBox(height: 12),
+                              ApplyActionButtons(job: widget.job),
+                              const SizedBox(height: 12),
+                              ApplyStatusBanner(job: widget.job),
+                              JobCommentWidget(jobId: widget.job.jobId,)
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
