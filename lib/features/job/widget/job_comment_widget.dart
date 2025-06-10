@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:loading_indicator/loading_indicator.dart';
-import 'package:personalized_job_hunter/features/auth/domain/models/user_data_model.dart';
 import 'package:personalized_job_hunter/features/job/controller/job_timeline_controller.dart';
 import 'package:personalized_job_hunter/features/job/domain/model/job_comment_model.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +20,7 @@ class _JobCommentWidgetState extends State<JobCommentWidget> with SingleTickerPr
   int _currentCommentIndex = 0;
   Timer? _timer;
   bool _isDialogOpen = false;
-  int _lastCommentCount = 0; // Track comment list length to detect changes
+  bool _isCommentsLoaded = false;
 
   @override
   void initState() {
@@ -37,45 +36,50 @@ class _JobCommentWidgetState extends State<JobCommentWidget> with SingleTickerPr
       parent: _controller,
       curve: Curves.easeInOut,
     ));
+
+    // Load comments initially
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<JobTimelineController>().loadComments(widget.jobId).then((_) {
+        if (mounted) {
+          setState(() {
+            _isCommentsLoaded = true;
+          });
+          final comments = context.read<JobTimelineController>().jobCommentMap[widget.jobId] ?? [];
+          if (comments.isNotEmpty) {
+            _startCommentSlideshow(comments);
+          }
+        }
+      });
+    });
   }
 
   void _startCommentSlideshow(List<JobCommentModel> comments) {
-    if (comments.isNotEmpty && _timer == null && !_isDialogOpen) {
+    if (comments.isNotEmpty && _timer == null && !_isDialogOpen && mounted) {
       _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
-        _animateComments();
+        if (mounted && !_isDialogOpen && comments.isNotEmpty) {
+          setState(() {
+            _currentCommentIndex = (_currentCommentIndex + 1) % comments.length;
+          });
+          _controller.reset();
+          _controller.forward();
+        } else {
+          _stopCommentSlideshow();
+        }
       });
-      _animateComments();
+      // Trigger initial animation
+      if (mounted) {
+        setState(() {
+          _currentCommentIndex = 0;
+        });
+        _controller.reset();
+        _controller.forward();
+      }
     }
   }
 
   void _stopCommentSlideshow() {
     _timer?.cancel();
     _timer = null;
-  }
-
-  void _animateComments() {
-    if (mounted && !_isDialogOpen) {
-      final comments = context.read<JobTimelineController>().jobCommentMap[widget.jobId] ?? [];
-      if (comments.isNotEmpty) {
-        setState(() {
-          _currentCommentIndex = (_currentCommentIndex + 1) % comments.length;
-        });
-        _controller.reset();
-        _controller.forward();
-      } else {
-        _stopCommentSlideshow();
-      }
-    }
-  }
-
-  void _pauseSlideshow() {
-    _stopCommentSlideshow();
-  }
-
-  void _resumeSlideshow(List<JobCommentModel> comments) {
-    if (comments.isNotEmpty && !_isDialogOpen) {
-      _startCommentSlideshow(comments);
-    }
   }
 
   @override
@@ -89,228 +93,200 @@ class _JobCommentWidgetState extends State<JobCommentWidget> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return Consumer<JobTimelineController>(
-      builder: (BuildContext context, JobTimelineController controller, Widget? child) {
+      builder: (context, controller, child) {
         final comments = controller.jobCommentMap[widget.jobId] ?? [];
-        // Detect comment list changes
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (comments.length != _lastCommentCount) {
-            _lastCommentCount = comments.length;
-            _stopCommentSlideshow();
-            setState(() {
-              // Reset index to avoid out-of-bounds when comment list changes
-              _currentCommentIndex = comments.isNotEmpty ? 0 : 0;
-            });
-            _resumeSlideshow(comments);
-          }
-        });
-        final lastComment = comments.isNotEmpty ? comments[_currentCommentIndex].comment : 'No comments yet';
+        final lastComment = comments.isNotEmpty && _isCommentsLoaded
+            ? comments[_currentCommentIndex].comment
+            : 'No comments yet';
 
         return GestureDetector(
           onTap: () {
-            _pauseSlideshow();
+            _stopCommentSlideshow();
             _isDialogOpen = true;
-            _controller.forward();
+            _controller.reset(); // Reset controller for dialog animation
+            _controller.forward(); // Start dialog animation
             showDialog(
               context: context,
               barrierDismissible: true,
-              builder: (context) {
-                return AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: CurvedAnimation(
-                        parent: _controller,
-                        curve: Curves.easeOut,
-                      ).value,
-                      child: Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+              builder: (dialogContext) {
+                return Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  backgroundColor: const Color(0xFFFFFFFF),
+                  child: Consumer<JobTimelineController>(
+                    builder: (context, controller, child) {
+                      final dialogComments = controller.jobCommentMap[widget.jobId] ?? [];
+                      return Container(
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * 0.6,
                         ),
-                        backgroundColor: const Color(0xFFFFFFFF),
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          constraints: BoxConstraints(
-                            maxHeight: MediaQuery.of(context).size.height * 0.6,
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Row(
-                                      children: [
-                                        Icon(
-                                          Icons.voice_chat,
-                                          color: Color(0xFF272727),
-                                        ),
-                                        SizedBox(width: 10),
-                                        Text(
-                                          'Share your thoughts',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF272727),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.close,
-                                        color: Color(0xFF757575),
-                                        size: 20,
-                                      ),
-                                      onPressed: () {
-                                        _controller.reverse();
-                                        Navigator.pop(context);
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Expanded(
-                                child: comments.isEmpty
-                                    ? const Center(
-                                  child: Text(
-                                    'No comments yet',
-                                    style: TextStyle(
-                                      color: Color(0xFF757575),
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                )
-                                    : ListView.builder(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                  itemCount: comments.length,
-                                  itemBuilder: (context, index) {
-                                    final job = comments[index];
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                      child: ListTile(
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                        leading: CircleAvatar(
-                                          backgroundImage: NetworkImage(job.user.photoUrl ?? ""),
-                                          radius: 20,
-                                        ),
-                                        title: Text(
-                                          job.user.name,
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF000000),
-                                          ),
-                                        ),
-                                        subtitle: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              job.comment,
-                                              style: const TextStyle(
-                                                fontSize: 13,
-                                                color: Color(0xFF757575),
-                                              ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              job.createTime.toLocal().toString().split('.')[0],
-                                              style: const TextStyle(
-                                                fontSize: 11,
-                                                color: Color(0xFF757575),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Container(
-                                  height: 36,
-                                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF5F5F5),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Row(
                                     children: [
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _commentController,
-                                          textAlignVertical: TextAlignVertical.center,
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            color: Color(0xFF757575),
-                                          ),
-                                          decoration: const InputDecoration(
-                                            hintText: 'Add a comment...',
-                                            hintStyle: TextStyle(
-                                              color: Color(0xFF757575),
-                                              fontSize: 13,
-                                            ),
-                                            border: InputBorder.none,
-                                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-                                          ),
-                                        ),
+                                      Icon(
+                                        Icons.voice_chat,
+                                        color: Color(0xFF272727),
                                       ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          if (_commentController.text.isNotEmpty) {
-                                            controller.addComment(
-                                              widget.jobId,
-                                              JobCommentModel(
-                                                user: UserDataModel(
-                                                  id: "current_user", // Replace with actual user data
-                                                  name: "Current User", // Replace with actual user data
-                                                  email: "user@example.com", // Replace with actual user data
-                                                  photoUrl: "https://randomuser.me/api/portraits/men/1.jpg", // Replace with actual user data
-                                                ),
-                                                uuid: DateTime.now().millisecondsSinceEpoch.toString(),
-                                                comment: _commentController.text,
-                                                jobId: widget.jobId,
-                                                userId: 1, // Replace with actual user ID
-                                                createTime: DateTime.now(),
-                                                updateTime: DateTime.now(),
-                                              ),
-                                            );
-                                            _commentController.clear();
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text('Comment posted: ${_commentController.text}'),
-                                              ),
-                                            );
-                                          }
-                                        },
-                                        child: const Icon(
-                                          Icons.send,
-                                          color: Color(0xFFD53FFF),
-                                          size: 16,
+                                      SizedBox(width: 10),
+                                      Text(
+                                        'Share your thoughts',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF272727),
                                         ),
                                       ),
                                     ],
                                   ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.close,
+                                      color: Color(0xFF757575),
+                                      size: 20,
+                                    ),
+                                    onPressed: () {
+                                      _controller.reverse().then((_) {
+                                        Navigator.pop(dialogContext);
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: dialogComments.isEmpty
+                                  ? const Center(
+                                child: Text(
+                                  'No comments yet',
+                                  style: TextStyle(
+                                    color: Color(0xFF757575),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              )
+                                  : ListView.builder(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                itemCount: dialogComments.length,
+                                itemBuilder: (context, index) {
+                                  final comment = dialogComments[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                    child: ListTile(
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                      leading: CircleAvatar(
+                                        backgroundImage: NetworkImage(comment.user.photoUrl ?? ""),
+                                        radius: 20,
+                                      ),
+                                      title: Text(
+                                        comment.user.name,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF000000),
+                                        ),
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            comment.comment,
+                                            style: const TextStyle(
+                                              fontSize: 13,
+                                              color: Color(0xFF757575),
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            comment.createTime.toLocal().toString().split('.')[0],
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Color(0xFF757575),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Container(
+                                height: 36,
+                                padding: const EdgeInsets.symmetric(horizontal: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF5F5F5),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _commentController,
+                                        textAlignVertical: TextAlignVertical.center,
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Color(0xFF757575),
+                                        ),
+                                        decoration: const InputDecoration(
+                                          hintText: 'Add a comment...',
+                                          hintStyle: TextStyle(
+                                            color: Color(0xFF757575),
+                                            fontSize: 13,
+                                          ),
+                                          border: InputBorder.none,
+                                          contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        if (_commentController.text.isNotEmpty) {
+                                          controller.addComment(widget.jobId, _commentController.text);
+                                          _commentController.clear();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Comment posted'),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      child: const Icon(
+                                        Icons.send,
+                                        color: Color(0xFFD53FFF),
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 );
               },
             ).then((_) {
-              _controller.reverse();
               _isDialogOpen = false;
-              _resumeSlideshow(comments);
+              final comments = controller.jobCommentMap[widget.jobId] ?? [];
+              if (comments.isNotEmpty && mounted) {
+                _startCommentSlideshow(comments);
+              }
             });
           },
           child: Container(
@@ -331,13 +307,15 @@ class _JobCommentWidgetState extends State<JobCommentWidget> with SingleTickerPr
             child: Row(
               children: [
                 const SizedBox(width: 4),
-                controller.jobCommentMap[widget.jobId]==null?const LoadingIndicator(
-                    indicatorType: Indicator.ballPulse, /// Required, The loading type of the widget
-                    colors: [Colors.purple,Colors.blue,Colors.orange],       /// Optional, The color collections
-                    strokeWidth: 2,                     /// Optional, The stroke of the line, only applicable to widget which contains line
-                    backgroundColor: Colors.transparent,      /// Optional, Background of the widget
-                    pathBackgroundColor: Colors.black   /// Optional, the stroke backgroundColor
-                ):Container(
+                controller.jobCommentMap[widget.jobId] == null && !_isCommentsLoaded
+                    ? const LoadingIndicator(
+                  indicatorType: Indicator.ballPulse,
+                  colors: [Colors.purple, Colors.blue, Colors.orange],
+                  strokeWidth: 2,
+                  backgroundColor: Colors.transparent,
+                  pathBackgroundColor: Colors.black,
+                )
+                    : Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF6200),
@@ -345,7 +323,7 @@ class _JobCommentWidgetState extends State<JobCommentWidget> with SingleTickerPr
                   ),
                   child: const Text(
                     'Comments',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -354,10 +332,10 @@ class _JobCommentWidgetState extends State<JobCommentWidget> with SingleTickerPr
                 ),
                 const SizedBox(width: 4),
                 Expanded(
-                  child: comments.isNotEmpty
+                  child: _isCommentsLoaded && comments.isNotEmpty
                       ? ClipRect(
                     child: AnimatedBuilder(
-                      animation: _controller, // Tie animation to controller
+                      animation: _controller,
                       builder: (context, child) {
                         return SlideTransition(
                           position: _slideAnimation,
@@ -369,7 +347,7 @@ class _JobCommentWidgetState extends State<JobCommentWidget> with SingleTickerPr
                             ).createShader(bounds),
                             child: Text(
                               lastComment,
-                              key: ValueKey(lastComment), // Ensure rebuild on comment change
+                              key: ValueKey(lastComment),
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w400,

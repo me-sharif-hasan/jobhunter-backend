@@ -68,6 +68,8 @@ class Constants{
 
   static const String loadJobComments = "/api/jobs/comment";
 
+  static String postJobComments = "/api/jobs/comment";
+
   static List <Color> getThemeColor(int index) {
     List <Color> colors = [
       Color(themeColor[index][0]),

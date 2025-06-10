@@ -3,8 +3,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:personalized_job_hunter/features/auth/domain/datasource/auth_datasource.dart';
+import 'package:personalized_job_hunter/features/auth/domain/models/user_data_model.dart';
 import 'package:personalized_job_hunter/features/common/domain/model/api_response.dart';
 import 'package:personalized_job_hunter/features/common/domain/model/job_model.dart';
+import 'package:personalized_job_hunter/features/job/controller/dto/post_comment_dto.dart';
 import 'package:personalized_job_hunter/util/values/widget_loading_registry.dart';
 import 'package:provider/provider.dart';
 
@@ -56,6 +59,7 @@ class JobTimelineController extends ChangeNotifier {
       log("is silent $isSilent $currentPage");
       if (!isSilent) {
         _isLoading = true;
+        jobCommentMap.clear();
         WidgetsBinding.instance.addPostFrameCallback((_) {
           notifyListeners();
         });
@@ -238,5 +242,14 @@ class JobTimelineController extends ChangeNotifier {
 
   void toggleFavorite(Job job) {}
 
-  void addComment(String jobId, JobCommentModel jobCommentModel) {}
+  void addComment(String jobId,String comment) async{
+    PostCommentDto commentDto = PostCommentDto(jobId: jobId, comment: comment, parentUuid: "");
+    _jobDatasource?.postComment(commentDto).then((job){
+      if(jobCommentMap[job.jobId]==null){
+        jobCommentMap[job.jobId]=[];
+      }
+      jobCommentMap[job.jobId]!.add(job);
+      notifyListeners();
+    });
+  }
 }
