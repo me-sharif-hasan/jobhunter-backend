@@ -27,7 +27,7 @@ public class InAppJobService implements GetPersonalInAppNotificationsUseCase, Jo
     }
 
     @Override
-    public String addJobComment(SimpleJobCommentModel model) {
+    public SimpleJobCommentModel addJobComment(SimpleJobCommentModel model) {
         if(StringUtil.isBlank(model.getComment())){
             throw new IllegalArgumentException("Comment cannot be empty");
         }
@@ -40,7 +40,9 @@ public class InAppJobService implements GetPersonalInAppNotificationsUseCase, Jo
         }
         model.setUserId(user.getId());
         model.setUser(user);
-        return jobDataAdapter.postComment(model);
+        SimpleJobCommentModel commentModel = jobDataAdapter.postComment(model);
+        commentModel.setUser(user);
+        return commentModel;
     }
 
     @Override
