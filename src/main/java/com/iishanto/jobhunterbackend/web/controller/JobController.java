@@ -27,17 +27,6 @@ public class JobController {
     private final JobApplyManagementUseCase jobApplyManagementUseCase;
     private final JobCommentUseCase jobCommentUseCase;
 
-
-    @GetMapping("/refresh")
-    public ApiResponse refreshJobs(){
-        scheduledJobIndexRefresher.refreshJobIndex();
-        return new ApiResponse(
-                true,
-                null,
-                "Job Index Refreshed"
-        );
-    }
-
     @GetMapping
     public ApiResponse getJobs(
             @RequestParam(defaultValue = "") String query,
@@ -87,24 +76,6 @@ public class JobController {
                 true,
                 null,
                 "Job removed from applied successfully"
-        );
-    }
-
-    @GetMapping("/get-applied-jobs")
-    public ApiResponse getAppliedJobs(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int limit,
-            @RequestParam(defaultValue = "") String query
-    ){
-        if(page<0||limit<0||limit>50){
-            throw new IllegalArgumentException("Invalid query parameters");
-        }
-        List <SimpleUserAppliedJobsModel> jobs = jobApplyManagementUseCase.getAppliedJobs(page,limit,query);
-        System.out.println(jobs.get(0).getAppliedAt());
-        return new ApiResponse(
-                true,
-                jobs,
-                "Applied jobs fetched successfully"
         );
     }
 
