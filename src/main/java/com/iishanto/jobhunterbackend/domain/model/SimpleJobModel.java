@@ -1,6 +1,5 @@
 package com.iishanto.jobhunterbackend.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.iishanto.jobhunterbackend.domain.model.values.JobApplicationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,10 +31,10 @@ public class SimpleJobModel {
     public Timestamp jobUpdatedAt;
     public String skillsNeeded;
     public String experienceNeeded;
-    public boolean isDuplicate=false;
-    public boolean isApproved=false;
+    public boolean isDuplicate;
+    public boolean isApproved;
     public Timestamp appliedAt;
-    public boolean isApplied=false;
+    public boolean isApplied;
     public JobApplicationStatus applicationStatus = JobApplicationStatus.UNKNOWN;
 
 
