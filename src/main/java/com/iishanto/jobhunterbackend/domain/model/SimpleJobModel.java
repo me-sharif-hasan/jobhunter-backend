@@ -2,6 +2,8 @@ package com.iishanto.jobhunterbackend.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.iishanto.jobhunterbackend.domain.model.values.JobApplicationStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +11,8 @@ import java.sql.Timestamp;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class SimpleJobModel {
     public String jobId;
     public String title;
