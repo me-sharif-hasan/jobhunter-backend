@@ -49,9 +49,6 @@ public class JobController {
         if(page<0||limit<0||limit>50){
             throw new IllegalArgumentException("Invalid query parameters");
         }
-        List dd=userJobAccessUseCase.getAppliedJobs(
-                page, limit, query, siteId
-        );
         return new ApiResponse(
                 true,
                 switch (variant){
