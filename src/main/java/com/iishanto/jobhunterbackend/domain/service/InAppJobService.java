@@ -50,6 +50,9 @@ public class InAppJobService implements GetPersonalInAppNotificationsUseCase, Jo
         if(StringUtil.isBlank(jobId)){
             throw new IllegalArgumentException("JobId cannot be empty");
         }
+        if(limit <= 0){
+            throw new IllegalArgumentException("Limit must be greater than 0");
+        }
         return jobDataAdapter.getJobComments(jobId,limit,startAt).stream().peek(jobCommentModel -> {
             SimpleUserModel user = userDataAdapter.getUserById(jobCommentModel.getUserId());
             jobCommentModel.setUser(user);

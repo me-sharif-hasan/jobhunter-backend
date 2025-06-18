@@ -100,6 +100,8 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
             userAppliedJobs.setApplied(false);
             userAppliedJobs.setAppliedAt(null);
             userAppliedJobsRepository.save(userAppliedJobs);
+        }else{
+            throw new RuntimeException("Job application not found for the user");
         }
     }
 
