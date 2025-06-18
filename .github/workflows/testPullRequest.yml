@@ -37,8 +37,3 @@ jobs:
       - name: Build with Maven
         run: |
           ./mvnw clean package
-
-      # Run the application
-      - name: Run Application
-        run: |
-          java -jar target/*.jar
