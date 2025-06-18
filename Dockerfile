@@ -1,9 +1,12 @@
 FROM ubuntu:22.04
 
 WORKDIR /app
-ENV GEMINI_KEY=AIzaSyB2BDJFSdBOE0z8WcvgxKkIdzZYDsuI46U
 
-# Update package lists and install dependencies in smaller batches
+# Set environment variables
+ENV GEMINI_KEY=AIzaSyB2BDJFSdBOE0z8WcvgxKkIdzZYDsuI46U
+ENV TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal:56047
+
+# Update package lists and install dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     openjdk-21-jdk \
@@ -34,11 +37,15 @@ RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd6
     apt install -y ./google-chrome-stable_current_amd64.deb && \
     rm ./google-chrome-stable_current_amd64.deb
 
-# Copy project files and build
-COPY . .
+# Copy Maven configuration files first to cache dependencies
+COPY pom.xml .
+COPY src ./src
 
-RUN mvn clean package && cp target/*.jar app.jar
+# Build the project
+RUN mvn clean package -DskipTests && cp target/*.jar app.jar
 
+# Expose the application port
 EXPOSE 8080
 
+# Run the application
 CMD ["java", "-jar", "app.jar"]
