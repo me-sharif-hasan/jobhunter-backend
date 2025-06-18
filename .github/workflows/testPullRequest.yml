@@ -1,0 +1,39 @@
+name: Test Pull Request
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  pull_request:
+    branches:
+      - main
+      - deploy/azure
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Java
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      # Set executable permission for mvnw
+      - name: Set mvnw executable
+        run: chmod +x ./mvnw
+        
+      # Build the application
+      - name: Build with Maven
+        run: |
+          ./mvnw clean package
