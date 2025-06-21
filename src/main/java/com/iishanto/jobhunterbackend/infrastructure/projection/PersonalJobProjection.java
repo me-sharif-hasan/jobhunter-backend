@@ -41,4 +41,5 @@ public interface PersonalJobProjection {
 
     Timestamp getAppliedAt();
     JobApplicationStatus getApplicationStatus();
+    Boolean getIsPresentOnSite();
 }
