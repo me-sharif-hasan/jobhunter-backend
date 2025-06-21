@@ -2,10 +2,12 @@ package com.iishanto.jobhunterbackend.infrastructure.repository;
 
 import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
 import com.iishanto.jobhunterbackend.infrastructure.projection.PersonalJobProjection;
+import jakarta.persistence.LockModeType;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface JobsRepository extends JpaRepository<Jobs, String> {
     @Query(value = """
@@ -30,12 +33,13 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
             AND user_applied_jobs.user_id = :userId
         WHERE
             jobs.is_duplicate = false
+            AND jobs.is_present_on_site != false
             AND jobs.site_id IN :siteIds
             AND (
-                jobs.title LIKE %:keyword%
-                OR jobs.job_description LIKE %:keyword%
-                OR site.name LIKE %:keyword%
-            )
+                lower(jobs.title) LIKE concat('%', lower(:keyword), '%')
+                OR lower(jobs.job_description) LIKE concat('%', lower(:keyword), '%')
+                OR lower(site.name) LIKE concat('%', lower(:keyword), '%')
+                OR lower(site.homepage) LIKE concat('%', lower(:keyword), '%')            )
         ORDER BY jobs.job_parsed_at DESC
     """, nativeQuery = true)
     Page<PersonalJobProjection> findJobs(@Param("siteIds") List<Long> siteIds, @Param("userId") Long userId, @Param("keyword") String keyword, Pageable pageable);
@@ -56,10 +60,10 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
             jobs.is_duplicate = false
             AND jobs.site_id IN :siteIds
             AND (
-                jobs.title LIKE %:keyword%
-                OR jobs.job_description LIKE %:keyword%
-                OR site.name LIKE %:keyword%
-            )
+                lower(jobs.title) LIKE concat('%', lower(:keyword), '%')
+                OR lower(jobs.job_description) LIKE concat('%', lower(:keyword), '%')
+                OR lower(site.name) LIKE concat('%', lower(:keyword), '%')
+                OR lower(site.homepage) LIKE concat('%', lower(:keyword), '%')            )
         ORDER BY jobs.job_parsed_at DESC
     """, nativeQuery = true)
     Page<PersonalJobProjection> findAppliedJobs(@Param("siteIds") List<Long> siteIds, @Param("userId") Long userId, @Param("keyword") String keyword, Pageable pageable);
@@ -83,10 +87,10 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
         WHERE
             jobs.is_duplicate = false
             AND (
-                jobs.title LIKE %:keyword%
-                OR jobs.job_description LIKE %:keyword%
-                OR site.name LIKE %:keyword%
-            )
+                lower(jobs.title) LIKE concat('%', lower(:keyword), '%')
+                OR lower(jobs.job_description) LIKE concat('%', lower(:keyword), '%')
+                OR lower(site.name) LIKE concat('%', lower(:keyword), '%')
+                OR lower(site.homepage) LIKE concat('%', lower(:keyword), '%')            )
         ORDER BY jobs.job_parsed_at DESC
     """, nativeQuery = true)
     Page<PersonalJobProjection> findAppliedJobs(@Param("userId") Long userId, @Param("keyword") String keyword, Pageable pageable);
@@ -129,7 +133,8 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
             user_applied_jobs.is_applied as is_applied,
             user_applied_jobs.applied_at as applied_at,
             user_applied_jobs.is_favourite as is_favourite,
-            user_applied_jobs.is_hidden as is_hidden
+            user_applied_jobs.is_hidden as is_hidden,
+            GREATEST(jobs.reopen_noticed_at, jobs.job_parsed_at) as sorted_order
         FROM jobs
         LEFT JOIN site ON site.id = jobs.site_id
         LEFT JOIN user_applied_jobs
@@ -138,13 +143,27 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
         WHERE
             (jobs.site_id = :siteId OR :siteId IS NULL OR :siteId <0)
             AND
+                jobs.is_present_on_site != false
+            AND
             jobs.is_duplicate = false
             AND (
-                jobs.title LIKE %:keyword%
-                OR jobs.job_description LIKE %:keyword%
-                OR site.name LIKE %:keyword%
-            )
-        ORDER BY jobs.job_parsed_at DESC
+                lower(jobs.title) LIKE concat('%', lower(:keyword), '%')
+                OR lower(jobs.job_description) LIKE concat('%', lower(:keyword), '%')
+                OR lower(site.name) LIKE concat('%', lower(:keyword), '%')
+                OR lower(site.homepage) LIKE concat('%', lower(:keyword), '%')            )
+        ORDER BY sorted_order DESC
     """, nativeQuery = true)
     List<PersonalJobProjection> findAllJobs(String keyword,Long userId,Long siteId, Pageable pageable);
+
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+        UPDATE jobs
+        SET is_present_on_site = false
+        WHERE job_id IN :jobIds
+    """, nativeQuery = true)
+    void updateNonExistentJobs(Set<String> foundJobIds, Long siteId);
+
+    List<Jobs> findJobsByJobIdNotInAndSiteId(Set<String> jobId, Long siteId);
 }

@@ -14,8 +14,8 @@ import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -118,6 +118,7 @@ public class JobIndexEngine implements JobIndexingAdapter {
         systemStatusService.updateJobIndexingStatus(SystemStatusValues.JOB_INDEXING);
         List <String> newJobIds=new LinkedList<>();
         new Thread(()->{
+            Set <String> foundJobIds=new HashSet<>();
             while (!indexingQueue.isEmpty()){
                 try{
                     Site site=indexingQueue.poll();
@@ -141,6 +142,7 @@ public class JobIndexEngine implements JobIndexingAdapter {
                             jobEntity.setJobId(jobEntity.getJobUrl());
                         }
                         jobEntity.setJobId(cleanJobId(jobEntity.getJobId()));
+                        jobEntity.setIsPresentOnSite(true);
                         if(!jobsRepository.existsById(jobEntity.getJobId())&&!jobsRepository.existsByJobUrl(jobEntity.getJobUrl())){
                             System.out.println("job not exits"+jobEntity.getJobId()+" "+jobEntity.getJobUrl());
                             if(jobEntity.getJobUrl()!=null&&!jobEntity.isDescriptionIndexed()){
@@ -155,8 +157,10 @@ public class JobIndexEngine implements JobIndexingAdapter {
                                 jobEntity.setJobUrl(preservedUrl);
                             }
                             jobEntity.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
+                            jobEntity.setIsPresentOnSite(true);
                             jobsRepository.save(jobEntity);
                             newJobIds.add(jobEntity.getJobId());
+                            foundJobIds.add(jobEntity.getJobId());
                         }else{
                             Optional<Jobs> optionalJob=jobsRepository.findById(jobEntity.getJobId());
                             if(optionalJob.isEmpty()){
@@ -176,11 +180,19 @@ public class JobIndexEngine implements JobIndexingAdapter {
                                 }else if(updatedTimeFormat!=null&&!updatedTimeFormat.toString().equals(existingJob.getJobLastDate())){
                                     existingJob.setJobLastDate(updatedTimeFormat.toString());
                                 }
+                                if(existingJob.getIsPresentOnSite()==false){
+                                    existingJob = this.getJobMetadata(existingJob);
+                                    existingJob.setIsReopened(true);
+                                    existingJob.setIsPresentOnSite(true);
+                                    existingJob.setVersion(existingJob.getVersion()+1);
+                                }
+                                foundJobIds.add(existingJob.getJobId());
                                 jobsRepository.save(existingJob);
                             }
                             System.out.println("job already exits");
                         }
                     }
+                    updateNonExistentJobs(foundJobIds,site.getId());
                 }catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -196,4 +208,15 @@ public class JobIndexEngine implements JobIndexingAdapter {
         return StringUtils.stripAccents(jobId).replaceAll("[^a-zA-Z0-9]", "_");
     }
 
+    void updateNonExistentJobs(Set<String> foundJobIds,Long siteId) {
+        List <Jobs> jobs = jobsRepository.findJobsByJobIdNotInAndSiteId(foundJobIds, siteId);
+        if (jobs.isEmpty()) return;
+        System.out.println("Updating non-existent jobs: " + jobs.size());
+        jobs.forEach(j->{
+            j.setIsPresentOnSite(false);
+            j.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
+            j.setVersion(j.getVersion()+1);
+        });
+        jobsRepository.saveAll(jobs);
+    }
 }

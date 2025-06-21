@@ -64,6 +64,21 @@ public class Jobs {
     private boolean isApproved=false;
     private Timestamp lastSeenAt;
 
+    @Column(nullable = false)
+    private Boolean isPresentOnSite=false;
+    private Timestamp reopenNoticedAt;
+    private Boolean isReopened=false;
+    private Long version=0L;
+
+    public void setIsReopened(Boolean isReopened) {
+        this.isReopened = isReopened;
+        if(isReopened){
+            this.reopenNoticedAt = Timestamp.from(java.time.Instant.now());
+        } else {
+            this.reopenNoticedAt = null;
+        }
+    }
+
     @ManyToOne
     @JoinColumn(name = "site_id")
     private Site site;
