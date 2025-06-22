@@ -36,6 +36,8 @@ public class SimpleJobModel {
     public Timestamp appliedAt;
     public boolean isApplied;
     public JobApplicationStatus applicationStatus = JobApplicationStatus.UNKNOWN;
+    public boolean isReopened;
+    public Timestamp reopenNoticedAt;
 
 
     private SimpleSiteModel site;

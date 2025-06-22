@@ -136,6 +136,8 @@ public class Jobs {
         );
         simpleJobModel.setDuplicate(isDuplicate);
         simpleJobModel.setApproved(isApproved);
+        simpleJobModel.setReopened(isReopened);
+        simpleJobModel.setReopenNoticedAt(reopenNoticedAt);
         return simpleJobModel;
     }
 
@@ -166,6 +168,8 @@ public class Jobs {
         site.setIconUrl(projection.getIconUrl());
         site.setName(projection.getName());
         site.setHomepage(projection.getHomepage());
+        job.setReopenNoticedAt(projection.getReopenNoticedAt());
+        job.setIsReopened(projection.getIsReopened() != null && projection.getIsReopened());
         job.setSite(site);
         return job;
     }
