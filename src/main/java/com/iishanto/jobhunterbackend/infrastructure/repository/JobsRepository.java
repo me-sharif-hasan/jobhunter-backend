@@ -164,7 +164,7 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
     @Query(value = """
         UPDATE jobs
         SET is_present_on_site = false
-        WHERE job_id IN :jobIds
+        WHERE job_id IN :jobIds AND site_id = :siteId
     """, nativeQuery = true)
     void updateNonExistentJobs(Set<String> foundJobIds, Long siteId);
 
