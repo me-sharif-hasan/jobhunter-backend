@@ -79,6 +79,10 @@ public class Jobs {
         }
     }
 
+    public Boolean getIsReopened() {
+        return isReopened != null && isReopened;
+    }
+
     @ManyToOne
     @JoinColumn(name = "site_id")
     private Site site;
@@ -136,7 +140,7 @@ public class Jobs {
         );
         simpleJobModel.setDuplicate(isDuplicate);
         simpleJobModel.setApproved(isApproved);
-        simpleJobModel.setReopened(isReopened);
+        simpleJobModel.setReopened(isReopened != null && isReopened);
         simpleJobModel.setReopenNoticedAt(reopenNoticedAt);
         return simpleJobModel;
     }
