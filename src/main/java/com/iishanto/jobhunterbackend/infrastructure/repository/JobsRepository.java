@@ -158,15 +158,5 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
     """, nativeQuery = true)
     List<PersonalJobProjection> findAllJobs(String keyword,Long userId,Long siteId, Pageable pageable);
 
-
-    @Modifying
-    @Transactional
-    @Query(value = """
-        UPDATE jobs
-        SET is_present_on_site = false
-        WHERE job_id IN :jobIds AND site_id = :siteId
-    """, nativeQuery = true)
-    void updateNonExistentJobs(Set<String> foundJobIds, Long siteId);
-
     List<Jobs> findJobsByJobIdNotInAndSiteId(Set<String> jobId, Long siteId);
 }
