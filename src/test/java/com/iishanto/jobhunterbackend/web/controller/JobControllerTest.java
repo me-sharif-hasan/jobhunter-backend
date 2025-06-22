@@ -111,7 +111,7 @@ class JobControllerTest {
 
         if(jobsRepository.count() == 0) {
             for (int i = 0; i < 10; i++) {
-                jobsRepository.save(Jobs.fromSimpleJobModel(
+                Jobs job=Jobs.fromSimpleJobModel(
                         SimpleJobModel.builder()
                                 .jobId("test-job-id-" + i)
                                 .title("Test Job " + i)
@@ -127,7 +127,9 @@ class JobControllerTest {
                                 .jobApplyLink("https://example.com/apply/" + i)
                                 .build(),
                         site
-                ));
+                );
+                job.setIsPresentOnSite(true);
+                jobsRepository.save(job);
             }
         }
 
@@ -138,7 +140,7 @@ class JobControllerTest {
         subscribedSite.setDescription("This is a subscribed site for job postings.");
         subscribedSite = siteRepository.save(subscribedSite);
         for (int i = 0; i < 5; i++) {
-            jobsRepository.save(Jobs.fromSimpleJobModel(
+            Jobs job = Jobs.fromSimpleJobModel(
                     SimpleJobModel.builder()
                             .jobId("subscribed-job-id-" + i)
                             .title("Subscribed Job " + i)
@@ -154,7 +156,9 @@ class JobControllerTest {
                             .jobApplyLink("https://subscribed.example.com/apply/" + i)
                             .build(),
                     subscribedSite
-            ));
+            );
+            job.setIsPresentOnSite(true);
+            jobsRepository.save(job);
         }
     }
 
