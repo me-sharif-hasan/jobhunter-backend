@@ -60,7 +60,6 @@ dependencies:
   jwt_decoder: ^2.0.1
   flutter_timezone: ^3.0.0
   shimmer: ^3.0.0
-  visibility_detector: ^0.4.0+2
   loading_indicator: ^3.1.1
 
 dev_dependencies:
