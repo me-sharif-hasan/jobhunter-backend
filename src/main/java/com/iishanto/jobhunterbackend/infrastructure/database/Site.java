@@ -1,6 +1,8 @@
 package com.iishanto.jobhunterbackend.infrastructure.database;
 
 import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
+import com.iishanto.jobhunterbackend.domain.model.values.SiteControlStatus;
+import com.iishanto.jobhunterbackend.domain.model.values.SiteRuntimeStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -27,6 +29,9 @@ public class Site {
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private Timestamp createdAt;
+
+    private SiteControlStatus status = SiteControlStatus.ACTIVE;
+    private SiteRuntimeStatus runtimeStatus = SiteRuntimeStatus.IDLE;
 
 
     public static Site fromSiteModel(SimpleSiteModel siteModel){

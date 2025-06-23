@@ -30,6 +30,11 @@ public class User{
     private Timestamp lastLogout;
     private String lastIp;
 
+    @JsonManagedReference
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_owned_sites",joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "site_id"))
+    private List<Site> userSites;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @ToString.Exclude
     @JoinTable(
