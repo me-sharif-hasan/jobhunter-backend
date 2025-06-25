@@ -40,6 +40,10 @@ public class SimpleSiteModel{
         this.lastCrawledAt=lastCrawledAt;
     }
     public SimpleSiteModel withJobListPageUrl(String jobListPageUrl){
+        jobListPageUrl=jobListPageUrl.trim();
+        if(jobListPageUrl.endsWith("/")){
+            jobListPageUrl=jobListPageUrl.substring(0,jobListPageUrl.length()-1);
+        }
         return new SimpleSiteModel(id,name,homepage,description,iconUrl,jobListPageUrl,lastCrawledAt);
     }
 }
