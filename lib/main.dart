@@ -51,7 +51,7 @@ _getPlatform(){
     return const FirebaseOptions(
       apiKey: "AIzaSyBGnoSfEUJHKk35JyBSH44VsBDFY0dlWQw",
       authDomain: "session-1-46a86.firebaseapp.com",
-      databaseURL: "${FIREBASE_REALTIME_DATABASE_URL}",
+      databaseURL: "https://session-1-46a86-default-rtdb.firebaseio.com/",
       projectId: "session-1-46a86",
       storageBucket: "session-1-46a86.firebasestorage.app",
       messagingSenderId: "742827419889",

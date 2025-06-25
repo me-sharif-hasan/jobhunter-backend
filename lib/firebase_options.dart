@@ -57,7 +57,7 @@ class DefaultFirebaseOptions {
     appId: '1:742827419889:android:6a0753c1c95c8d4cbf2150',
     messagingSenderId: '742827419889',
     projectId: 'session-1-46a86',
-    databaseURL: '${FIREBASE_REALTIME_DATABASE_URL}',
+    databaseURL: 'https://session-1-46a86-default-rtdb.firebaseio.com/',
     storageBucket: 'session-1-46a86.firebasestorage.app',
   );
 }

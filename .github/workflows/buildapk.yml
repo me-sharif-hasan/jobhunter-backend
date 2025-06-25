@@ -45,6 +45,24 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq
 
+      # Create key.properties file
+      - name: Create key.properties
+        run: |
+          echo "${{ secrets.KEY_PROPERTIES_ANDROID }}" > android/key.properties
+        shell: bash
+
+      # Create key.jks file from base64
+      - name: Create key.jks
+        run: |
+          echo "${{ secrets.KEY_JKS_BASE64 }}" | base64 --decode > android/app/key.jks
+        shell: bash
+
+      # Create google-services.json file
+      - name: Create google-services.json
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICES_ANDROID }}" > android/app/google-services.json
+        shell: bash
+
       # Validate google-services.json
       - name: Validate google-services.json
         run: |
