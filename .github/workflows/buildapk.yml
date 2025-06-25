@@ -5,7 +5,8 @@ on:
     branches:
       - frontend
 permissions:
-  - contents: write
+  contents: write
+
 
 jobs:
   build:
