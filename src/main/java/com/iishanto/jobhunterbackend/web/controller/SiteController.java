@@ -3,6 +3,8 @@ package com.iishanto.jobhunterbackend.web.controller;
 import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
 import com.iishanto.jobhunterbackend.domain.usecase.AddSiteUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.GetSitesUseCase;
+import com.iishanto.jobhunterbackend.exception.SiteAlreadyExistsException;
+import com.iishanto.jobhunterbackend.exception.UserAlreadyOwnsSiteException;
 import com.iishanto.jobhunterbackend.web.dto.request.AddSiteDto;
 import com.iishanto.jobhunterbackend.web.dto.response.ApiResponse;
 import com.iishanto.jobhunterbackend.web.dto.response.site.SiteResponseDto;
@@ -49,4 +51,40 @@ public class SiteController {
 
         }
     }
+
+    @PostMapping("/review-personal-site")
+    public ApiResponse reviewPersonalSite(
+            @RequestBody AddSiteDto siteInfo
+    ){
+        if(siteInfo==null || siteInfo.getHomepage().isEmpty()){
+            throw new IllegalArgumentException("Site URL cannot be null or empty");
+        }
+        SiteResponseDto site = SiteResponseDto.fromSimpleSiteModel(addSiteUseCase.reviewSite(siteInfo.getJobListPageUrl(),siteInfo.getHomepage()));
+        return new ApiResponse(true,site,"Site review result fetched");
+    }
+
+    @PostMapping("/add-personal-site")
+    public ApiResponse addPersonalSite(
+            @RequestBody AddSiteDto siteInfo
+    ){
+        if(siteInfo==null || siteInfo.getHomepage().isEmpty()){
+            throw new IllegalArgumentException("Site URL cannot be null or empty");
+        }
+        SiteResponseDto site;
+        String message = "Site added successfully";
+        try{
+            site = SiteResponseDto.fromSimpleSiteModel(addSiteUseCase.addPersonalSite(siteInfo.getJobListPageUrl(),siteInfo.getHomepage()));
+        }catch (SiteAlreadyExistsException e){
+            site = SiteResponseDto.fromSimpleSiteModel(
+                    getSitesUseCase.getSiteByJobListUrl(siteInfo.getJobListPageUrl())
+            );
+            message = "Site already exists";
+        }catch (UserAlreadyOwnsSiteException e){
+            return new ApiResponse(false,null,
+                    "You already own this site. Please review the site instead."
+            );
+        }
+        return new ApiResponse(true,site,message);
+    }
+
 }
