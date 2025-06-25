@@ -33,6 +33,8 @@ public class Site {
     private SiteControlStatus status = SiteControlStatus.ACTIVE;
     private SiteRuntimeStatus runtimeStatus = SiteRuntimeStatus.IDLE;
 
+    private boolean isPublished = true;
+
 
     public static Site fromSiteModel(SimpleSiteModel siteModel){
         Site site=new Site();
