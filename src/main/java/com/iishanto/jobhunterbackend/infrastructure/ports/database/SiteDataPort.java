@@ -3,11 +3,16 @@ package com.iishanto.jobhunterbackend.infrastructure.ports.database;
 import com.iishanto.jobhunterbackend.domain.adapter.UserJobAccessDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.UserDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteDataAdapter;
+import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
+import com.iishanto.jobhunterbackend.exception.SiteAlreadyExistsException;
 import com.iishanto.jobhunterbackend.infrastructure.crawler.WebCrawler;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
+import com.iishanto.jobhunterbackend.infrastructure.database.User;
+import com.iishanto.jobhunterbackend.infrastructure.database.UserOwnedSite;
 import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
 import com.iishanto.jobhunterbackend.domain.adapter.SiteDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
+import com.iishanto.jobhunterbackend.infrastructure.repository.UserOwnedSiteRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,12 +31,35 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
     private final SiteRepository siteRepository;
     private final UserJobAccessDataAdapter userJobAccessDataAdapter;
     private final UserDataAdapter userDataAdapter;
+    private final UserOwnedSiteRepository userOwnedSiteRepository;
 //    public SiteDataPort(WebCrawler webCrawler, SiteRepository siteRepository){
 //        this.webCrawler = webCrawler;
 //        this.siteRepository=siteRepository;
 //    }
+
+
+    @Override
+    public SimpleSiteModel getExistingSiteByJobListUrl(String jobListUrl) {
+        Site site = siteRepository.findByJobListPageUrl(jobListUrl).orElseGet(()->{
+            String refinedJobListPageUrl = jobListUrl;
+            if(refinedJobListPageUrl.endsWith("/")) {
+                refinedJobListPageUrl = refinedJobListPageUrl.substring(0, refinedJobListPageUrl.length() - 1);
+            }else{
+                refinedJobListPageUrl = refinedJobListPageUrl + "/";
+            }
+            Optional<Site> siteByHomePage = siteRepository.findByJobListPageUrl(refinedJobListPageUrl);
+            return siteByHomePage.orElse(null);
+        });
+
+        return site==null?null:site.toDomain();
+    }
+
     @Override
     public Long saveSite(SimpleSiteModel siteModel) {
+        SimpleSiteModel existingSite = getExistingSiteByJobListUrl(siteModel.getJobListPageUrl());
+        if (existingSite!=null) {
+            throw new SiteAlreadyExistsException("Job list page URL already exists: " + siteModel.getJobListPageUrl(),existingSite.getId());
+        }
         Site site=Site.fromSiteModel(siteModel);
         siteRepository.save(site);
         return site.getId();
@@ -80,6 +108,18 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
         return sites.stream().map(Site::toDomain).peek(simpleSiteModel -> simpleSiteModel.setSubscribed(
                 subscribedSitesMap.getOrDefault(simpleSiteModel.getId(),false)
         )).toList();
+    }
+
+    @Override
+    public void addSiteOwner(SimpleSiteModel site, SimpleUserModel siteOwner) {
+        UserOwnedSite userOwnedSite=new UserOwnedSite();
+        userOwnedSite.setSite(Site.fromSiteModel(site));
+        userOwnedSite.setUser(User.fromUserModel(siteOwner));
+        try{
+            userOwnedSiteRepository.save(userOwnedSite);
+        }catch (Exception e){
+            throw new IllegalArgumentException("Failed to add site owner: " + e.getMessage(), e);
+        }
     }
 
     @Override

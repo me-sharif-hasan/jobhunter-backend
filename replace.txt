@@ -1,0 +1,7 @@
+literal:742827419889-pigebjtdbe1vuu15dgl5808o5jd7ink3.apps.googleusercontent.com,742827419889-a1atigohq0ri7okcm6viv9u08q8v8cnt.apps.googleusercontent.com==>${API_CLIENT_IDS}
+literal:avnadmin==>${DB_USER}
+literal:AVNS_8tHHsHCRh-2TEEZO3xb==>${DB_PASSWORD}
+literal:https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent==>${GEMINI_API_URL}
+literal:yourSecretKeyHere==>${JWT_SECRET_KEY}
+literal:credentials/jobhunter-service-account.json==>${CREDENTIALS_FILE}
+literal:https://session-1-46a86-default-rtdb.firebaseio.com==>${FIREBASE_REALTIME_DATABASE_URL}
