@@ -23,6 +23,12 @@ jobs:
           java-version: '24'
           distribution: 'temurin'
 
+      # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
       # Set up Flutter
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -38,6 +44,37 @@ jobs:
       # Install jq for JSON validation
       - name: Install jq
         run: sudo apt-get install -y jq
+
+      # Create key.properties file
+      - name: Create key.properties
+        run: |
+          echo "${{ secrets.KEY_PROPERTIES_ANDROID }}" > android/key.properties
+        shell: bash
+
+      # Create key.jks file from base64
+      - name: Create key.jks
+        run: |
+          echo "${{ secrets.KEY_JKS_BASE64 }}" | base64 --decode > android/app/key.jks
+        shell: bash
+
+      # Create google-services.json file from base64
+      - name: Create google-services.json
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICES_ANDROID_BASE64 }}" | base64 --decode > android/app/google-services.json
+        shell: bash
+
+      # Debug google-services.json (optional, for troubleshooting)
+      - name: Debug google-services.json
+        run: |
+          if [ -f android/app/google-services.json ]; then
+            echo "File exists, checking content..."
+            head -n 10 android/app/google-services.json
+            cat -v android/app/google-services.json | head -n 10
+          else
+            echo "File not created!"
+            exit 1
+          fi
+        shell: bash
 
       # Validate google-services.json
       - name: Validate google-services.json

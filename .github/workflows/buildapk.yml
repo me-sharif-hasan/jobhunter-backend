@@ -5,7 +5,7 @@ on:
     branches:
       - frontend
 permissions:
-  contents: write
+  - contents: write
 
 jobs:
   build:
@@ -23,7 +23,7 @@ jobs:
           java-version: '24'
           distribution: 'temurin'
 
-      # Set up Node.js (pin to version 18 for stability)
+      # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -57,10 +57,23 @@ jobs:
           echo "${{ secrets.KEY_JKS_BASE64 }}" | base64 --decode > android/app/key.jks
         shell: bash
 
-      # Create google-services.json file
+      # Create google-services.json file from base64
       - name: Create google-services.json
         run: |
-          echo "${{ secrets.GOOGLE_SERVICES_ANDROID }}" > android/app/google-services.json
+          echo "${{ secrets.GOOGLE_SERVICES_ANDROID_BASE64 }}" | base64 --decode > android/app/google-services.json
+        shell: bash
+
+      # Debug google-services.json (optional, for troubleshooting)
+      - name: Debug google-services.json
+        run: |
+          if [ -f android/app/google-services.json ]; then
+            echo "File exists, checking content..."
+            head -n 10 android/app/google-services.json
+            cat -v android/app/google-services.json | head -n 10
+          else
+            echo "File not created!"
+            exit 1
+          fi
         shell: bash
 
       # Validate google-services.json
