@@ -46,6 +46,9 @@ jobs:
             exit 1
           fi
         shell: bash
+
+      - name: Print jobhunter-service-account.json content
+        run: cat src/main/resources/credentials/jobhunter-service-account.json
         
       # Set up Docker Buildx
       - name: Set up Docker Buildx
