@@ -35,7 +35,7 @@ jobs:
         run: |
           echo "${{ secrets.BACKEND_GOOGLE_SERVICES_BASE64 }}" | base64 -di > src/main/resources/credentials/jobhunter-service-account.json
         shell: bash
-        
+
       # Validate google-services.json
       - name: Validate jobhunter-service-account.json.json
         run: |
@@ -47,9 +47,6 @@ jobs:
           fi
         shell: bash
 
-      - name: Print jobhunter-service-account.json content
-        run: cat src/main/resources/credentials/jobhunter-service-account.json
-        
       # Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -81,7 +78,7 @@ jobs:
         run: |
           docker build -t ${{ env.DOCKER_IMAGE }}:${TAG} .
           docker push ${{ env.DOCKER_IMAGE }}:${TAG}
-          
+      
 
       # Deploy to Azure Container Apps
       - name: Deploy to Azure Container Apps
