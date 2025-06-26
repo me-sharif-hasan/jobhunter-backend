@@ -33,7 +33,7 @@ jobs:
       # Create src/main/resources/credentials/jobhunter-service-account.json file from base64
       - name: Create jobhunter-service-account.json.json
         run: |
-          echo "${{ secrets.GOOGLE_SERVICES_ANDROID }}" | base64 -di > src/main/resources/credentials/jobhunter-service-account.json
+          echo "${{ secrets.BACKEND_GOOGLE_SERVICES_BASE64 }}" | base64 -di > src/main/resources/credentials/jobhunter-service-account.json
         shell: bash
         
       # Validate google-services.json
