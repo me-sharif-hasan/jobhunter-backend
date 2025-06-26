@@ -78,6 +78,7 @@ jobs:
               "API_CLIENT_IDS=${{ secrets.API_CLIENT_IDS }}" \
               "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
               "DB_USER=${{ secrets.DB_USER }}" \
+              "CREDENTIALS_FILE=${{ secrets.CREDENTIALS_FILE }}" \
               "FIREBASE_REALTIME_DATABASE_URL=${{ secrets.FIREBASE_REALTIME_DATABASE_URL }}" \
               "GEMINI_API_URL=${{ secrets.GEMINI_API_URL }}" \
               "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" \
