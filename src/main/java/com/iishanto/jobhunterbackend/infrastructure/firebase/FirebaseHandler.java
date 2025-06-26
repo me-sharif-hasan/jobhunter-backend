@@ -5,7 +5,9 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.messaging.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -14,8 +16,8 @@ import java.util.List;
 
 @Component
 public class FirebaseHandler {
-    public FirebaseHandler() {
-        try (InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream("${CREDENTIALS_FILE}")) {
+    public FirebaseHandler(@Value("${firebase.service-account-filename}") String keyFilename) {
+        try (InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream(keyFilename)) {
             if (serviceAccount == null) {
                 throw new IllegalStateException("Firebase credentials file not found");
             }
