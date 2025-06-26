@@ -96,6 +96,6 @@ jobs:
               "CREDENTIALS_FILE=${{ secrets.CREDENTIALS_FILE }}" \
               "FIREBASE_REALTIME_DATABASE_URL=${{ secrets.FIREBASE_REALTIME_DATABASE_URL }}" \
               "GEMINI_API_URL=${{ secrets.GEMINI_API_URL }}" \
-              "GEMINI_KEY=${{ secrets.GEMINI_KEY }}" \n
+              "GEMINI_KEY=${{ secrets.GEMINI_KEY }}" \
               "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" \
               "RELATIONAL_DATABASE_URL=${{ secrets.RELATIONAL_DATABASE_URL }}"

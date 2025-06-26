@@ -3,7 +3,6 @@ FROM ubuntu:22.04
 WORKDIR /app
 
 # Set environment variables
-ENV GEMINI_KEY=AIzaSyB2BDJFSdBOE0z8WcvgxKkIdzZYDsuI46U
 ENV TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal:56047
 
 # Update package lists and install dependencies
