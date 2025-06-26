@@ -3,6 +3,7 @@ package com.iishanto.jobhunterbackend.testutils;
 import com.iishanto.jobhunterbackend.config.security.JwtUtil;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
 import com.iishanto.jobhunterbackend.infrastructure.ports.database.UserDataPort;
+import com.iishanto.jobhunterbackend.infrastructure.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -14,6 +15,16 @@ public class TestUtils {
     UserDataPort userDataPort;
     @Autowired
     JwtUtil jwtUtil;
+    @Autowired
+    SubscriptionRepository subscriptionRepository;
+    @Autowired
+    UserAppliedJobsRepository userAppliedJobsRepository;
+    @Autowired
+    JobsRepository jobsRepository;
+    @Autowired
+    SiteRepository siteRepository;
+    @Autowired
+    UserRepository userRepository;
 
 
     static final MySQLContainer MYSQL_CONTAINER;
@@ -46,5 +57,13 @@ public class TestUtils {
 
     String generateToken() {
         return jwtUtil.generateToken("test@gmail.com", "ROLE_USER");
+    }
+
+    public void clearDatabase() {
+        subscriptionRepository.deleteAll();
+        userAppliedJobsRepository.deleteAll();
+        jobsRepository.deleteAll();
+        siteRepository.deleteAll();
+        userRepository.deleteAll();
     }
 }

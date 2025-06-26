@@ -11,6 +11,7 @@ import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.database.firebase.JobComment;
 import com.iishanto.jobhunterbackend.infrastructure.ports.database.UserDataPort;
 import com.iishanto.jobhunterbackend.infrastructure.repository.*;
+import com.iishanto.jobhunterbackend.testutils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +52,9 @@ class JobControllerTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private TestUtils  testUtils;
+
     @DynamicPropertySource
     static void setProperties(org.springframework.test.context.DynamicPropertyRegistry registry) {
         System.out.println("Setting up MySQL container properties");
@@ -63,16 +67,11 @@ class JobControllerTest {
     }
 
     @Autowired
-    JobController jobController;
-
-    @Autowired
     MockMvc mockMvc;
 
     @Autowired
     JwtUtil jwtUtil;
 
-    @Autowired
-    UserService getUserUseCase;
 
     @Autowired
     UserDataPort userDataPort;
@@ -80,21 +79,10 @@ class JobControllerTest {
     JobsRepository jobsRepository;
     @Autowired
     SiteRepository siteRepository;
-    @Autowired
-    AddSubscriptionUseCase addSubscriptionUseCase;
-    @Autowired
-    UserAppliedJobsRepository userAppliedJobsRepository;
-    @Autowired
-    SubscriptionRepository subscriptionRepository;
 
     @BeforeEach
     void setUpAuthentication(){
-        SimpleUserModel user = SimpleUserModel.builder()
-                .email("test@gmail.com")
-                .name("Test")
-                .token("test")
-                .build();
-        userDataPort.addUser(user);
+        testUtils.setupAuthentication();
         setupJobs();
     }
 
@@ -528,10 +516,6 @@ class JobControllerTest {
 
     @AfterEach
     void tearDown() {
-        subscriptionRepository.deleteAll();
-        userAppliedJobsRepository.deleteAll();
-        jobsRepository.deleteAll();
-        siteRepository.deleteAll();
-        userRepository.deleteAll();
+        testUtils.clearDatabase();
     }
 }

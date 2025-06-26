@@ -6,6 +6,7 @@ import com.iishanto.jobhunterbackend.infrastructure.crawler.WebCrawler;
 import com.iishanto.jobhunterbackend.infrastructure.repository.UserRepository;
 import com.iishanto.jobhunterbackend.testutils.TestUtils;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,11 @@ class SiteControllerTest {
     @BeforeEach
     void setUp() {
         jwtToken=testUtils.setupAuthentication();
+    }
+
+    @AfterEach
+    void tearDown() {
+        testUtils.clearDatabase();
     }
 
     @Test
