@@ -60,7 +60,7 @@ jobs:
       # Create google-services.json file from base64
       - name: Create google-services.json
         run: |
-          echo "${{ secrets.GOOGLE_SERVICES_ANDROID_BASE64 }}" | base64 --decode > android/app/google-services.json
+          echo "${{ secrets.GOOGLE_SERVICES_ANDROID }}" | base64 -di > android/app/google-services.json
         shell: bash
 
       # Debug google-services.json (optional, for troubleshooting)
@@ -68,8 +68,6 @@ jobs:
         run: |
           if [ -f android/app/google-services.json ]; then
             echo "File exists, checking content..."
-            head -n 10 android/app/google-services.json
-            cat -v android/app/google-services.json | head -n 10
           else
             echo "File not created!"
             exit 1
@@ -90,3 +88,14 @@ jobs:
       # Build APK
       - name: Build APK
         run: flutter build apk --release
+
+      # Verify APK exists
+      - name: Verify APK file
+        run: |
+          if [ -f build/app/outputs/flutter-apk/app-release.apk ]; then
+            echo "APK file found"
+          else
+            echo "APK file not found"
+            exit 1
+          fi
+        shell: bash
