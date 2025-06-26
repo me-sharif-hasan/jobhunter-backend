@@ -14,10 +14,42 @@ jobs:
   build-and-run:
     runs-on: ubuntu-latest
 
+    env:
+      API_CLIENT_IDS: ${{ secrets.API_CLIENT_IDS }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_USER: ${{ secrets.DB_USER }}
+      FIREBASE_REALTIME_DATABASE_URL: ${{ secrets.FIREBASE_REALTIME_DATABASE_URL }}
+      GEMINI_API_URL: ${{ secrets.GEMINI_API_URL }}
+      GEMINI_KEY: ${{ secrets.GEMINI_KEY }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      CREDENTIALS_FILE: ${{ secrets.CREDENTIALS_FILE }}
+      RELATIONAL_DATABASE_URL: ${{ secrets.RELATIONAL_DATABASE_URL }}
+
     steps:
       # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # Install jq for JSON validation
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      # Create src/main/resources/credentials/jobhunter-service-account.json file from base64
+      - name: Create jobhunter-service-account.json.json
+        run: |
+          echo "${{ secrets.BACKEND_GOOGLE_SERVICES_BASE64 }}" | base64 -di > src/main/resources/credentials/jobhunter-service-account.json
+        shell: bash
+
+      # Validate google-services.json
+      - name: Validate jobhunter-service-account.json.json
+        run: |
+          if [ -f src/main/resources/credentials/jobhunter-service-account.json ]; then
+            jq . src/main/resources/credentials/jobhunter-service-account.json > /dev/null || { echo "Invalid JSON in google-services.json"; cat src/main/resources/credentials/jobhunter-service-account.json; exit 1; }
+          else
+            echo "src/main/resources/credentials/jobhunter-service-account.json not found"
+            exit 1
+          fi
+        shell: bash
 
       # Set up Java
       - name: Set up JDK
