@@ -2,6 +2,9 @@ package com.iishanto.jobhunterbackend.infrastructure.google;
 
 import lombok.Builder;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+
 public final class GeminiPromptLibrary {
     public static String getPrompt(PromptType promptType, PromptParameters build) {
         return switch (promptType) {
@@ -19,19 +22,20 @@ public final class GeminiPromptLibrary {
                                     "text": "%s"
                                 },
                                 {
-                                    "text": "See the above Markdown? It's from a job site. I am having a hard time parsing this, so I need your help. From this HTML, you need to parse the job details. I need you to extract the job details and return them in the following JSON format (Not array):
+                                    "text": "Current Time: %s. Ensure consistent formatting and valid JSON.
+                                    See the above Markdown? It's from a job site. I am having a hard time parsing this, so I need your help. From this HTML, you need to parse the job details. I need you to extract the job details and return them in the following JSON format (Not array):
                                     {
                                         \\"jobId\\": \\"<Unique Job ID job_unique_token_from_url> (special chars like dash, space will be underscored)\\",
                                         \\"title\\": \\"<Job Title>\\",
                                         \\"company\\": \\"<Company Name>\\",
                                         \\"companyWebsite\\": \\"<Company Website URL>\\",
-                                        \\"jobUrl\\": \\"<Job Posting URL (URL where the details is available (hyperlink of the job card), not apply link)>\\",
+                                        \\"jobUrl\\": \\"<Job Posting URL (URL where the details is available (hyperlink of the job card), not apply link), If all job url are same, make it same as job apply url>\\",
                                         \\"location\\": \\"<Job Location>\\",
                                         \\"salary\\": \\"<Salary Information>\\",
                                         \\"jobType\\": \\"<Job Type>\\",
                                         \\"jobCategory\\": \\"<Job Category>\\",
                                         \\"jobDescription\\": \\"<Full Job Description, within 2000 words or less>\\",
-                                        \\"jobPostedDate\\": \\"<Job Posted Date>\\",
+                                        \\"jobPostedDate\\": \\"<Job Posted Date, ensure yyyy-MM-ddTHH:mm:ssZ format, given current time>\\",
                                         \\"jobLastDate\\": \\"<Last Date to Apply>\\",
                                         \\"jobApplyLink\\": \\"<Direct Apply Link>\\",
                                         \\"jobApplyEmail\\": \\"<Contact Email for Application>\\",
@@ -54,7 +58,7 @@ public final class GeminiPromptLibrary {
                                 ]
                         }],
                     }
-                    """.formatted(build.escapedMessage,build.baseUrl);
+                    """.formatted(Timestamp.from(Instant.now()),build.escapedMessage,build.baseUrl);
     }
 
     public static String getJobListPromptTemplate(PromptParameters promptParameters){
@@ -66,20 +70,21 @@ public final class GeminiPromptLibrary {
                                     "text": "%s"
                                 },
                                 {
-                                    "text": "See the above Markdown? It's from a job site. I am having a hard time parsing this, so I need your help. From this HTML, you need to parse the list of all jobs. I need you to extract the jobs and return them in the following JSON format:
+                                    "text": "Current Time: %s. Ensure consistent formatting and valid JSON.
+                                    See the above Markdown? It's from a job site. I am having a hard time parsing this, so I need your help. From this HTML, you need to parse the list of all jobs. I need you to extract the jobs and return them in the following JSON format:
                                     [
                                         {
                                             \\"jobId\\": \\"<Unique Job ID, follow this format: job_unique_token_from_url> (special chars like dash, space will be underscored)\\",
                                             \\"title\\": \\"<Job Title>\\",
                                             \\"company\\": \\"<Company Name>\\",
                                             \\"companyWebsite\\": \\"<Company Website URL>\\",
-                                            \\"jobUrl\\": \\"<Job Posting URL (URL where the details is available (hyperlink of the job card), not apply link)>\\",
+                                            \\"jobUrl\\": \\"<Job Posting URL (URL where the details is available (hyperlink of the job card), not apply link), If all job url are same, make it same as job apply url>\\",
                                             \\"location\\": \\"<Job Location>\\",
                                             \\"salary\\": \\"<Salary Information>\\",
                                             \\"jobType\\": \\"<Job Type>\\",
                                             \\"jobCategory\\": \\"<Job Category>\\",
                                             \\"jobDescription\\": \\"<Full Job Description, within 50 words if job url exists else within 400 words or less, must summarize full description given, include responsibilities, context etc>\\",
-                                            \\"jobPostedDate\\": \\"<Job Posted Date>\\",
+                                            \\"jobPostedDate\\": \\"<Job Posted Date, ensure yyyy-MM-ddTHH:mm:ssZ format, given current time>\\",
                                             \\"jobLastDate\\": \\"<Last Date to Apply>\\",
                                             \\"jobApplyLink\\": \\"<Direct Apply Link>\\",
                                             \\"jobApplyEmail\\": \\"<Contact Email for Application>\\",
@@ -93,7 +98,7 @@ public final class GeminiPromptLibrary {
                                                 \\"title\\": \\"<Job Title>\\",
                                                 \\"company\\": \\"<Company Name>\\",
                                                 \\"companyWebsite\\": \\"<Company Website URL>\\",
-                                                \\"jobUrl\\": \\"<Job Posting URL>\\",
+                                                \\"jobUrl\\": \\"<ob Posting URL (URL where the details is available (hyperlink of the job card), not apply link), If all job url are same, make it same as job apply url>\\",
                                                 \\"location\\": \\"<Job Location>\\",
                                                 \\"salary\\": \\"<Salary Information>\\",
                                                 \\"jobType\\": \\"<Job Type>\\",
@@ -127,7 +132,7 @@ public final class GeminiPromptLibrary {
                             "temperature": %d
                         }
                     }
-                """.formatted(promptParameters.escapedMessage,promptParameters.baseUrl,promptParameters.temperature);
+                """.formatted(Timestamp.from(Instant.now()),promptParameters.escapedMessage,promptParameters.baseUrl,promptParameters.temperature);
     }
 
 

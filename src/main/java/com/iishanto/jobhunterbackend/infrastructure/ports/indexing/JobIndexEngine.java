@@ -116,92 +116,96 @@ public class JobIndexEngine implements JobIndexingAdapter {
         if(isIndexing) return;
         isIndexing=true;
         systemStatusService.updateJobIndexingStatus(SystemStatusValues.JOB_INDEXING);
-        List <String> newJobIds=new LinkedList<>();
         new Thread(()->{
-            Set <String> foundJobIds=new HashSet<>();
-            while (!indexingQueue.isEmpty()){
-                try{
-                    Site site=indexingQueue.poll();
-                    System.out.println("Indexing: "+site.getHomepage());
-                    GeminiClient.GeminiPrompt prompt = geminiClient.getJobListingPromptFromUrl(site.getJobListPageUrl());
-                    if(prompt==null) continue;
-                    site.setLastCrawledAt(new Timestamp(System.currentTimeMillis()));
-                    siteRepository.save(site);
-                    List < SimpleJobModel > jobs = geminiClient.getJsonResponseOfJobs(prompt);
-                    if(jobs==null) continue;
-                    for(SimpleJobModel job:jobs){
-                        System.out.println("Job: "+job);
-                        Timestamp normalizedDate=DateNormalizer.normalizeToTimestamp(job.getJobLastDate());
-                        if (normalizedDate!=null){
-                            job.setJobLastDate(normalizedDate.toString());
-                        }
-                        Jobs jobEntity=Jobs.fromSimpleJobModel(job,site);
-                        if(jobEntity.getJobId()!=null){
-                            jobEntity.setJobId(site.getJobListPageUrl()+"/"+jobEntity.getJobId());
-                        }else{
-                            jobEntity.setJobId(jobEntity.getJobUrl());
-                        }
-                        jobEntity.setJobId(cleanJobId(jobEntity.getJobId()));
-                        jobEntity.setIsPresentOnSite(true);
-                        if(!jobsRepository.existsById(jobEntity.getJobId())&&!jobsRepository.existsByJobUrl(jobEntity.getJobUrl())){
-                            System.out.println("job not exits"+jobEntity.getJobId()+" "+jobEntity.getJobUrl());
-                            if(jobEntity.getJobUrl()!=null&&!jobEntity.isDescriptionIndexed()){
-                                String preservedUrl=jobEntity.getJobUrl();
-                                jobEntity=this.getJobMetadata(jobEntity);
-                                if(!StringUtils.isBlank(jobEntity.getJobLastDate())){
-                                    Timestamp metaNormalizedDate=DateNormalizer.normalizeToTimestamp(jobEntity.getJobLastDate());
-                                    if (metaNormalizedDate!=null){
-                                        jobEntity.setJobLastDate(metaNormalizedDate.toString());
-                                    }
-                                }
-                                jobEntity.setJobUrl(preservedUrl);
-                            }
-                            jobEntity.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
-                            jobEntity.setIsPresentOnSite(true);
-                            jobsRepository.save(jobEntity);
-                            newJobIds.add(jobEntity.getJobId());
-                            foundJobIds.add(jobEntity.getJobId());
-                        }else{
-                            Optional<Jobs> optionalJob=jobsRepository.findById(jobEntity.getJobId());
-                            if(optionalJob.isEmpty()){
-                                optionalJob=jobsRepository.findByJobUrl(jobEntity.getJobUrl());
-                            }
-                            if(optionalJob.isPresent()){
-                                Jobs existingJob=optionalJob.get();
-                                existingJob.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
-                                Timestamp updatedTimeFormat = DateNormalizer.normalizeToTimestamp(existingJob.getJobLastDate());
-
-                                //if deadline is extended, update the last seen date
-                                if(
-                                    !StringUtils.isBlank(jobEntity.getJobLastDate())
-                                    &&!jobEntity.getJobLastDate().equals(existingJob.getJobLastDate())
-                                ) {
-                                    existingJob.setJobLastDate(jobEntity.getJobLastDate());
-                                }else if(updatedTimeFormat!=null&&!updatedTimeFormat.toString().equals(existingJob.getJobLastDate())){
-                                    existingJob.setJobLastDate(updatedTimeFormat.toString());
-                                }
-                                if(existingJob.getIsPresentOnSite()==false){
-                                    existingJob = this.getJobMetadata(existingJob);
-                                    existingJob.setIsReopened(true);
-                                    existingJob.setIsPresentOnSite(true);
-                                    existingJob.setVersion(existingJob.getVersion()+1);
-                                }
-                                foundJobIds.add(existingJob.getJobId());
-                                jobsRepository.save(existingJob);
-                            }
-                            System.out.println("job already exits");
-                        }
-                    }
-                    updateNonExistentJobs(foundJobIds,site.getId());
-                }catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            System.out.println("Indexing done");
-            isIndexing=false;
-            systemStatusService.updateJobIndexingStatus(SystemStatusValues.JOB_INDEXER_IDLE);
-            onIndexingDone.onIndexingDone(newJobIds);
+            runIndexingUnit(onIndexingDone);
         }).start();
+    }
+
+    public void runIndexingUnit(OnIndexingDone onIndexingDone) {
+        List <String> newJobIds=new LinkedList<>();
+        Set <String> foundJobIds=new HashSet<>();
+        while (!indexingQueue.isEmpty()){
+            try{
+                Site site=indexingQueue.poll();
+                System.out.println("Indexing: "+site.getHomepage());
+                GeminiClient.GeminiPrompt prompt = geminiClient.getJobListingPromptFromUrl(site.getJobListPageUrl());
+                if(prompt==null) continue;
+                site.setLastCrawledAt(new Timestamp(System.currentTimeMillis()));
+                siteRepository.save(site);
+                List < SimpleJobModel > jobs = geminiClient.getJsonResponseOfJobs(prompt);
+                if(jobs==null) continue;
+                for(SimpleJobModel job:jobs){
+                    System.out.println("Job: "+job);
+                    Timestamp normalizedDate=DateNormalizer.normalizeToTimestamp(job.getJobLastDate());
+                    if (normalizedDate!=null){
+                        job.setJobLastDate(normalizedDate.toString());
+                    }
+                    Jobs jobEntity=Jobs.fromSimpleJobModel(job,site);
+                    if(jobEntity.getJobId()!=null){
+                        jobEntity.setJobId(site.getJobListPageUrl()+"/"+jobEntity.getJobId());
+                    }else{
+                        jobEntity.setJobId(jobEntity.getJobUrl());
+                    }
+                    jobEntity.setJobId(cleanJobId(jobEntity.getJobId()));
+                    jobEntity.setIsPresentOnSite(true);
+                    if(!jobsRepository.existsById(jobEntity.getJobId())&&!jobsRepository.existsByJobUrl(jobEntity.getJobUrl())){
+                        System.out.println("job not exits"+jobEntity.getJobId()+" "+jobEntity.getJobUrl());
+                        if(jobEntity.getJobUrl()!=null&&!jobEntity.isDescriptionIndexed()){
+                            String preservedUrl=jobEntity.getJobUrl();
+                            jobEntity=this.getJobMetadata(jobEntity);
+                            if(!StringUtils.isBlank(jobEntity.getJobLastDate())){
+                                Timestamp metaNormalizedDate=DateNormalizer.normalizeToTimestamp(jobEntity.getJobLastDate());
+                                if (metaNormalizedDate!=null){
+                                    jobEntity.setJobLastDate(metaNormalizedDate.toString());
+                                }
+                            }
+                            jobEntity.setJobUrl(preservedUrl);
+                        }
+                        jobEntity.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
+                        jobEntity.setIsPresentOnSite(true);
+                        jobsRepository.save(jobEntity);
+                        newJobIds.add(jobEntity.getJobId());
+                        foundJobIds.add(jobEntity.getJobId());
+                    }else{
+                        Optional<Jobs> optionalJob=jobsRepository.findById(jobEntity.getJobId());
+                        if(optionalJob.isEmpty()){
+                            optionalJob=jobsRepository.findByJobUrl(jobEntity.getJobUrl());
+                        }
+                        if(optionalJob.isPresent()){
+                            Jobs existingJob=optionalJob.get();
+                            existingJob.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
+                            Timestamp updatedTimeFormat = DateNormalizer.normalizeToTimestamp(existingJob.getJobLastDate());
+
+                            //if deadline is extended, update the last seen date
+                            if(
+                                !StringUtils.isBlank(jobEntity.getJobLastDate())
+                                &&!jobEntity.getJobLastDate().equals(existingJob.getJobLastDate())
+                            ) {
+                                existingJob.setJobLastDate(jobEntity.getJobLastDate());
+                            }else if(updatedTimeFormat!=null&&!updatedTimeFormat.toString().equals(existingJob.getJobLastDate())){
+                                existingJob.setJobLastDate(updatedTimeFormat.toString());
+                            }
+                            if(existingJob.getIsPresentOnSite()==false){
+                                existingJob = this.getJobMetadata(existingJob);
+                                existingJob.setIsReopened(true);
+                                existingJob.setIsPresentOnSite(true);
+                                existingJob.setVersion(existingJob.getVersion()+1);
+                            }
+                            foundJobIds.add(existingJob.getJobId());
+                            jobsRepository.save(existingJob);
+                        }
+                        System.out.println("job already exits");
+                    }
+                }
+                updateNonExistentJobs(foundJobIds,site.getId());
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Indexing done");
+        isIndexing=false;
+        systemStatusService.updateJobIndexingStatus(SystemStatusValues.JOB_INDEXER_IDLE);
+        onIndexingDone.onIndexingDone(newJobIds);
     }
 
     private String cleanJobId(String jobId) {
