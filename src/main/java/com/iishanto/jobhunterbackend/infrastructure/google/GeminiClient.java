@@ -13,6 +13,7 @@ import org.springframework.web.client.RestClient;
 import org.jsoup.Jsoup;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 
@@ -42,7 +43,12 @@ public class GeminiClient {
             ignored.printStackTrace();
         }finally {
             System.out.println("Gemini client is release by: "+Thread.currentThread().getName());
-            lock.unlock();
+            try{
+                System.out.println("Gemini client is sleeping for 10 seconds to avoid rate limit");
+                TimeUnit.SECONDS.sleep(10L);
+            }catch (Exception ignored){}finally {
+                lock.unlock();
+            }
         }
         return "I am Gemini";
     }
