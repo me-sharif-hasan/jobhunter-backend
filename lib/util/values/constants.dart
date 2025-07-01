@@ -55,8 +55,8 @@ class Constants{
     [0xFF42A5F5, 0xFF79BCFF], // Light Blue to Blue
     [0xFFFFA726, 0xFFFF963C], // Orange to Light Orange
     [0xFFE94BFC, 0xFFFF7416], // Light Green to Green
-    [0xFFAB47BC, 0xFF8E24AA], // Light Purple to Purple
     [0xFF7E57C2, 0xFF5E35B1], // Light Indigo to Indigo
+    [0xFFAB47BC, 0xFF8E24AA], // Light Purple to Purple
     [0xFFEC407A, 0xFFD81B60], // Pink to Deep Pink
     [0xFF7E57C2, 0xFF5E35B1], // Light Indigo to Indigo
     [0xFF26A69A, 0xFF00897B], // Teal to Deep Teal

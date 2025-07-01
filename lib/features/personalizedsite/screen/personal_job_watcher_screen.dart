@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:personalized_job_hunter/features/common/controller/meta_controller.dart';
 import 'package:personalized_job_hunter/features/common/widgets/search_bar.dart';
+import 'package:personalized_job_hunter/features/common/widgets/rounded_logo.dart';
 import 'package:personalized_job_hunter/util/values/constants.dart';
 import 'package:provider/provider.dart';
 
@@ -118,23 +119,7 @@ class _PersonalJobWatcherScreenState extends State<PersonalJobWatcherScreen> wit
                           ),
                           child: Row(
                             children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Color(0xFFCFD8DC).withOpacity(0.2), // Warm Grey
-                                ),
-                                padding: const EdgeInsets.all(8),
-                                child: ClipOval(
-                                  child: CachedNetworkImage(
-                                    imageUrl: site['logoUrl'],
-                                    fit: BoxFit.cover,
-                                    errorWidget: (context, url, error) =>
-                                        const Icon(Icons.web, color: Color(0xFFCFD8DC)), // Warm Grey
-                                  ),
-                                ),
-                              ),
+                              RoundedLogo(imageUrl: site['logoUrl'],),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
@@ -163,17 +148,17 @@ class _PersonalJobWatcherScreenState extends State<PersonalJobWatcherScreen> wit
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFF4DB6AC), Color(0xFFCE93D8)], // Muted Teal to Soft Lavender
+                                    colors: [Color.fromARGB(255, 255, 255, 255), Color.fromARGB(255, 250, 250, 250)], // Muted Teal to Soft Lavender
                                     begin: Alignment.centerLeft,
                                     end: Alignment.centerRight,
                                   ),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Text(
-                                  '${site['jobCount']} jobs',
+                                  '${site['jobCount']} new',
                                   style: const TextStyle(
                                     fontSize: 12,
-                                    color: Color(0xFFCFD8DC), // Warm Grey
+                                    color: Color.fromARGB(255, 212, 0, 255), // Warm Grey
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
