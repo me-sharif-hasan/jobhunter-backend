@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:personalized_job_hunter/features/common/domain/datasource/backend_meta_datasource.dart';
 import 'package:personalized_job_hunter/features/common/domain/model/api_response.dart';
 import 'package:personalized_job_hunter/features/common/domain/model/job_model.dart';
+import 'package:personalized_job_hunter/features/personalizedsite/screen/personal_job_watcher_screen.dart';
 import 'package:personalized_job_hunter/util/values/constants.dart';
 import 'package:personalized_job_hunter/util/values/widget_loading_registry.dart';
 
@@ -78,10 +79,10 @@ class MetaController extends ChangeNotifier {
         _currentScreenTitle = 'Company Subscriptions';
         break;
       case 3:
-        _currentScreenTitle = 'Notifications';
+        _currentScreenTitle = 'My sites';
         break;
       case 4:
-        _currentScreenTitle = 'Settings';
+        _currentScreenTitle = 'Notifications';
         break;
     }
     notifyListeners();
@@ -93,6 +94,7 @@ class MetaController extends ChangeNotifier {
     const UserProfileScreen(),
     const JobTimelineScreen(),
     const CompanySubscriptionScreen(),
+    const PersonalJobWatcherScreen(),
     const InAppNotificationScreen(),
   ];
 
