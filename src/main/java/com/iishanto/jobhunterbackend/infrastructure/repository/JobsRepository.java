@@ -36,7 +36,6 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
             jobs.is_duplicate = false
             AND (jobs.is_present_on_site is null OR jobs.is_present_on_site != false)
             AND jobs.site_id IN :siteIds
-            AND site.is_published = TRUE
             AND (
                 lower(jobs.title) LIKE concat('%', lower(:keyword), '%')
                 OR lower(jobs.job_description) LIKE concat('%', lower(:keyword), '%')

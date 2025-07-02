@@ -33,6 +33,10 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
         if(subscriptionRepository.findFirstByUserIdAndSiteId(subscriptionModel.getUser().getId(),subscriptionModel.getSite().getId()).isPresent()){
             throw new RuntimeException("Already Subscribed");
         }
+        Site site = siteRepository.findById(subscriptionModel.getSite().getId()).orElseThrow();
+        if(!site.isPublished()){
+            throw new RuntimeException("Site is not available for open subscription.");
+        }
         Subscription subscription=Subscription.fromSubscriptionModels(userRepository,siteRepository,subscriptionModel);
         System.out.println("SUBSCRIPTIONxx: "+subscription+" "+subscriptionModel);
         subscriptionRepository.save(subscription);
