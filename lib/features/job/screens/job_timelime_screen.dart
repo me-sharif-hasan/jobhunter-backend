@@ -184,7 +184,7 @@ class _JobTimelineScreenState extends State<JobTimelineScreen> with SingleTicker
                 context,
                 index: 1,
                 icon: Icons.subscriptions,
-                text: "Subscribed",
+                text: "My jobs",
                 isSelected: _tabController.index == 1,
                 onTap: () {
                   _tabController.animateTo(1);

@@ -146,10 +146,26 @@ class _JobTimelineCardState extends State<JobTimelineCard>
                             const SizedBox(height: 12),
                             JobMetadataChips(job: widget.job),
                             const SizedBox(height: 12),
-                            ApplyActionButtons(job: widget.job),
-                            const SizedBox(height: 12),
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  ApplyActionButtons(job: widget.job),
+                                  JobCommentWidget(jobId: widget.job.jobId,),
                             ApplyStatusBanner(job: widget.job),
-                            JobCommentWidget(jobId: widget.job.jobId,)
+                                ],
+                              ),
+                            )
                           ],
                         ),
                       ),

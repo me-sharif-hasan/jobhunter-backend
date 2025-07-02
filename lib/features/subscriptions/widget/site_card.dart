@@ -264,40 +264,21 @@ class _SiteCardState extends State<SiteCard>
                             ],
                           ),
                         ),
-                        // Visit Home Page Button
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => JobWebViewScreen.manual(
-                                  url: widget.site.homepage,
-                                  title: widget.site.name,
-                                  company: widget.site.homepage,
+                        IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => JobWebViewScreen.manual(
+                                    url: widget.site.homepage,
+                                    title: widget.site.name,
+                                    company: widget.site.homepage,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                            backgroundColor: const Color(0x1DFFFFFF),
-                            // Slightly translucent white
-                            foregroundColor: const Color(0xFFFFFFFF),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            elevation: 0,
-                            textStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ).copyWith(
-                            overlayColor: MaterialStateProperty.all(
-                              const Color(0xFFE94BFC).withOpacity(0.1),
-                            ),
-                          ),
-                          child: const Text('Visit Home Page'),
+                              );
+                            },
+                          icon: const Icon(Icons.public),
+                          color: Colors.white,
                         ),
                       ],
                     ),

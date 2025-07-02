@@ -8,6 +8,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:personalized_job_hunter/features/job/controller/job_timeline_controller.dart';
+import 'package:personalized_job_hunter/features/personalizedsite/controller/personal_site_controller.dart';
+import 'package:personalized_job_hunter/features/personalizedsite/domain/datasource/personal_site_datasource.dart';
 import 'package:personalized_job_hunter/util/firebase/firebase_analytics.dart';
 import 'package:personalized_job_hunter/util/firebase/firebase_util.dart';
 import 'package:personalized_job_hunter/util/http/client.dart';
@@ -43,6 +45,7 @@ void setupLocator() {
   locator.registerSingleton<ProfileDatasource>(ProfileDatasource());
   locator.registerSingleton<BackendMetaDatasource>(BackendMetaDatasource());
   locator.registerSingleton<NotificationDatasource>(NotificationDatasource());
+  locator.registerSingleton<PersonalSiteDatasource>(PersonalSiteDatasource());
 }
 
 
@@ -65,10 +68,18 @@ _getPlatform(){
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: _getPlatform(),
-  );
-
+  if(Firebase.apps.isNotEmpty){
+    log("Firebase already initialized");
+  }else{
+    try{
+      await Firebase.initializeApp(
+        options: _getPlatform(),
+      );
+    } catch (e) {
+      log("Firebase initialization error: $e");
+    }
+  }
+  
   setupLocator();
 
   initFlutterLocalNotification();
@@ -107,6 +118,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => AuthController()),
         ChangeNotifierProvider(create: (_) => FacebookController()),
         ChangeNotifierProvider(create: (_) => InAppNotificationController()),
+        ChangeNotifierProvider(create: (_)=> Personalsitecontroller())
       ],
       child: const JobHunter(),
     ),
