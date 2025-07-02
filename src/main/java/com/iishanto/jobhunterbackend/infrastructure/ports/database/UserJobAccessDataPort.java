@@ -7,17 +7,16 @@ import com.iishanto.jobhunterbackend.domain.model.SimpleSubscriptionModel;
 import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.database.Subscription;
+import com.iishanto.jobhunterbackend.infrastructure.database.UserOwnedSite;
 import com.iishanto.jobhunterbackend.infrastructure.projection.PersonalJobProjection;
-import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
-import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
-import com.iishanto.jobhunterbackend.infrastructure.repository.SubscriptionRepository;
-import com.iishanto.jobhunterbackend.infrastructure.repository.UserRepository;
+import com.iishanto.jobhunterbackend.infrastructure.repository.*;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -27,11 +26,16 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
     private final SiteRepository siteRepository;
     private final UserRepository userRepository;
     private final JobsRepository jobsRepository;
+    private final UserOwnedSiteRepository userOwnedSiteRepository;
     @Override
     public Long addSubscription(SimpleSubscriptionModel subscriptionModel) {
         subscriptionModel.setActive(true);
         if(subscriptionRepository.findFirstByUserIdAndSiteId(subscriptionModel.getUser().getId(),subscriptionModel.getSite().getId()).isPresent()){
             throw new RuntimeException("Already Subscribed");
+        }
+        Site site = siteRepository.findById(subscriptionModel.getSite().getId()).orElseThrow();
+        if(!site.isPublished()){
+            throw new RuntimeException("Site is not available for open subscription.");
         }
         Subscription subscription=Subscription.fromSubscriptionModels(userRepository,siteRepository,subscriptionModel);
         System.out.println("SUBSCRIPTIONxx: "+subscription+" "+subscriptionModel);
@@ -60,7 +64,11 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
 
     @Override
     public List<SimpleJobModel> getSubscribedJobsOf(Long userId, int page, int limit, String query, int siteId) {
-        List <Site> sites=getSubscribedSites(userId);
+        List <Site> sites=new ArrayList<>(getSubscribedSites(userId));
+        List < UserOwnedSite> userOwnedSites=userOwnedSiteRepository.findAllByUserId(userId);
+        userOwnedSites.forEach(userOwnedSite -> {
+            sites.add(userOwnedSite.getSite());
+        });
         List <Long> siteIds=sites.stream().map(Site::getId).filter(
                 id -> siteId < 0 || id == siteId
         ).toList();

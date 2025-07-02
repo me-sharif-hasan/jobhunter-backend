@@ -1,6 +1,5 @@
 package com.iishanto.jobhunterbackend.infrastructure.ports.database;
 
-import com.iishanto.jobhunterbackend.domain.adapter.UserJobAccessDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.UserDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
@@ -18,10 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @AllArgsConstructor
@@ -29,13 +25,9 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
     private final WebCrawler webCrawler;
     private final UserJobAccessDataPort subscriptionDataPort;
     private final SiteRepository siteRepository;
-    private final UserJobAccessDataAdapter userJobAccessDataAdapter;
+    private final UserOwnedSiteRepository ownedSiteRepository;
     private final UserDataAdapter userDataAdapter;
     private final UserOwnedSiteRepository userOwnedSiteRepository;
-//    public SiteDataPort(WebCrawler webCrawler, SiteRepository siteRepository){
-//        this.webCrawler = webCrawler;
-//        this.siteRepository=siteRepository;
-//    }
 
 
     @Override
@@ -66,6 +58,18 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
     }
 
     @Override
+    public void setSitePublishedStatus(boolean published, Long siteId) {
+        Optional<Site> siteOptional = siteRepository.findById(siteId);
+        if (siteOptional.isPresent()) {
+            Site site = siteOptional.get();
+            site.setPublished(published);
+            siteRepository.save(site);
+        } else {
+            throw new IllegalArgumentException("Site with ID " + siteId + " does not exist.");
+        }
+    }
+
+    @Override
     public String getRawHtml(String url) {
         return webCrawler.getRawHtml(url);
     }
@@ -93,7 +97,7 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
         if(size>50) throw new IllegalArgumentException("Size can't be greater than 40");
         Pageable pageable= PageRequest.of(page,size);
         System.out.println("Page: "+page+" Size: "+size+" Query: "+query);
-        List <Site> sites=siteRepository.findAllByNameContainingOrDescriptionContainingOrderByCreatedAtDesc(query,query,pageable);
+        List <Site> sites=siteRepository.findAllByNameContainingAndIsPublishedTrueOrDescriptionContainingAndIsPublishedTrueOrderByCreatedAtDesc(query,query,pageable);
         List <SimpleSiteModel> subscribedSites= new java.util.ArrayList<>(subscriptionDataPort.getSubscribedSitesInSideIds(
                 userDataAdapter.getLoggedInUser().getId(),
                 sites.stream().map(Site::getId).toList()
@@ -123,8 +127,22 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
     }
 
     @Override
+    public List<SimpleSiteModel> getPersonalSites(int page, int size, String query,Long userId) {
+        List <UserOwnedSite> userOwnedSites = userOwnedSiteRepository.findAllByUserId(userId);
+        Set<Long> siteIds = new HashSet<>();
+        for (UserOwnedSite userOwnedSite : userOwnedSites) {
+            siteIds.add(userOwnedSite.getSite().getId());
+        }
+        List <Site> sites = siteRepository.findAllByIdInOrderByLastCrawledAtDesc(siteIds);
+        return sites.stream()
+                .limit(size)
+                .map(Site::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<SimpleSiteModel> getAllSitesForAdmin(int page, int limit, String query) {
-        return siteRepository.findAllByNameContainingOrDescriptionContainingOrderByCreatedAtDesc(query,query,PageRequest.of(page,limit)).stream().map(Site::toDomain).toList();
+        return siteRepository.findAllByNameContainingAndIsPublishedTrueOrDescriptionContainingAndIsPublishedTrueOrderByCreatedAtDesc(query,query,PageRequest.of(page,limit)).stream().map(Site::toDomain).toList();
     }
 
     @Override

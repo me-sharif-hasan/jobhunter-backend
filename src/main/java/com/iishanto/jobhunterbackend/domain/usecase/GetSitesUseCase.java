@@ -9,4 +9,6 @@ public interface GetSitesUseCase {
     public List<SimpleSiteModel> getSites(int page, int size,String query);
 
     SimpleSiteModel getSiteByJobListUrl(@NotBlank String jobListPageUrl);
+
+    List<SimpleSiteModel> getPersonalSites(int page, int size, String query);
 }
