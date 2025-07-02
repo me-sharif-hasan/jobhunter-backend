@@ -8,8 +8,8 @@ import 'package:http/http.dart' as http;
 class Constants{
   // static String baseUrl = 'https://jobhunterbackend.gentlesmoke-d65a2350.westus2.azurecontainerapps.io';
   static const String _ipStoreGist = 'https://gist.githubusercontent.com/me-sharif-hasan/3cef53fc292b780057371902e4f0ee68/raw/c0ec071e04eac46246ccfe8830c1e3450d1ae469/hunterenginelocation.txt';
-  static String baseUrl = 'http://10.0.2.2:8080';
-  // static String baseUrl = 'http://172.16.1.2:8080';
+  // static String baseUrl = 'http://10.0.2.2:8080';
+  static String baseUrl = 'http://172.16.1.2:8080';
   static String baseUrlWebLocal = 'http://localhost:8080';
   static Future loadBaseUrl() async{
     if(!kReleaseMode){
@@ -38,6 +38,8 @@ class Constants{
   static const String token = '';
 
   static const getJobs = '/api/jobs';
+  static const getPersonalSites = '/api/site/get-personal-sites';
+  static const addPersonalSite = '/api/site/add-personal-site';
   static const getSites = '/api/site';
   static const subscribe = '/api/subscription';
   static const unsubscribe = '/api/subscription/remove';
@@ -55,6 +57,7 @@ class Constants{
     [0xFF42A5F5, 0xFF79BCFF], // Light Blue to Blue
     [0xFFFFA726, 0xFFFF963C], // Orange to Light Orange
     [0xFFE94BFC, 0xFFFF7416], // Light Green to Green
+    [0xFF7E57C2, 0xFF5E35B1], // Light Indigo to Indigo
     [0xFFAB47BC, 0xFF8E24AA], // Light Purple to Purple
     [0xFFEC407A, 0xFFD81B60], // Pink to Deep Pink
     [0xFF7E57C2, 0xFF5E35B1], // Light Indigo to Indigo

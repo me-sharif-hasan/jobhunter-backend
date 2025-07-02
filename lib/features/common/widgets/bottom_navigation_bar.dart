@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:personalized_job_hunter/features/common/controller/meta_controller.dart';
@@ -14,6 +16,7 @@ class BottomNavigationBarWidget extends StatefulWidget {
 
 class _BottomNavigationBarWidgetState extends State<BottomNavigationBarWidget> {
   void _onItemTapped(int index) {
+    log('BottomNavigationBarWidget: _onItemTapped: $index');
     Provider.of<MetaController>(context, listen: false).currentPage = index;
   }
 
@@ -68,15 +71,15 @@ class _BottomNavigationBarWidgetState extends State<BottomNavigationBarWidget> {
                 color: selectedIndex == 2 ? const Color(0xFFFFA726) : Colors.white,
               ),
               Icon(
-                Icons.notifications,
+                Icons.gas_meter,
                 size: 30,
                 color: selectedIndex == 3 ? const Color(0xFFFFA726) : Colors.white,
               ),
-              // Icon(
-              //   Icons.settings,
-              //   size: 30,
-              //   color: selectedIndex == 4 ? const Color(0xFFFFA726) : Colors.white,
-              // ),
+              Icon(
+                Icons.notifications,
+                size: 30,
+                color: selectedIndex == 4 ? const Color(0xFFFFA726) : Colors.white,
+              ),
             ],
             index: selectedIndex,
             onTap: _onItemTapped,

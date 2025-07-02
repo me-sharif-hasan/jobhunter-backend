@@ -3,9 +3,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:personalized_job_hunter/features/auth/domain/datasource/auth_datasource.dart';
-import 'package:personalized_job_hunter/features/auth/domain/models/user_data_model.dart';
-import 'package:personalized_job_hunter/features/common/domain/model/api_response.dart';
 import 'package:personalized_job_hunter/features/common/domain/model/job_model.dart';
 import 'package:personalized_job_hunter/features/job/controller/dto/post_comment_dto.dart';
 import 'package:personalized_job_hunter/util/values/widget_loading_registry.dart';

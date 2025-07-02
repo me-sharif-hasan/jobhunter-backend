@@ -1,0 +1,2 @@
+C:/Users/BJIT/Desktop/jobh/jobhunter-backend/android/app/.cxx/Debug/6g352g3w/x86/CMakeFiles/edit_cache.dir
+C:/Users/BJIT/Desktop/jobh/jobhunter-backend/android/app/.cxx/Debug/6g352g3w/x86/CMakeFiles/rebuild_cache.dir
