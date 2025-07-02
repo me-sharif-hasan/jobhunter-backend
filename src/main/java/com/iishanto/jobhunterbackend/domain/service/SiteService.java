@@ -44,9 +44,11 @@ public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseC
     private Long saveSite(SimpleSiteModel siteModel,String jobListPageUrl){
         Timestamp timestamp=new Timestamp(0);
         siteModel.setLastCrawledAt(timestamp);
-        return siteDataAdapter.saveSite(
+        Long siteId = siteDataAdapter.saveSite(
                 siteModel.withJobListPageUrl(jobListPageUrl)
         );
+        siteDataAdapter.setSitePublishedStatus(false,siteId);
+        return siteId;
     }
 
     @Override
@@ -60,9 +62,6 @@ public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseC
     public SimpleSiteModel addPersonalSite(String jobListPageUrl, String homepage) {
         if(jobListPageUrl.isEmpty()){
             throw new IllegalArgumentException("Job list page url is required");
-        }
-        if(siteDataAdapter.getSiteByJobListUrl(jobListPageUrl)!=null){
-            throw new IllegalArgumentException("Job list page url already exists");
         }
         SimpleSiteModel site = getSiteInformationFromUrl(homepage);
         if(site == null){
@@ -79,7 +78,7 @@ public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseC
             siteId= e.getExistingSiteId();
             if(siteId==null) throw e;
         }
-        site.setId(siteId);
+        site=siteDataAdapter.getSite(siteId);
         try{
             siteDataAdapter.addSiteOwner(site, siteOwner);
             return site;
@@ -95,7 +94,7 @@ public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseC
     public SimpleSiteModel getSiteInformationFromUrl(String url){
         String html=siteDataAdapter.getRawHtml(url);
         Document document= Jsoup.parse(html);
-        String title=document.title();
+        String title=document.getElementsByTag("title").text();
         String description=document.select("meta[name=description]").attr("content");
         String icon=document.select("link[rel=icon]").attr("href");
         if(icon.isEmpty()){
@@ -127,6 +126,12 @@ public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseC
     @Override
     public SimpleSiteModel getSiteByJobListUrl(String jobListUrl) {
         return siteDataAdapter.getExistingSiteByJobListUrl(jobListUrl);
+    }
+
+    @Override
+    public List<SimpleSiteModel> getPersonalSites(int page, int size, String query) {
+        Long userId = userDataAdapter.getLoggedInUser().getId();
+        return siteDataAdapter.getPersonalSites(page, size, query,userId);
     }
 
     @Override

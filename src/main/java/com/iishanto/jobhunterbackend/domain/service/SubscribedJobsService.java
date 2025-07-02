@@ -45,24 +45,13 @@ public class SubscribedJobsService implements AddSubscriptionUseCase, UserJobAcc
         validateRequest(page, limit, query);
         List<SimpleJobModel> simpleJobModels;
         Long userId = userDataAdapter.getLoggedInUser().getId();
-        if(siteId==-1){
-            simpleJobModels = userJobAccessDataAdapter.getSubscribedJobsOf(
-                    userId,
-                    page,
-                    limit,
-                    query,
-                    siteId
-            );
-        }else{
-            System.out.println("SITEIDii: "+siteId);
-            simpleJobModels = userJobAccessDataAdapter.getSubscribedJobsOf(
-                    userId,
-                    page,
-                    limit,
-                    query,
-                    siteId
-            );
-        }
+        simpleJobModels = userJobAccessDataAdapter.getSubscribedJobsOf(
+                userId,
+                page,
+                limit,
+                query,
+                siteId
+        );
 
         return simpleJobModels;
     }

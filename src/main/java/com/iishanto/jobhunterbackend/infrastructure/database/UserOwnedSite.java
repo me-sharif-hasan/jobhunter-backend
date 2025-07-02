@@ -22,11 +22,11 @@ public class UserOwnedSite {
     private Long id;
 
     @JoinColumn(name = "user_id")
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     private User user;
 
     @JoinColumn(name = "site_id")
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Site site;
 
     @CreationTimestamp

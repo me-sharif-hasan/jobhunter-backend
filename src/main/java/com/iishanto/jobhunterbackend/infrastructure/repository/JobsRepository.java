@@ -36,6 +36,7 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
             jobs.is_duplicate = false
             AND (jobs.is_present_on_site is null OR jobs.is_present_on_site != false)
             AND jobs.site_id IN :siteIds
+            AND site.is_published = TRUE
             AND (
                 lower(jobs.title) LIKE concat('%', lower(:keyword), '%')
                 OR lower(jobs.job_description) LIKE concat('%', lower(:keyword), '%')
@@ -109,26 +110,6 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
 
     Optional<Jobs> findByJobUrl(String jobUrl);
 
-//    @Modifying
-//    @Transactional
-//    @Query(value = """
-//    INSERT INTO user_applied_jobs(user_id, job_id)
-//    SELECT :userId, :jobId FROM DUAL
-//    WHERE NOT EXISTS (
-//        SELECT 1 FROM user_applied_jobs
-//        WHERE user_id = :userId AND job_id = :jobId
-//    )
-//    """, nativeQuery = true)
-//    Integer applyIfNotApplied(@Param("userId") Long userId, @Param("jobId") String jobId);
-//
-//    @Modifying
-//    @Transactional
-//    @Query(value = """
-//        DELETE FROM user_applied_jobs
-//        WHERE user_id = :userId AND job_id = :jobId
-//        """, nativeQuery = true)
-//    Integer unapplyIfApplied(Long userId, String jobId);
-
     @Query(value = """
         SELECT
             jobs.*,
@@ -149,6 +130,7 @@ public interface JobsRepository extends JpaRepository<Jobs, String> {
                 (jobs.is_present_on_site is null OR jobs.is_present_on_site != false)
             AND
             jobs.is_duplicate = false
+            AND site.is_published = TRUE
             AND (
                 lower(jobs.title) LIKE concat('%', lower(:keyword), '%')
                 OR lower(jobs.job_description) LIKE concat('%', lower(:keyword), '%')

@@ -80,11 +80,36 @@ public class SiteController {
             );
             message = "Site already exists";
         }catch (UserAlreadyOwnsSiteException e){
-            return new ApiResponse(false,null,
+            site = SiteResponseDto.fromSimpleSiteModel(
+                    getSitesUseCase.getSiteByJobListUrl(siteInfo.getJobListPageUrl())
+            );
+            return new ApiResponse(false,site,
                     "You already own this site. Please review the site instead."
             );
         }
         return new ApiResponse(true,site,message);
+    }
+
+    @GetMapping("/get-personal-sites")
+    public ApiResponse getPersonalSites(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "") String query
+    ){
+        if (page<0 || size<1){
+            throw new IllegalArgumentException("Invalid page or size");
+        }
+        if(size>40){
+            throw new IllegalArgumentException("Size can't be greater than 100");
+        }
+        List<SimpleSiteModel> sites = getSitesUseCase.getPersonalSites(page,size,query);
+        if(sites.isEmpty()){
+            return new ApiResponse(false,null,"No personal sites found");
+        }else{
+            List<SiteResponseDto> siteResponseDtos = sites.stream().map(SiteResponseDto::fromSimpleSiteModel).toList();
+            return new ApiResponse(true, siteResponseDtos,"Personal sites fetched successfully");
+
+        }
     }
 
 }

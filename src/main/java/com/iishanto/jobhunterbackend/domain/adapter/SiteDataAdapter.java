@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface SiteDataAdapter {
     Long saveSite(SimpleSiteModel site);
+    void setSitePublishedStatus(boolean published, Long siteId);
     String getRawHtml(String url);
     public SimpleSiteModel getSiteByJobListUrl(String jobListUrl);
     public SimpleSiteModel getSiteByHomePage(String homePage);
@@ -15,4 +16,6 @@ public interface SiteDataAdapter {
 
     SimpleSiteModel getExistingSiteByJobListUrl(String jobListUrl);
     void addSiteOwner(SimpleSiteModel site, SimpleUserModel siteOwner);
+
+    List<SimpleSiteModel> getPersonalSites(int page, int size, String query,Long userId);
 }
