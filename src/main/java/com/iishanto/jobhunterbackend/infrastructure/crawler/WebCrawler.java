@@ -1,5 +1,6 @@
 package com.iishanto.jobhunterbackend.infrastructure.crawler;
 
+import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteValidationDataAdapter;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -9,7 +10,7 @@ import org.springframework.web.client.RestClient;
 import java.time.Duration;
 
 @Service
-public class WebCrawler {
+public class WebCrawler implements AdminSiteValidationDataAdapter {
     RestClient restClient=RestClient.create();
     WebDriver webDriver;
     public WebCrawler(WebDriver webDriver) {
@@ -36,5 +37,10 @@ public class WebCrawler {
         }catch (Exception e){
             throw new RuntimeException("Failed to get html from url: "+url);
         }
+    }
+
+    @Override
+    public String getRenderedHtmlPage(String url) {
+        return getHtml(url);
     }
 }

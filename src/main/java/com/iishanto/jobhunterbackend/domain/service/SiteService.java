@@ -44,11 +44,9 @@ public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseC
     private Long saveSite(SimpleSiteModel siteModel,String jobListPageUrl){
         Timestamp timestamp=new Timestamp(0);
         siteModel.setLastCrawledAt(timestamp);
-        Long siteId = siteDataAdapter.saveSite(
+        return siteDataAdapter.saveSite(
                 siteModel.withJobListPageUrl(jobListPageUrl)
         );
-        siteDataAdapter.setSitePublishedStatus(false,siteId);
-        return siteId;
     }
 
     @Override
@@ -74,6 +72,7 @@ public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseC
         Long siteId;
         try{
             siteId = saveSite(site, jobListPageUrl);
+            siteDataAdapter.setSitePublishedStatus(false,siteId);
         }catch (SiteAlreadyExistsException e){
             siteId= e.getExistingSiteId();
             if(siteId==null) throw e;

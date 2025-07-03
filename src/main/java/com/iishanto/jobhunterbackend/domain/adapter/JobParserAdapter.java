@@ -5,5 +5,5 @@ import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import java.util.List;
 
 public interface JobParserAdapter {
-    public List<SimpleJobModel> parse(String url);
+    List<SimpleJobModel> parse(String url);
 }
