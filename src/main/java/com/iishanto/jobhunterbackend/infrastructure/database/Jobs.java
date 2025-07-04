@@ -1,6 +1,7 @@
 package com.iishanto.jobhunterbackend.infrastructure.database;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.infrastructure.projection.PersonalJobProjection;
 import jakarta.annotation.Nullable;
@@ -90,6 +91,7 @@ public class Jobs {
     @ToString.Exclude
     @ManyToMany(mappedBy = "appliedJobs",fetch = FetchType.LAZY)
     @JsonBackReference
+    @JsonIgnore
     List<User> users;
 
 

@@ -6,6 +6,7 @@ import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.values.SystemStatusValues;
 import com.iishanto.jobhunterbackend.domain.service.admin.SystemStatusService;
 import com.iishanto.jobhunterbackend.domain.utility.DateNormalizer;
+import com.iishanto.jobhunterbackend.infrastructure.crawler.CareerPageSpider;
 import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.google.GeminiClient;
@@ -25,8 +26,8 @@ public class JobIndexEngine implements JobIndexingAdapter {
     private final JobsRepository jobsRepository;
     HunterUtility hunterUtility;
     private final SystemStatusService systemStatusService;
-    private final
-    GeminiClient geminiClient;
+    private final GeminiClient geminiClient;
+
     public JobIndexEngine(SiteRepository siteRepository, JobsRepository jobsRepository, GeminiClient geminiClient, HunterUtility hunterUtility, SystemStatusService systemStatusService) {
         this.siteRepository=siteRepository;
         this.geminiClient=geminiClient;
@@ -63,7 +64,7 @@ public class JobIndexEngine implements JobIndexingAdapter {
         return jobEntity;
     }
 
-    private void mergeNullFields(Jobs jobEntity, Jobs initialJob) {
+    public static void mergeNullFields(Jobs jobEntity, Jobs initialJob) {
         if (jobEntity.getTitle() == null) {
             jobEntity.setTitle(initialJob.getTitle());
         }
@@ -208,7 +209,7 @@ public class JobIndexEngine implements JobIndexingAdapter {
         onIndexingDone.onIndexingDone(newJobIds);
     }
 
-    private String cleanJobId(String jobId) {
+    public static String cleanJobId(String jobId) {
         return StringUtils.stripAccents(jobId).replaceAll("[^a-zA-Z0-9]", "_");
     }
 

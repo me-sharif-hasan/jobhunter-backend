@@ -19,7 +19,7 @@ public class BeanConfigs {
     public WebDriver webDriver(){
 //        WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless"); // Ensure JS execution in headless mode
+//        options.addArguments("--headless"); // Ensure JS execution in headless mode
         options.addArguments("--disable-gpu");
         options.addArguments("--window-size=1920,1080");
         options.addArguments("--enable-javascript");

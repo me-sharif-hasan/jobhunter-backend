@@ -1,9 +1,12 @@
 package com.iishanto.jobhunterbackend.web.dto.request;
 
+import com.iishanto.jobhunterbackend.domain.model.SiteAttributeValidatorModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -11,5 +14,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SiteValidationDto {
     private String url;
-    private String titleScript;
+    private List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow;
 }

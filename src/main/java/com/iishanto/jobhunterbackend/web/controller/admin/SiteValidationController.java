@@ -19,10 +19,10 @@ public class SiteValidationController {
         getRenderedHtmlPageUseCase.getSiteAttributes(
                 SiteAttributeValidatorModel.builder()
                         .url(site.getUrl())
-                        .titleScript(site.getTitleScript())
+                        .processFlow(site.getProcessFlow())
                         .build()
         );
-        return new ApiResponse(true, getRenderedHtmlPageUseCase.getRenderedHtmlPage(site.getUrl()), "Rendered page screenshot for: " + site.getUrl());
+        return null;
     }
 }
 

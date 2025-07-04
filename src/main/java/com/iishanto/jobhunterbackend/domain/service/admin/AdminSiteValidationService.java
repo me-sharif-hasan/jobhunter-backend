@@ -6,17 +6,16 @@ import com.iishanto.jobhunterbackend.domain.usecase.admin.GetRenderedHtmlPageUse
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+
 @Service
 @AllArgsConstructor
 public class AdminSiteValidationService implements GetRenderedHtmlPageUseCase {
     private AdminSiteValidationDataAdapter adminSiteValidationDataAdapter;
     @Override
-    public String getRenderedHtmlPage(String url) {
-        return adminSiteValidationDataAdapter.getRenderedHtmlPage(url);
-    }
-
-    @Override
     public void getSiteAttributes(SiteAttributeValidatorModel siteAttributes) {
-
+        System.out.println("Running scripts for site: " + siteAttributes.getUrl());
+        adminSiteValidationDataAdapter.runScript(siteAttributes.getUrl(), siteAttributes.getProcessFlow());
     }
 }
