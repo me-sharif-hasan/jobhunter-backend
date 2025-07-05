@@ -1,6 +1,7 @@
 package com.iishanto.jobhunterbackend.infrastructure.database;
 
 import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
+import com.iishanto.jobhunterbackend.domain.model.values.IndexingStrategyNames;
 import com.iishanto.jobhunterbackend.domain.model.values.SiteControlStatus;
 import com.iishanto.jobhunterbackend.domain.model.values.SiteRuntimeStatus;
 import jakarta.persistence.*;
@@ -34,6 +35,8 @@ public class Site {
     private SiteRuntimeStatus runtimeStatus = SiteRuntimeStatus.IDLE;
 
     private boolean isPublished = true;
+
+    private IndexingStrategyNames indexingStrategy = IndexingStrategyNames.AI;
 
 
     public static Site fromSiteModel(SimpleSiteModel siteModel){
