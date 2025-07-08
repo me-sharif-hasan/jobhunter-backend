@@ -46,6 +46,7 @@ public class WebCrawler {
             }
             return webDriver.getPageSource();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Failed to get html from url: " + url);
         }
     }

@@ -11,6 +11,7 @@ import java.util.List;
 @Data
 public class SiteAttributeValidatorModel {
     String url;
+    Long siteId;
     List <JobExtractionPipeline> processFlow;
     String titleScript;
     String jobListingScript;
@@ -39,7 +40,10 @@ public class SiteAttributeValidatorModel {
         }
     }
 
+    @Getter
+    @Setter
     public static class ClickOnElement extends JobExtractionPipeline {
+        private String selector;
         public ClickOnElement() {
             super("click");
         }
@@ -70,6 +74,7 @@ public class SiteAttributeValidatorModel {
     @Setter
     public static class MapElementResult extends JobExtractionPipeline {
         private String selector;
+        private String javaScript;
         private String attribute;
         public MapElementResult() {
             super("map");
@@ -95,6 +100,7 @@ public class SiteAttributeValidatorModel {
     @Getter
     @Setter
     public static class AskAI extends JobExtractionPipeline {
+        private String withContext;
         public AskAI() {
             super("askAi");
         }

@@ -1,6 +1,7 @@
 package com.iishanto.jobhunterbackend.web.controller.admin;
 
 import com.iishanto.jobhunterbackend.domain.usecase.admin.GetAllJobsUseCase;
+import com.iishanto.jobhunterbackend.domain.usecase.admin.JobIndexUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.admin.JobUpdateUseCase;
 import com.iishanto.jobhunterbackend.scheduled.ScheduledJobIndexRefresher;
 import com.iishanto.jobhunterbackend.web.dto.request.JobUpdateDto;
@@ -16,12 +17,14 @@ public class AdminJobController {
     ScheduledJobIndexRefresher refreshJobUseCase;
     GetAllJobsUseCase getAllJobsUseCase;
     JobUpdateUseCase jobUpdateUseCase;
+    JobIndexUseCase jobIndexUseCase;
 
     @GetMapping("/refresh")
     public void refreshJobs() {
         refreshJobUseCase.refreshJobIndex();
         System.out.println("Jobs Refreshed");
     }
+
 
     @PatchMapping("/mark-duplicate")
     public ApiResponse updateJob(

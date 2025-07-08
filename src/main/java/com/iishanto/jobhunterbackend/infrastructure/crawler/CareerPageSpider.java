@@ -5,16 +5,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iishanto.jobhunterbackend.domain.adapter.JobIndexingAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteValidationDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SiteAttributeValidatorModel;
+import com.iishanto.jobhunterbackend.domain.service.admin.JobIndexingService;
 import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
 import com.iishanto.jobhunterbackend.infrastructure.ports.indexing.JobIndexEngine;
 import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +34,7 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
     ObjectMapper objectMapper;
 
     @Override
-    public void runScript(String url, List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow) {
+    public void executeProcessFlow(String url, List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow, JobIndexingService.OnJobAvailableCallback onJobAvailable) {
         webCrawler.getHtml(url);
         List<String> foundJobs=new ArrayList<>();
         executeProcessFlowRecursive(null, processFlow, new JobExtractionCallback() {
@@ -46,14 +50,20 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
             }
 
             @Override
+            public Map<String, String> getJobMappings() {
+                return jobMappings;
+            }
+
+            @Override
             public void save() {
                 System.out.println("Saving mappings...");
                 Jobs jobs = objectMapper.convertValue(jobMappings, Jobs.class);
                 jobs.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
                 jobs.setIsPresentOnSite(true);
                 jobs.setDescriptionIndexed(true);
-                jobsRepository.save(jobs);
-
+                jobs.setLastSeenAt(Timestamp.valueOf(LocalDateTime.now()));
+                jobs.setJobUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
+                onJobAvailable.onJobAvailable(jobs.toSimpleJobModel());
                 jobMappings.clear();
             }
         }, null);
@@ -98,6 +108,10 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                     }
                 }
             } else if (root != null && pipeline instanceof SiteAttributeValidatorModel.ClickOnElement navigateAction) {
+                String selector = navigateAction.getSelector();
+                if(!StringUtils.isBlank(selector)) {
+                    root= root.findElement(By.xpath(selector));
+                }
                 System.out.println("Clicking on element: " + root.getText());
                 try {
                     String currentUrl = webDriver.getCurrentUrl();
@@ -122,9 +136,24 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                     Thread.sleep(2000);
                 } catch (Exception e) {
                 }
-                WebElement targetElement = webDriver.findElement(By.xpath(mapElementResult.getSelector()));
+                if(!StringUtils.isBlank(mapElementResult.getJavaScript())&&!StringUtils.isBlank(mapElementResult.getSelector())) {
+                    throw new IllegalArgumentException("Both JavaScript and Selector cannot be set at the same time.");
+                }
+                String text;
                 String attribute = mapElementResult.getAttribute();
-                String text = targetElement.getText();
+                if(!StringUtils.isBlank(mapElementResult.getSelector())) {
+                    WebElement targetElement = root.findElement(By.xpath(mapElementResult.getSelector()));
+                    text = targetElement.getAttribute("textContent");
+                }else{
+                    String js = """
+                            return (()=>{
+                            %s
+                            })();
+                            """.formatted(mapElementResult.getJavaScript());
+                    js = processStringTemplate(callback.getJobMappings(),js);
+                    JavascriptExecutor jsExecutor = (JavascriptExecutor) webDriver;
+                    text = (String) jsExecutor.executeScript(js);
+                }
                 callback.onNewMappingAvailable(attribute, text);
             } else if (pipeline instanceof SiteAttributeValidatorModel.SaveJob saveJob) {
                 if(jobMetaMappings!=null){
@@ -137,14 +166,20 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                         callback.onNewMappingAvailable(entry.getKey(), entry.getValue());
                     }
                 }
-                callback.save();
+                try{
+                    callback.save();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             } else if (pipeline instanceof SiteAttributeValidatorModel.AskAI askAI) {
                 Jobs jobs = new Jobs();
                 String currentUrl = webDriver.getCurrentUrl();
                 jobs.setJobUrl(currentUrl);
                 jobs.setJobId(JobIndexEngine.cleanJobId(currentUrl));
-                Jobs job = jobIndexingAdapter.getJobMetadata(jobs);
-                Map <String,String> jobMappings = objectMapper.convertValue(job, new TypeReference<Map<String, String>>() {});
+                String baseContext = processStringTemplate(callback.getJobMappings(),askAI.getWithContext());
+                Jobs job = jobIndexingAdapter.getJobMetadata(jobs, baseContext);
+                Map <String,String> jobMappings = objectMapper.convertValue(job, new TypeReference<>() {
+                });
                 jobMappings.entrySet().removeIf(e -> e.getValue() == null || e.getValue().isEmpty());
                 for (String key : jobMappings.keySet()) {
                     System.out.println("Mapping: " + key + " -> " + jobMappings.get(key));
@@ -153,10 +188,22 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
             }
         }
     }
+
+    private String processStringTemplate(Map<String, String> mappings,String template) {
+        if(StringUtils.isBlank(template)) {
+            return "";
+        }
+        List<String> patterns = mappings.keySet().stream().map(key->"%"+key+"%").toList();
+        List<String> values = mappings.values().stream().toList();
+        for (int i = 0; i < patterns.size(); i++) {
+            template = template.replaceAll(patterns.get(i), values.get(i));
+        }
+        return template;
+    }
 }
 
 interface JobExtractionCallback {
     void onNewMappingAvailable(String key, String output);
-
+    Map<String,String> getJobMappings();
     void save();
 }

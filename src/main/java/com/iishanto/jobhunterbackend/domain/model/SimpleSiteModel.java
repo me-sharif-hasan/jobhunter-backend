@@ -22,6 +22,7 @@ public class SimpleSiteModel{
     private Timestamp lastCrawledAt;
 
     boolean isSubscribed=false;
+    boolean isActive;
     public SimpleSiteModel (
             Long id,
             String name,

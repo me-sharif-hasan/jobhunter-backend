@@ -44,8 +44,8 @@ public class GeminiClient {
         }finally {
             System.out.println("Gemini client is release by: "+Thread.currentThread().getName());
             try{
-                System.out.println("Gemini client is sleeping for 10 seconds to avoid rate limit");
-                TimeUnit.SECONDS.sleep(10L);
+                System.out.println("Gemini client is sleeping for 5 seconds to avoid rate limit");
+                TimeUnit.SECONDS.sleep(5L);
             }catch (Exception ignored){}finally {
                 lock.unlock();
             }

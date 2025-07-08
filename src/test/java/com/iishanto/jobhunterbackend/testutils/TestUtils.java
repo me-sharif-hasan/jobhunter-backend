@@ -25,6 +25,7 @@ public class TestUtils {
     SiteRepository siteRepository;
     @Autowired
     UserRepository userRepository;
+    @Autowired IndexingStrategyRepository indexingStrategyRepository;
 
 
     static final MySQLContainer MYSQL_CONTAINER;
@@ -63,6 +64,7 @@ public class TestUtils {
         subscriptionRepository.deleteAll();
         userAppliedJobsRepository.deleteAll();
         jobsRepository.deleteAll();
+        indexingStrategyRepository.deleteAll();
         siteRepository.deleteAll();
         userRepository.deleteAll();
     }

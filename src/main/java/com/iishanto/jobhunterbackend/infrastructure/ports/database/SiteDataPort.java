@@ -3,16 +3,20 @@ package com.iishanto.jobhunterbackend.infrastructure.ports.database;
 import com.iishanto.jobhunterbackend.domain.adapter.UserDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
+import com.iishanto.jobhunterbackend.domain.model.values.IndexingStrategyNames;
 import com.iishanto.jobhunterbackend.exception.SiteAlreadyExistsException;
 import com.iishanto.jobhunterbackend.infrastructure.crawler.WebCrawler;
+import com.iishanto.jobhunterbackend.infrastructure.database.IndexingStrategy;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.database.User;
 import com.iishanto.jobhunterbackend.infrastructure.database.UserOwnedSite;
+import com.iishanto.jobhunterbackend.infrastructure.repository.IndexingStrategyRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
 import com.iishanto.jobhunterbackend.domain.adapter.SiteDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
 import com.iishanto.jobhunterbackend.infrastructure.repository.UserOwnedSiteRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -20,7 +24,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
     private final WebCrawler webCrawler;
     private final UserJobAccessDataPort subscriptionDataPort;
@@ -28,6 +32,7 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
     private final UserOwnedSiteRepository ownedSiteRepository;
     private final UserDataAdapter userDataAdapter;
     private final UserOwnedSiteRepository userOwnedSiteRepository;
+    private final IndexingStrategyRepository indexingStrategyRepository;
 
 
     @Override
@@ -148,5 +153,38 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
     @Override
     public long countAllSites() {
         return siteRepository.count();
+    }
+
+    @Override
+    public List<SimpleSiteModel> getSitesForIndexing() {
+        return siteRepository.findAll().stream()
+                .map(Site::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Optional<SimpleSiteModel> getSiteById(Long siteId) {
+        return siteRepository.findById(siteId)
+                .map(Site::toDomain);
+    }
+
+    @Override
+    public Long saveIndexingStrategy(Long siteId, String jsonStrategy) {
+        if (jsonStrategy == null || jsonStrategy.isEmpty()) {
+            throw new IllegalArgumentException("Indexing strategy cannot be null or empty");
+        }
+
+        IndexingStrategy indexingStrategy = indexingStrategyRepository.findBySiteId(siteId).orElseGet(()->IndexingStrategy.builder()
+                .site(
+                        Site.builder().id(siteId).build()
+                )
+                .indexingStrategy(
+                        IndexingStrategyNames.HYBRID
+                )
+                .strategyPipeline(jsonStrategy)
+                .build());
+        indexingStrategy.setStrategyPipeline(jsonStrategy);
+        return Optional.of(indexingStrategyRepository.save(indexingStrategy))
+                .orElseThrow(()->new RuntimeException("Save failure.")).getId();
     }
 }

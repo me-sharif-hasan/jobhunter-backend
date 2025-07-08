@@ -13,6 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 @Data
 @Entity
@@ -122,9 +123,9 @@ public class Jobs {
         SimpleJobModel simpleJobModel= new SimpleJobModel(
                 jobId,
                 title,
-                site.getName(),
-                site.getHomepage(),
-                site.getIconUrl(),
+                Optional.ofNullable(site).orElseGet(Site::new).getName(),
+                Optional.ofNullable(site).orElseGet(Site::new).getHomepage(),
+                Optional.ofNullable(site).orElseGet(Site::new).getIconUrl(),
                 jobUrl,
                 location,
                 salary,

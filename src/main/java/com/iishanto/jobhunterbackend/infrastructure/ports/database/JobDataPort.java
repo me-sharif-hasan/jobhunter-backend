@@ -7,6 +7,7 @@ import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserAppliedJobsModel;
 import com.iishanto.jobhunterbackend.domain.model.values.JobApplicationStatus;
 import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
+import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.database.User;
 import com.iishanto.jobhunterbackend.infrastructure.database.UserAppliedJobs;
 import com.iishanto.jobhunterbackend.infrastructure.database.firebase.JobComment;
@@ -145,5 +146,14 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
             startAt = -1L;
         }
         return jobCommentRepository.findByJobId(jobId,startAt,limit).stream().map(JobComment::toSimpleJobCommentModel).collect(Collectors.toList());
+    }
+
+    @Override
+    public void saveSimpleJob(SimpleJobModel jobModel) {
+        Jobs job = Jobs.fromSimpleJobModel(jobModel, Site.fromSiteModel(jobModel.getSite()));
+        if(job.getJobId() == null){
+            throw new IllegalArgumentException("Job ID cannot be null");
+        }
+        jobsRepository.save(job);
     }
 }

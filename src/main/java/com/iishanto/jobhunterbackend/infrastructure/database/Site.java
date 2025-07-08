@@ -5,13 +5,19 @@ import com.iishanto.jobhunterbackend.domain.model.values.IndexingStrategyNames;
 import com.iishanto.jobhunterbackend.domain.model.values.SiteControlStatus;
 import com.iishanto.jobhunterbackend.domain.model.values.SiteRuntimeStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.sql.Timestamp;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Site {
     @Id
@@ -34,10 +40,8 @@ public class Site {
     private SiteControlStatus status = SiteControlStatus.ACTIVE;
     private SiteRuntimeStatus runtimeStatus = SiteRuntimeStatus.IDLE;
 
+
     private boolean isPublished = true;
-
-    private IndexingStrategyNames indexingStrategy = IndexingStrategyNames.AI;
-
 
     public static Site fromSiteModel(SimpleSiteModel siteModel){
         Site site=new Site();
