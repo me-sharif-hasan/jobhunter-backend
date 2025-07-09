@@ -1,6 +1,6 @@
 package com.iishanto.jobhunterbackend.infrastructure.tasks.duplicateutil;
 
-import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
+import com.iishanto.jobhunterbackend.infrastructure.database.Opportunity;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
@@ -28,9 +28,9 @@ public class AlgorithmicDuplicateJobMarkerImpl implements DuplicateJobMarker{
     }
 
     @Override
-    public void isDuplicate(Jobs jobs) {
+    public void isDuplicate(Opportunity opportunity) {
         //reload the job from the database
-        Jobs job = jobsRepository.findById(jobs.getJobId()).orElseThrow(() -> new RuntimeException("Job not found"));
+        Opportunity job = jobsRepository.findById(opportunity.getJobId()).orElseThrow(() -> new RuntimeException("Job not found"));
         //reload site related to the job
         Site site = siteRepository.findById(job.getSite().getId()).orElseThrow(() -> new RuntimeException("Site not found"));
         //get atleast one matching job from the site

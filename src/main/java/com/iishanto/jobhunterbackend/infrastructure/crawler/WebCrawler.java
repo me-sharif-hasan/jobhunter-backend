@@ -1,21 +1,12 @@
 package com.iishanto.jobhunterbackend.infrastructure.crawler;
 
-import com.iishanto.jobhunterbackend.domain.adapter.JobIndexingAdapter;
-import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteValidationDataAdapter;
-import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
-import com.iishanto.jobhunterbackend.domain.model.SiteAttributeValidatorModel;
-import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
-import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class WebCrawler {

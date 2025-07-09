@@ -4,7 +4,7 @@ import com.iishanto.jobhunterbackend.domain.adapter.UserJobAccessDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleSubscriptionModel;
-import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
+import com.iishanto.jobhunterbackend.infrastructure.database.Opportunity;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.database.Subscription;
 import com.iishanto.jobhunterbackend.infrastructure.database.UserOwnedSite;
@@ -82,7 +82,7 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
         List<PersonalJobProjection> personalJobProjections = jobsRepository.findJobs(siteIds,userId,query,pageable)
                 .getContent();
         return personalJobProjections.stream().map(projection -> {
-            SimpleJobModel jobModel = Jobs.fromProjection(projection).toSimpleJobModel();
+            SimpleJobModel jobModel = Opportunity.fromProjection(projection).toSimpleJobModel();
             jobModel.setApplied(projection.getIsApplied()!=null&&projection.getIsApplied());
             return jobModel;
         }).toList();
@@ -113,7 +113,7 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
                     query,
                     pageable
             ).stream().map(personalJobProjection -> {
-                SimpleJobModel jobModel = Jobs.fromProjection(personalJobProjection).toSimpleJobModel();
+                SimpleJobModel jobModel = Opportunity.fromProjection(personalJobProjection).toSimpleJobModel();
                 jobModel.setApplied(personalJobProjection.getIsApplied()!=null&&personalJobProjection.getIsApplied());
                 jobModel.setAppliedAt(personalJobProjection.getAppliedAt());
                 jobModel.setApplicationStatus(personalJobProjection.getApplicationStatus());
@@ -125,7 +125,7 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
                     query,
                     pageable
             ).stream().map(personalJobProjection -> {
-                SimpleJobModel jobModel = Jobs.fromProjection(personalJobProjection).toSimpleJobModel();
+                SimpleJobModel jobModel = Opportunity.fromProjection(personalJobProjection).toSimpleJobModel();
                 jobModel.setApplied(personalJobProjection.getIsApplied()!=null&&personalJobProjection.getIsApplied());
                 jobModel.setAppliedAt(personalJobProjection.getAppliedAt());
                 jobModel.setApplicationStatus(personalJobProjection.getApplicationStatus());
@@ -139,7 +139,7 @@ public class UserJobAccessDataPort implements UserJobAccessDataAdapter {
         Pageable pageable= PageRequest.of(page,limit);
         List <PersonalJobProjection> projectedJobs = jobsRepository.findAllJobs(query, userId,siteId, pageable);
         return projectedJobs.stream().map(projectedJob->{
-            SimpleJobModel jobModel = Jobs.fromProjection(projectedJob).toSimpleJobModel();
+            SimpleJobModel jobModel = Opportunity.fromProjection(projectedJob).toSimpleJobModel();
             jobModel.setApplied(projectedJob.getIsApplied()!=null&&projectedJob.getIsApplied());
             return jobModel;
         }).toList();

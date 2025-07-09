@@ -8,20 +8,17 @@ import com.iishanto.jobhunterbackend.domain.model.SiteAttributeValidatorModel;
 import com.iishanto.jobhunterbackend.domain.model.values.SystemStatusValues;
 import com.iishanto.jobhunterbackend.domain.service.admin.SystemStatusService;
 import com.iishanto.jobhunterbackend.domain.utility.DateNormalizer;
-import com.iishanto.jobhunterbackend.infrastructure.crawler.CareerPageSpider;
 import com.iishanto.jobhunterbackend.infrastructure.database.IndexingStrategy;
-import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
+import com.iishanto.jobhunterbackend.infrastructure.database.Opportunity;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.google.GeminiClient;
 import com.iishanto.jobhunterbackend.infrastructure.google.GeminiPromptLibrary;
 import com.iishanto.jobhunterbackend.infrastructure.repository.IndexingStrategyRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -50,12 +47,12 @@ public class JobIndexEngine implements JobIndexingAdapter {
 
 
     @Override
-    public Jobs getJobMetadata(Jobs job){
+    public Opportunity getJobMetadata(Opportunity job){
         return getJobMetadata(job,null);
     }
 
     @Override
-    public Jobs getJobMetadata(Jobs job, String baseContext) {
+    public Opportunity getJobMetadata(Opportunity job, String baseContext) {
         System.out.println("Getting Metadata for: "+job.getJobId());
         GeminiClient.GeminiPrompt prompt = null;
         if(!StringUtils.isBlank(baseContext)){
@@ -72,7 +69,7 @@ public class JobIndexEngine implements JobIndexingAdapter {
         SimpleJobModel jobModel = geminiClient.getJobMetadata(prompt);
         System.out.println("the job model"+jobModel);
         if(jobModel==null) return job;
-        Jobs jobEntity=Jobs.fromSimpleJobModel(jobModel, job.getSite());
+        Opportunity jobEntity= Opportunity.fromSimpleJobModel(jobModel, job.getSite());
         mergeNullFields(jobEntity,job);
         jobEntity.setJobId(job.getJobId());
         jobEntity.setJobUrl(job.getJobUrl());
@@ -108,7 +105,7 @@ public class JobIndexEngine implements JobIndexingAdapter {
         return models;
     }
 
-    public static void mergeNullFields(Jobs jobEntity, Jobs initialJob) {
+    public static void mergeNullFields(Opportunity jobEntity, Opportunity initialJob) {
         if (jobEntity.getTitle() == null) {
             jobEntity.setTitle(initialJob.getTitle());
         }
@@ -185,7 +182,7 @@ public class JobIndexEngine implements JobIndexingAdapter {
                     if (normalizedDate!=null){
                         job.setJobLastDate(normalizedDate.toString());
                     }
-                    Jobs jobEntity=Jobs.fromSimpleJobModel(job,site);
+                    Opportunity jobEntity= Opportunity.fromSimpleJobModel(job,site);
                     if(jobEntity.getJobId()!=null){
                         jobEntity.setJobId(site.getJobListPageUrl()+"/"+jobEntity.getJobId());
                     }else{
@@ -212,12 +209,12 @@ public class JobIndexEngine implements JobIndexingAdapter {
                         newJobIds.add(jobEntity.getJobId());
                         foundJobIds.add(jobEntity.getJobId());
                     }else{
-                        Optional<Jobs> optionalJob=jobsRepository.findById(jobEntity.getJobId());
+                        Optional<Opportunity> optionalJob=jobsRepository.findById(jobEntity.getJobId());
                         if(optionalJob.isEmpty()){
                             optionalJob=jobsRepository.findByJobUrl(jobEntity.getJobUrl());
                         }
                         if(optionalJob.isPresent()){
-                            Jobs existingJob=optionalJob.get();
+                            Opportunity existingJob=optionalJob.get();
                             existingJob.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
                             Timestamp updatedTimeFormat = DateNormalizer.normalizeToTimestamp(existingJob.getJobLastDate());
 
@@ -258,7 +255,7 @@ public class JobIndexEngine implements JobIndexingAdapter {
     }
 
     void updateNonExistentJobs(Set<String> foundJobIds,Long siteId) {
-        List <Jobs> jobs = jobsRepository.findJobsByJobIdNotInAndSiteId(foundJobIds, siteId);
+        List <Opportunity> jobs = jobsRepository.findJobsByJobIdNotInAndSiteId(foundJobIds, siteId);
         if (jobs.isEmpty()) return;
         System.out.println("Updating non-existent jobs: " + jobs.size());
         jobs.forEach(j->{

@@ -1,22 +1,15 @@
 package com.iishanto.jobhunterbackend.infrastructure.ports.database;
 
 import com.iishanto.jobhunterbackend.domain.adapter.UserDataAdapter;
-import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
-import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
 import com.iishanto.jobhunterbackend.infrastructure.database.User;
-import com.iishanto.jobhunterbackend.infrastructure.database.UserAppliedJobs;
 import com.iishanto.jobhunterbackend.infrastructure.repository.UserAppliedJobsRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.security.Principal;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Optional;
 
 @Component

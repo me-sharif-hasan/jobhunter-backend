@@ -6,7 +6,7 @@ import com.iishanto.jobhunterbackend.domain.adapter.JobIndexingAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteValidationDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SiteAttributeValidatorModel;
 import com.iishanto.jobhunterbackend.domain.service.admin.JobIndexingService;
-import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
+import com.iishanto.jobhunterbackend.infrastructure.database.Opportunity;
 import com.iishanto.jobhunterbackend.infrastructure.ports.indexing.JobIndexEngine;
 import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
 import lombok.AllArgsConstructor;
@@ -57,13 +57,13 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
             @Override
             public void save() {
                 System.out.println("Saving mappings...");
-                Jobs jobs = objectMapper.convertValue(jobMappings, Jobs.class);
-                jobs.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
-                jobs.setIsPresentOnSite(true);
-                jobs.setDescriptionIndexed(true);
-                jobs.setLastSeenAt(Timestamp.valueOf(LocalDateTime.now()));
-                jobs.setJobUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
-                onJobAvailable.onJobAvailable(jobs.toSimpleJobModel());
+                Opportunity opportunity = objectMapper.convertValue(jobMappings, Opportunity.class);
+                opportunity.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
+                opportunity.setIsPresentOnSite(true);
+                opportunity.setDescriptionIndexed(true);
+                opportunity.setLastSeenAt(Timestamp.valueOf(LocalDateTime.now()));
+                opportunity.setJobUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
+                onJobAvailable.onJobAvailable(opportunity.toSimpleJobModel());
                 jobMappings.clear();
             }
         }, null);
@@ -172,12 +172,12 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                     e.printStackTrace();
                 }
             } else if (pipeline instanceof SiteAttributeValidatorModel.AskAI askAI) {
-                Jobs jobs = new Jobs();
+                Opportunity opportunity = new Opportunity();
                 String currentUrl = webDriver.getCurrentUrl();
-                jobs.setJobUrl(currentUrl);
-                jobs.setJobId(JobIndexEngine.cleanJobId(currentUrl));
+                opportunity.setJobUrl(currentUrl);
+                opportunity.setJobId(JobIndexEngine.cleanJobId(currentUrl));
                 String baseContext = processStringTemplate(callback.getJobMappings(),askAI.getWithContext());
-                Jobs job = jobIndexingAdapter.getJobMetadata(jobs, baseContext);
+                Opportunity job = jobIndexingAdapter.getJobMetadata(opportunity, baseContext);
                 Map <String,String> jobMappings = objectMapper.convertValue(job, new TypeReference<>() {
                 });
                 jobMappings.entrySet().removeIf(e -> e.getValue() == null || e.getValue().isEmpty());

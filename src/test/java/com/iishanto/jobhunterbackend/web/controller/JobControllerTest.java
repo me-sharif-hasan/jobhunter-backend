@@ -4,9 +4,7 @@ import com.iishanto.jobhunterbackend.config.security.JwtUtil;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobCommentModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
-import com.iishanto.jobhunterbackend.domain.service.UserService;
-import com.iishanto.jobhunterbackend.domain.usecase.AddSubscriptionUseCase;
-import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
+import com.iishanto.jobhunterbackend.infrastructure.database.Opportunity;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.database.firebase.JobComment;
 import com.iishanto.jobhunterbackend.infrastructure.ports.database.UserDataPort;
@@ -99,7 +97,7 @@ class JobControllerTest {
 
         if(jobsRepository.count() == 0) {
             for (int i = 0; i < 10; i++) {
-                Jobs job=Jobs.fromSimpleJobModel(
+                Opportunity job= Opportunity.fromSimpleJobModel(
                         SimpleJobModel.builder()
                                 .jobId("test-job-id-" + i)
                                 .title("Test Job " + i)
@@ -128,7 +126,7 @@ class JobControllerTest {
         subscribedSite.setDescription("This is a subscribed site for job postings.");
         subscribedSite = siteRepository.save(subscribedSite);
         for (int i = 0; i < 5; i++) {
-            Jobs job = Jobs.fromSimpleJobModel(
+            Opportunity job = Opportunity.fromSimpleJobModel(
                     SimpleJobModel.builder()
                             .jobId("subscribed-job-id-" + i)
                             .title("Subscribed Job " + i)

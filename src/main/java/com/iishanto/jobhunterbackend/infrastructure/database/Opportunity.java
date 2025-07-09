@@ -17,7 +17,8 @@ import java.util.Optional;
 
 @Data
 @Entity
-public class Jobs {
+@Table(name = "opportunity")
+public class Opportunity {
     @Id
     private String jobId;
     private String title;
@@ -96,8 +97,8 @@ public class Jobs {
     List<User> users;
 
 
-    public static Jobs fromSimpleJobModel(SimpleJobModel jobModel, Site site) {
-        Jobs job=new Jobs();
+    public static Opportunity fromSimpleJobModel(SimpleJobModel jobModel, Site site) {
+        Opportunity job=new Opportunity();
         job.setJobId(jobModel.getJobId());
         job.setTitle(jobModel.getTitle());
         job.setJobUrl(jobModel.getJobUrl());
@@ -148,8 +149,8 @@ public class Jobs {
         return simpleJobModel;
     }
 
-    public static Jobs fromProjection(PersonalJobProjection projection) {
-        Jobs job = new Jobs();
+    public static Opportunity fromProjection(PersonalJobProjection projection) {
+        Opportunity job = new Opportunity();
         job.setJobId(projection.getJobId());
         job.setTitle(projection.getTitle());
         job.setJobUrl(projection.getJobUrl());

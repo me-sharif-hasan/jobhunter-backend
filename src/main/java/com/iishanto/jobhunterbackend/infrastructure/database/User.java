@@ -1,8 +1,6 @@
 package com.iishanto.jobhunterbackend.infrastructure.database;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -10,7 +8,6 @@ import lombok.ToString;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Data
@@ -38,7 +35,7 @@ public class User{
             inverseJoinColumns = @JoinColumn(name = "job_id")
     )
     @JsonManagedReference
-    private List<Jobs> appliedJobs;
+    private List<Opportunity> appliedJobs;
 
     public static User fromUserModel(SimpleUserModel userModel){
         return fromUserModel(userModel, null);

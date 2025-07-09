@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iishanto.jobhunterbackend.domain.adapter.JobDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.JobIndexingAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.SiteDataAdapter;
+import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminJobDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
@@ -29,6 +30,7 @@ public class JobIndexingService implements JobIndexUseCase {
     private final SiteDataAdapter siteDataAdapter;
     private final CareerPageSpider careerPageSpider;
     private final JobDataAdapter jobDataAdapter;
+    private final AdminJobDataAdapter adminJobDataAdapter;
 
     @Override
     public void refreshJobIndexWithStrategy(Long siteId) {
@@ -52,18 +54,44 @@ public class JobIndexingService implements JobIndexUseCase {
                 return;
             }
             System.out.println("Indexing site: " + site.getName() + " with attributes: " + processFlow.size()+" steps");
-            careerPageSpider.executeProcessFlow(site.getJobListPageUrl(), processFlow, new OnJobAvailableCallback() {
-                @Override
-                public void onJobAvailable(SimpleJobModel jobModel) {
-                    jobModel.setSite(site);
-                    jobModel.setJobDescription(StringUtils.trim(jobModel.getJobDescription()));
-                    jobModel.setTitle(StringUtils.trim(jobModel.getTitle()));
-                    jobModel.setJobUrl(StringUtils.trim(jobModel.getJobUrl()));
-                    jobDataAdapter.saveSimpleJob(jobModel);
-                }
+            careerPageSpider.executeProcessFlow(site.getJobListPageUrl(), processFlow, jobModel -> {
+                jobModel.setSite(site);
+                jobModel.setJobDescription(StringUtils.trim(jobModel.getJobDescription()));
+                jobModel.setTitle(StringUtils.trim(jobModel.getTitle()));
+                jobModel.setJobUrl(StringUtils.trim(jobModel.getJobUrl()));
+                handleJob(jobModel);
             });
             System.out.println("Indexing completed for site: " + site.getName());
         });
+    }
+
+    private void handleJob(SimpleJobModel jobModel) {
+        if(StringUtils.isBlank(jobModel.getJobId())){
+            throw new IllegalArgumentException("Job ID cannot be empty");
+        }
+        Optional<SimpleJobModel> existingJob = adminJobDataAdapter.findJobById(jobModel.getJobId());
+        if(existingJob.isPresent()){
+            SimpleJobModel existing = existingJob.get();
+            mergeNullFields(jobModel,existing);
+            adminJobDataAdapter.updateJob(jobModel);
+        }else{
+            adminJobDataAdapter.saveJob(jobModel);
+        }
+    }
+
+    private void mergeNullFields(SimpleJobModel to,SimpleJobModel from){
+        to.setJobDescription(Optional.ofNullable(to.getJobDescription()).orElse(from.getJobDescription()));
+        to.setJobUrl(Optional.ofNullable(to.getJobUrl()).orElse(from.getJobUrl()));
+        to.setTitle(Optional.ofNullable(to.getTitle()).orElse(from.getTitle()));
+        to.setJobType(Optional.ofNullable(to.getJobType()).orElse(from.getJobType()));
+        to.setSalary(Optional.ofNullable(to.getSalary()).orElse(from.getSalary()));
+        to.setLocation(Optional.ofNullable(to.getLocation()).orElse(from.getLocation()));
+        to.setJobCategory(Optional.ofNullable(to.getJobCategory()).orElse(from.getJobCategory()));
+        to.setJobPostedDate(Optional.ofNullable(to.getJobPostedDate()).orElse(from.getJobPostedDate()));
+        to.setJobLastDate(Optional.ofNullable(to.getJobLastDate()).orElse(from.getJobLastDate()));
+        to.setJobApplyLink(Optional.ofNullable(to.getJobApplyLink()).orElse(from.getJobApplyLink()));
+        to.setJobApplyEmail(Optional.ofNullable(to.getJobApplyEmail()).orElse(from.getJobApplyEmail()));
+        to.setJobParsedAt(Optional.ofNullable(to.getJobParsedAt()).orElse(from.getJobParsedAt()));
     }
 
     @Override
