@@ -2,6 +2,7 @@ package com.iishanto.jobhunterbackend.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.iishanto.jobhunterbackend.domain.model.values.ClickIntention;
 import lombok.*;
 
 import java.util.List;
@@ -44,6 +45,7 @@ public class SiteAttributeValidatorModel {
     @Setter
     public static class ClickOnElement extends JobExtractionPipeline {
         private String selector;
+        private ClickIntention clickIntent= ClickIntention.NAVIGATE;
         public ClickOnElement() {
             super("click");
         }

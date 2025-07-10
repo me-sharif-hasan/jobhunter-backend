@@ -25,6 +25,8 @@ public class TestUtils {
     SiteRepository siteRepository;
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    TestDataFactory testDataFactory;
     @Autowired IndexingStrategyRepository indexingStrategyRepository;
 
 
@@ -67,5 +69,6 @@ public class TestUtils {
         indexingStrategyRepository.deleteAll();
         siteRepository.deleteAll();
         userRepository.deleteAll();
+        testDataFactory.resetWebCrawler();
     }
 }

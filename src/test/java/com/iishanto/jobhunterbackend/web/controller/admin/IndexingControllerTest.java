@@ -1,6 +1,10 @@
 package com.iishanto.jobhunterbackend.web.controller.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.common.ClasspathFileSource;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.repository.IndexingStrategyRepository;
 import com.iishanto.jobhunterbackend.testutils.TestDataFactory;
@@ -9,6 +13,7 @@ import com.iishanto.jobhunterbackend.web.dto.response.ApiResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,10 +25,17 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Objects;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.mockito.ArgumentMatchers.argThat;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -98,24 +110,38 @@ class IndexingControllerTest {
     private String getStrategyJson() {
         return """
                 {
-                    "processFlow": [
+                    "processFlow":[
                         {
-                             "operation":"find",
-                             "selector":"//mat-card/div/mat-card-actions/button",
-                             "childPipelines":[
-                                 {
-                                     "operation":"click"
-                                 },
-                                 {
-                                     "operation":"askAi"
-                                 },
-                                 {
-                                     "operation":"save"
-                                 },
-                                 {
-                                     "operation":"back"
-                                 }
-                             ]
+                            "operation":"find",
+                            "selector":"//*[@id=\\"section-opl-job-circular\\"]/div/div[2]/a",
+                            "childPipelines":[
+                                {
+                                    "operation":"click"
+                                },
+                                {
+                                    "operation":"map",
+                                    "selector":"/html/body/main/article/div[1]/section/div/div/div[1]/h1",
+                                    "attribute":"title"
+                                },
+                                {
+                                    "operation":"map",
+                                    "javaScript":"return window.location.href;",
+                                    "attribute":"jobId"
+                                },
+                                {
+                                    "operation":"save"
+                                },
+                                {
+                                    "operation":"back"
+                                }
+                            ],
+                            "metaFieldsMapping":[
+                                {
+                                    "operation":"map",
+                                    "selector":"./div/div[1]/div[2]/p[4]/span",
+                                    "attribute":"jobLastDate"
+                                }
+                            ]
                         }
                     ]
                 }
@@ -124,5 +150,70 @@ class IndexingControllerTest {
 
     private Long createSite(){
 return 0l;
+    }
+
+    @RegisterExtension
+    static WireMockExtension wireMock = WireMockExtension.newInstance()
+            .options(
+                    wireMockConfig().dynamicPort()
+                            .fileSource(new ClasspathFileSource(""))
+            )
+            .build();
+
+    @Test
+    void validateJobIndexStrategy_OPL() throws Exception {
+        String careerPageHtml = new String(
+                Files.readAllBytes(
+                        Paths.get(Objects.requireNonNull(
+                                this.getClass().getResource("/test/opl/sample-html-opl.html")
+                        ).toURI())
+                )
+        );
+
+        String jobDetailsHtml = new String(
+                Files.readAllBytes(
+                        Paths.get(Objects.requireNonNull(
+                                this.getClass().getResource("/test/opl/sample-job-page.html")
+                        ).toURI())
+                )
+        );
+        wireMock.stubFor(get(urlEqualTo("/Career/"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "text/html")
+                        .withBody(careerPageHtml)));
+
+        // Stub for URLs starting with /Apply
+        wireMock.stubFor(get(urlPathMatching("/Apply.*"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "text/html")
+                        .withBody(jobDetailsHtml)));
+
+        Site site = testDataFactory.createSite(wireMock.getRuntimeInfo().getHttpBaseUrl(), wireMock.getRuntimeInfo().getHttpBaseUrl()+"/Career/");
+        assertNotNull(site, "Site should be created successfully");
+        assertNotNull(site.getId(), "Site ID should not be null");
+
+        MvcResult theResult = mockMvc.perform(
+                post(
+                        "/admin/indexing/validate-strategy?site_id=%d".formatted(site.getId())
+                )
+                .header("Authorization", "Bearer " + jwtToken)
+                .contentType("application/json")
+                .content(getStrategyJson())
+        )
+                .andExpect(
+                        result -> assertEquals(result.getResponse().getStatus(), HttpStatus.OK.value())
+                )
+                .andExpect(
+                        jsonPath("$.success").value(true)
+                )
+                .andExpect(
+                        jsonPath("$.data").isArray()
+                )
+                .andExpect(
+                        jsonPath("$.data.length()").value(6)
+                )
+                .andReturn();
     }
 }

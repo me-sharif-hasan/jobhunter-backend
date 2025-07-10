@@ -2,36 +2,39 @@ package com.iishanto.jobhunterbackend.infrastructure.crawler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.iishanto.jobhunterbackend.config.WebDriverManager;
 import com.iishanto.jobhunterbackend.domain.adapter.JobIndexingAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteValidationDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SiteAttributeValidatorModel;
+import com.iishanto.jobhunterbackend.domain.model.values.ClickIntention;
 import com.iishanto.jobhunterbackend.domain.service.admin.JobIndexingService;
 import com.iishanto.jobhunterbackend.infrastructure.database.Opportunity;
 import com.iishanto.jobhunterbackend.infrastructure.ports.indexing.JobIndexEngine;
 import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CareerPageSpider implements AdminSiteValidationDataAdapter {
-    WebDriver webDriver;
-    WebCrawler webCrawler;
-    JobIndexingAdapter jobIndexingAdapter;
-    JobsRepository jobsRepository;
-    ObjectMapper objectMapper;
+    private final WebCrawler webCrawler;
+    private final JobIndexingAdapter jobIndexingAdapter;
+    private final JobsRepository jobsRepository;
+    private final ObjectMapper objectMapper;
+    private final WebDriverManager webDriverManager;
 
     @Override
     public void executeProcessFlow(String url, List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow, JobIndexingService.OnJobAvailableCallback onJobAvailable) {
@@ -70,6 +73,7 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
     }
 
     private void executeProcessFlowRecursive(WebElement root, List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow, JobExtractionCallback callback, Map<String, String> jobMetaMappings) {
+        WebDriver webDriver= webDriverManager.getDriver();
         String rootXpath = getXpath(root);
         for (SiteAttributeValidatorModel.JobExtractionPipeline pipeline : processFlow) {
             if (pipeline instanceof SiteAttributeValidatorModel.FindElements findElements) {
@@ -117,20 +121,44 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                     root= root.findElement(By.xpath(selector));
                 }
                 System.out.println("Clicking on element: " + root.getText());
-                try {
-                    String currentUrl = webDriver.getCurrentUrl();
-                    ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView({block: 'center'});", root);
-                    Thread.sleep(2000);
-                    root.click();
-                    Thread.sleep(2000);
-                    String newUrl = webDriver.getCurrentUrl();
-                    if (currentUrl != null && !currentUrl.equals(newUrl)) {
-                        System.out.println("Navigated to new URL: " + newUrl);
-                        root=webDriver.findElement(By.ByTagName.tagName("body"));
+                int retryCount = 0;
+                String currentUrl = webDriver.getCurrentUrl();
+                while (retryCount < 3) {
+                    try {
+                        try{
+                            ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView({block: 'center'});", root);
+                        }catch (Exception e){
+                            try{
+                                ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView({block: 'center'});", webDriver.findElement(By.tagName("body")));
+                            }catch (Exception e2){
+                                System.out.println("Failed to scroll to element: " + e2.getMessage());
+                                e2.printStackTrace();
+                            }
+                        }
+                        WebElement element = new WebDriverWait(webDriver, Duration.ofSeconds(10))
+                                .until(ExpectedConditions.elementToBeClickable(root));
+                        ((JavascriptExecutor) webDriver).executeScript("arguments[0].click()", element);
+                        Thread.sleep(2000);
+                        if( navigateAction.getClickIntent() == ClickIntention.NAVIGATE) {
+                            WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
+                            wait.until(webDriver1 -> {
+                                String newUrl = webDriver1.getCurrentUrl();
+                                return !Objects.equals(newUrl, currentUrl);
+                            });
+                            System.out.println("Waiting for navigation to complete...");
+                            String newUrl = webDriver.getCurrentUrl();
+                            if (currentUrl != null && !currentUrl.equals(newUrl)) {
+                                System.out.println("Navigated to new URL: " + newUrl);
+                                root=webDriver.findElement(By.ByTagName.tagName("body"));
+                            }
+                        }
+                        break;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.out.println("Failed to click on element: " + e.getMessage());
+                        retryCount++;
+                        System.out.println("Retrying click operation, attempt " + retryCount);
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println("Failed to click on element: " + e.getMessage());
                 }
             } else if (pipeline instanceof SiteAttributeValidatorModel.BackToPreviousPage backToPreviousPage) {
                 webDriver.navigate().back();
@@ -198,6 +226,7 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
         }
     }
     private String getXpath(WebElement element) {
+        WebDriver webDriver= webDriverManager.getDriver();
         StringBuilder xpath = new StringBuilder();
         while (element != null) {
             String tagName = element.getTagName();
