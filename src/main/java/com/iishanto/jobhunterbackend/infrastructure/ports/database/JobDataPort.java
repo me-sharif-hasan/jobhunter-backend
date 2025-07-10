@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -54,20 +55,40 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
 
     @Override
     public void updateJob(SimpleJobModel simpleJobModel) {
-        if(jobsRepository.existsById(simpleJobModel.getJobId())) {
-            boolean isPresentOnSite = jobsRepository.isPresentOnSite(simpleJobModel.getJobId());
-        }else{
-            throw new RuntimeException("Job not found");
-        }
         Optional <Opportunity> optionalJob = jobsRepository.findById(simpleJobModel.getJobId());
         if (optionalJob.isPresent()) {
             Opportunity job = optionalJob.get();
-            Opportunity updatedJob = Opportunity.fromSimpleJobModel(simpleJobModel, Site.fromSiteModel(simpleJobModel.getSite()));
-
+            job.setJobType(simpleJobModel.getJobType());
+            job.setSalary(simpleJobModel.getSalary());
+            job.setLocation(simpleJobModel.getLocation());
+            job.setJobUrl(simpleJobModel.getJobUrl());
+            job.setTitle(simpleJobModel.getTitle());
+            job.setJobCategory(simpleJobModel.getJobCategory());
+            job.setJobDescription(simpleJobModel.getJobDescription());
+            job.setJobPostedDate(simpleJobModel.getJobPostedDate());
+            job.setJobLastDate(simpleJobModel.getJobLastDate());
+            job.setJobApplyLink(simpleJobModel.getJobApplyLink());
+            job.setJobApplyEmail(simpleJobModel.getJobApplyEmail());
             jobsRepository.save(job);
         } else {
             throw new RuntimeException("Job not found");
+        }    }
+
+    @Override
+    public void updateIndexedJob(SimpleJobModel simpleJobModel) {
+        if(jobsRepository.existsById(simpleJobModel.getJobId())) {
+            boolean isPresentOnSite = jobsRepository.isPresentOnSite(simpleJobModel.getJobId());
+            Opportunity updatedJob = Opportunity.fromSimpleJobModel(simpleJobModel, Site.fromSiteModel(simpleJobModel.getSite()));
+            if(isPresentOnSite){
+                updatedJob.setIsReopened(true);
+                updatedJob.setReopenNoticedAt(Timestamp.from(Instant.now()));
+            }
+            updatedJob.setIsPresentOnSite(true);
+            jobsRepository.save(updatedJob);
+        }else{
+            throw new RuntimeException("Job not found");
         }
+
     }
 
     @Override
@@ -81,7 +102,17 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
         if (opportunity.getJobId() == null) {
             throw new IllegalArgumentException("Job ID cannot be null");
         }
+        opportunity.setIsPresentOnSite(true);
         jobsRepository.save(opportunity);
+    }
+
+    @Override
+    public void updateNonExistentJobsGivenFoundJobs(Set<String> availableJobIds) {
+        List<Opportunity> existingJobs = jobsRepository.findAllByJobIdNotIn(availableJobIds);
+        existingJobs.forEach(job -> {
+            job.setIsPresentOnSite(false);
+        });
+        jobsRepository.saveAll(existingJobs);
     }
 
     @Override

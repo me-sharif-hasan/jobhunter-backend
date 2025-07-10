@@ -15,10 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,13 +51,20 @@ public class JobIndexingService implements JobIndexUseCase {
                 return;
             }
             System.out.println("Indexing site: " + site.getName() + " with attributes: " + processFlow.size()+" steps");
-            careerPageSpider.executeProcessFlow(site.getJobListPageUrl(), processFlow, jobModel -> {
-                jobModel.setSite(site);
-                jobModel.setJobDescription(StringUtils.trim(jobModel.getJobDescription()));
-                jobModel.setTitle(StringUtils.trim(jobModel.getTitle()));
-                jobModel.setJobUrl(StringUtils.trim(jobModel.getJobUrl()));
-                handleJob(jobModel);
-            });
+            try{
+                Set <String> availableJobIds=new HashSet<>();
+                careerPageSpider.executeProcessFlow(site.getJobListPageUrl(), processFlow, jobModel -> {
+                    jobModel.setSite(site);
+                    jobModel.setJobDescription(StringUtils.trim(jobModel.getJobDescription()));
+                    jobModel.setTitle(StringUtils.trim(jobModel.getTitle()));
+                    jobModel.setJobUrl(StringUtils.trim(jobModel.getJobUrl()));
+                    handleJob(jobModel);
+                    availableJobIds.add(jobModel.getJobId());
+                });
+                adminJobDataAdapter.updateNonExistentJobsGivenFoundJobs(availableJobIds);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
             System.out.println("Indexing completed for site: " + site.getName());
         });
     }
@@ -73,7 +77,7 @@ public class JobIndexingService implements JobIndexUseCase {
         if(existingJob.isPresent()){
             SimpleJobModel existing = existingJob.get();
             mergeNullFields(jobModel,existing);
-            adminJobDataAdapter.updateJob(jobModel);
+            adminJobDataAdapter.updateIndexedJob(jobModel);
         }else{
             adminJobDataAdapter.saveJob(jobModel);
         }
