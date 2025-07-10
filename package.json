@@ -13,6 +13,10 @@
   "dependencies": {
     "@react-oauth/google": "^0.12.1",
     "@tailwindcss/vite": "^4.1.6",
+    "@uiw/react-codemirror": "^4.21.21",
+    "@codemirror/lang-javascript": "^6.2.1",
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/theme-one-dark": "^6.1.2",
     "antd": "^5.24.9",
     "axios": "^1.9.0",
     "inversify": "^7.5.1",

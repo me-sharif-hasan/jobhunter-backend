@@ -15,4 +15,12 @@ export default class SiteController {
     async aiAddNewSite(siteHomePage: string | File | null, siteCareerPage: string | File | null) {
         return this.siteDatasource.addNewSiteAutoMode(siteHomePage, siteCareerPage);
     }
+
+    async updateIndexingStrategy(siteId: number, strategy: { type: 'ai' | 'json', jsCode?: string, config?: string }) {
+        return this.siteDatasource.updateSiteIndexingStrategy(siteId, strategy);
+    }
+
+    async validateIndexingStrategy(siteId: number, strategy: { type: 'ai' | 'json', jsCode?: string, config?: string }) {
+        return this.siteDatasource.validateSiteIndexingStrategy(siteId, strategy);
+    }
 }
