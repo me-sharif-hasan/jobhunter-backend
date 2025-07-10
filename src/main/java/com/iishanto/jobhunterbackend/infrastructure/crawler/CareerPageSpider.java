@@ -70,6 +70,7 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
     }
 
     private void executeProcessFlowRecursive(WebElement root, List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow, JobExtractionCallback callback, Map<String, String> jobMetaMappings) {
+        String rootXpath = getXpath(root);
         for (SiteAttributeValidatorModel.JobExtractionPipeline pipeline : processFlow) {
             if (pipeline instanceof SiteAttributeValidatorModel.FindElements findElements) {
                 String selectorXpath = findElements.getSelector();
@@ -109,19 +110,26 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                 }
             } else if (root != null && pipeline instanceof SiteAttributeValidatorModel.ClickOnElement navigateAction) {
                 String selector = navigateAction.getSelector();
+                if(!rootXpath.isEmpty()) {
+                    root = webDriver.findElement(By.xpath(rootXpath));
+                }
                 if(!StringUtils.isBlank(selector)) {
                     root= root.findElement(By.xpath(selector));
                 }
                 System.out.println("Clicking on element: " + root.getText());
                 try {
                     String currentUrl = webDriver.getCurrentUrl();
+                    ((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView({block: 'center'});", root);
+                    Thread.sleep(2000);
                     root.click();
-                    Thread.sleep(5000);
+                    Thread.sleep(2000);
                     String newUrl = webDriver.getCurrentUrl();
                     if (currentUrl != null && !currentUrl.equals(newUrl)) {
                         System.out.println("Navigated to new URL: " + newUrl);
+                        root=webDriver.findElement(By.ByTagName.tagName("body"));
                     }
                 } catch (Exception e) {
+                    e.printStackTrace();
                     System.out.println("Failed to click on element: " + e.getMessage());
                 }
             } else if (pipeline instanceof SiteAttributeValidatorModel.BackToPreviousPage backToPreviousPage) {
@@ -142,6 +150,7 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                 String text;
                 String attribute = mapElementResult.getAttribute();
                 if(!StringUtils.isBlank(mapElementResult.getSelector())) {
+                    root = webDriver.findElement(By.xpath(mapElementResult.getSelector()));
                     WebElement targetElement = root.findElement(By.xpath(mapElementResult.getSelector()));
                     text = targetElement.getAttribute("textContent");
                 }else{
@@ -188,7 +197,25 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
             }
         }
     }
-
+    private String getXpath(WebElement element) {
+        StringBuilder xpath = new StringBuilder();
+        while (element != null) {
+            String tagName = element.getTagName();
+            String id = element.getAttribute("id");
+            if (id != null && !id.isEmpty()) {
+                xpath.insert(0, "/" + tagName + "[@id='" + id + "']");
+                break;
+            } else {
+                int index = 1;
+                for (WebElement sibling : element.findElements(By.xpath("preceding-sibling::" + tagName))) {
+                    index++;
+                }
+                xpath.insert(0, "/" + tagName + "[" + index + "]");
+            }
+            element = (WebElement) ((JavascriptExecutor) webDriver).executeScript("return arguments[0].parentNode;", element);
+        }
+        return "/"+xpath.toString();
+    }
     private String processStringTemplate(Map<String, String> mappings,String template) {
         if(StringUtils.isBlank(template)) {
             return "";

@@ -110,6 +110,27 @@ public class JobIndexingService implements JobIndexUseCase {
         return savedId;
     }
 
+    @Override
+    public List<SimpleJobModel> validateStrategyAndGetJobs(Long siteId, List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow) {
+        if(siteId == null || siteId <= 0) {
+            throw new IllegalArgumentException("Invalid Site ID");
+        }
+        if(processFlow == null || processFlow.isEmpty()) {
+            throw new IllegalArgumentException("Process flow cannot be null or empty");
+        }
+        SimpleSiteModel site = adminSiteDataAdapter.getSiteById(siteId)
+                .orElseThrow(() -> new IllegalArgumentException("Site ID Not Found"));
+        List<SimpleJobModel> jobs = new ArrayList<>();
+        careerPageSpider.executeProcessFlow(site.getJobListPageUrl(), processFlow, jobModel -> {
+            jobModel.setSite(site);
+            jobModel.setJobDescription(StringUtils.trim(jobModel.getJobDescription()));
+            jobModel.setTitle(StringUtils.trim(jobModel.getTitle()));
+            jobModel.setJobUrl(StringUtils.trim(jobModel.getJobUrl()));
+            jobs.add(jobModel);
+        });
+        return jobs;
+    }
+
     public interface OnJobAvailableCallback {
         void onJobAvailable(SimpleJobModel jobModel);
     }

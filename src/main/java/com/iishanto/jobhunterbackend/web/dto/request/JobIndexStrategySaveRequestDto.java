@@ -7,5 +7,6 @@ import java.util.List;
 
 @Data
 public class JobIndexStrategySaveRequestDto {
+    private String type;
     private List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow;
 }
