@@ -178,7 +178,7 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                 String text;
                 String attribute = mapElementResult.getAttribute();
                 if(!StringUtils.isBlank(mapElementResult.getSelector())) {
-                    root = webDriver.findElement(By.xpath(mapElementResult.getSelector()));
+                    root = webDriver.findElement(By.xpath(rootXpath));
                     WebElement targetElement = root.findElement(By.xpath(mapElementResult.getSelector()));
                     text = targetElement.getAttribute("textContent");
                 }else{
