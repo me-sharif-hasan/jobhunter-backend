@@ -17,6 +17,7 @@ import com.iishanto.jobhunterbackend.infrastructure.ports.indexing.JobIndexEngin
 import com.iishanto.jobhunterbackend.web.dto.response.indexing.JobIndexStrategyResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -116,16 +117,38 @@ public class JobIndexingService implements JobIndexUseCase {
     }
 
     @Override
-    public Long saveJobIndexStrategy(IndexingStrategyNames type, Long siteId, List<SiteAttributeValidatorModel.JobExtractionPipeline> pipeline) {
+    public Long saveJobIndexingProcessFlow(IndexingStrategyNames type, Long siteId, List<SiteAttributeValidatorModel.JobExtractionPipeline> pipeline) {
         Optional.ofNullable(adminSiteDataAdapter.getSiteById(siteId))
                 .orElseThrow(() -> new RuntimeException("Site not found"));
+        return saveStrategy(type, siteId, pipeline);
+    }
+
+    private @NotNull Long saveStrategy(IndexingStrategyNames type, Long siteId, List<SiteAttributeValidatorModel.JobExtractionPipeline> pipeline) {
         String jsonStrategy = objectMapper.valueToTree(pipeline).toString();
-        Long savedId = adminSiteDataAdapter.saveIndexingStrategy(type,siteId, jsonStrategy);
+        Long savedId = adminSiteDataAdapter.saveIndexingStrategy(type, siteId, jsonStrategy);
         if (savedId == null || savedId <= 0) {
             throw new RuntimeException("Failed to save indexing strategy");
         }
         return savedId;
     }
+
+    @Override
+    public Long saveJobIdScript(IndexingStrategyNames type, Long siteId, String idString) {
+        if(type!= IndexingStrategyNames.AI) {
+            throw new IllegalArgumentException("Invalid indexing strategy type for saving job ID script");
+        }
+        Optional.ofNullable(adminSiteDataAdapter.getSiteById(siteId))
+                .orElseThrow(() -> new RuntimeException("Site not found"));
+        List<SiteAttributeValidatorModel.JobExtractionPipeline> pipeline = new ArrayList<>();
+
+        SiteAttributeValidatorModel.MapElementResult idExtractionPipeline = new SiteAttributeValidatorModel.MapElementResult();
+        idExtractionPipeline.setOperation("map");
+        idExtractionPipeline.setAttribute("jobId");
+        idExtractionPipeline.setJavaScript(idString);
+        pipeline.add(idExtractionPipeline);
+        return saveStrategy(type, siteId, pipeline);
+    }
+
 
     @Override
     public List<SimpleJobModel> validateStrategyAndGetJobs(Long siteId, List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow) {

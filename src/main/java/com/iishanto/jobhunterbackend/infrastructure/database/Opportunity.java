@@ -16,8 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Data
-@Entity
-@Table(name = "opportunity")
+@Entity(name = "jobs")
 public class Opportunity {
     @Id
     private String jobId;

@@ -35,7 +35,6 @@ public class JobIndexEngine implements JobIndexingAdapter {
     private final SystemStatusService systemStatusService;
     private final GeminiClient geminiClient;
     private final ObjectMapper objectMapper;
-
     Queue < Site > indexingQueue=new LinkedList<>();
     boolean isIndexing=false;
     @Override

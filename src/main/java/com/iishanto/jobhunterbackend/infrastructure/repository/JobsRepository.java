@@ -17,25 +17,25 @@ import java.util.Set;
 public interface JobsRepository extends JpaRepository<Opportunity, String> {
     @Query(value = """
                 SELECT
-                    opportunity.*,
+                    jobs.*,
                     site.*,
                     user_applied_jobs.is_applied as is_applied,
                     user_applied_jobs.applied_at as applied_at,
                     user_applied_jobs.is_favourite as is_favourite,
                     user_applied_jobs.is_hidden as is_hidden,
                     if(reopen_noticed_at>job_parsed_at, reopen_noticed_at,job_parsed_at) as sorted_order
-                FROM opportunity
-                JOIN site ON site.id = opportunity.site_id
+                FROM jobs
+                JOIN site ON site.id = jobs.site_id
                 LEFT JOIN user_applied_jobs
-                    ON user_applied_jobs.job_id = opportunity.job_id
+                    ON user_applied_jobs.job_id = jobs.job_id
                     AND user_applied_jobs.user_id = :userId
                 WHERE
-                    opportunity.is_duplicate = false
-                    AND (opportunity.is_present_on_site is null OR opportunity.is_present_on_site != false)
-                    AND opportunity.site_id IN :siteIds
+                    jobs.is_duplicate = false
+                    AND (jobs.is_present_on_site is null OR jobs.is_present_on_site != false)
+                    AND jobs.site_id IN :siteIds
                     AND (
-                        lower(opportunity.title) LIKE concat('%', lower(:keyword), '%')
-                        OR lower(opportunity.job_description) LIKE concat('%', lower(:keyword), '%')
+                        lower(jobs.title) LIKE concat('%', lower(:keyword), '%')
+                        OR lower(jobs.job_description) LIKE concat('%', lower(:keyword), '%')
                         OR lower(site.name) LIKE concat('%', lower(:keyword), '%')
                         OR lower(site.homepage) LIKE concat('%', lower(:keyword), '%')            )
                 ORDER BY sorted_order DESC
@@ -44,23 +44,23 @@ public interface JobsRepository extends JpaRepository<Opportunity, String> {
 
     @Query(value = """
                 SELECT
-                    opportunity.*,
+                    jobs.*,
                     site.*,
                     user_applied_jobs.is_applied as is_applied,
                     user_applied_jobs.applied_at as applied_at,
                     user_applied_jobs.is_favourite as is_favourite,
                     user_applied_jobs.is_hidden as is_hidden,
                     if(reopen_noticed_at>job_parsed_at, reopen_noticed_at,job_parsed_at) as sorted_order
-                FROM opportunity
-                JOIN site ON site.id = opportunity.site_id
+                FROM jobs
+                JOIN site ON site.id = jobs.site_id
                 JOIN user_applied_jobs
-                    ON (user_applied_jobs.job_id = opportunity.job_id AND user_applied_jobs.user_id = :userId)
+                    ON (user_applied_jobs.job_id = jobs.job_id AND user_applied_jobs.user_id = :userId)
                 WHERE
-                    opportunity.is_duplicate = false
-                    AND opportunity.site_id IN :siteIds
+                    jobs.is_duplicate = false
+                    AND jobs.site_id IN :siteIds
                     AND (
-                        lower(opportunity.title) LIKE concat('%', lower(:keyword), '%')
-                        OR lower(opportunity.job_description) LIKE concat('%', lower(:keyword), '%')
+                        lower(jobs.title) LIKE concat('%', lower(:keyword), '%')
+                        OR lower(jobs.job_description) LIKE concat('%', lower(:keyword), '%')
                         OR lower(site.name) LIKE concat('%', lower(:keyword), '%')
                         OR lower(site.homepage) LIKE concat('%', lower(:keyword), '%')            )
                 ORDER BY sorted_order DESC
@@ -70,7 +70,7 @@ public interface JobsRepository extends JpaRepository<Opportunity, String> {
 
     @Query(value = """
                 SELECT
-                    opportunity.*,
+                    jobs.*,
                     site.*,
                     user_applied_jobs.is_applied as is_applied,
                     user_applied_jobs.applied_at as applied_at,
@@ -78,17 +78,17 @@ public interface JobsRepository extends JpaRepository<Opportunity, String> {
                     user_applied_jobs.is_hidden as is_hidden,
                     user_applied_jobs.application_status as application_status,
                     if(reopen_noticed_at>job_parsed_at, reopen_noticed_at,job_parsed_at) as sorted_order
-                FROM opportunity
-                JOIN site ON site.id = opportunity.site_id
+                FROM jobs
+                JOIN site ON site.id = jobs.site_id
                 JOIN user_applied_jobs
-                    ON user_applied_jobs.job_id = opportunity.job_id
+                    ON user_applied_jobs.job_id = jobs.job_id
                     AND user_applied_jobs.user_id = :userId
                     AND user_applied_jobs.is_applied = true
                 WHERE
-                    opportunity.is_duplicate = false
+                    jobs.is_duplicate = false
                     AND (
-                        lower(opportunity.title) LIKE concat('%', lower(:keyword), '%')
-                        OR lower(opportunity.job_description) LIKE concat('%', lower(:keyword), '%')
+                        lower(jobs.title) LIKE concat('%', lower(:keyword), '%')
+                        OR lower(jobs.job_description) LIKE concat('%', lower(:keyword), '%')
                         OR lower(site.name) LIKE concat('%', lower(:keyword), '%')
                         OR lower(site.homepage) LIKE concat('%', lower(:keyword), '%')            )
                 ORDER BY sorted_order DESC
@@ -108,28 +108,28 @@ public interface JobsRepository extends JpaRepository<Opportunity, String> {
 
     @Query(value = """
                 SELECT
-                    opportunity.*,
+                    jobs.*,
                     site.*,
                     user_applied_jobs.is_applied as is_applied,
                     user_applied_jobs.applied_at as applied_at,
                     user_applied_jobs.is_favourite as is_favourite,
                     user_applied_jobs.is_hidden as is_hidden,
                     if(reopen_noticed_at>job_parsed_at, reopen_noticed_at,job_parsed_at) as sorted_order
-                FROM opportunity
-                LEFT JOIN site ON site.id = opportunity.site_id
+                FROM jobs
+                LEFT JOIN site ON site.id = jobs.site_id
                 LEFT JOIN user_applied_jobs
-                    ON user_applied_jobs.job_id = opportunity.job_id
+                    ON user_applied_jobs.job_id = jobs.job_id
                     AND user_applied_jobs.user_id = :userId
                 WHERE
-                    (opportunity.site_id = :siteId OR :siteId IS NULL OR :siteId <0)
+                    (jobs.site_id = :siteId OR :siteId IS NULL OR :siteId <0)
                     AND
-                        (opportunity.is_present_on_site is null OR opportunity.is_present_on_site != false)
+                        (jobs.is_present_on_site is null OR jobs.is_present_on_site != false)
                     AND
-                    opportunity.is_duplicate = false
+                    jobs.is_duplicate = false
                     AND site.is_published = TRUE
                     AND (
-                        lower(opportunity.title) LIKE concat('%', lower(:keyword), '%')
-                        OR lower(opportunity.job_description) LIKE concat('%', lower(:keyword), '%')
+                        lower(jobs.title) LIKE concat('%', lower(:keyword), '%')
+                        OR lower(jobs.job_description) LIKE concat('%', lower(:keyword), '%')
                         OR lower(site.name) LIKE concat('%', lower(:keyword), '%')
                         OR lower(site.homepage) LIKE concat('%', lower(:keyword), '%')            )
                 ORDER BY sorted_order DESC
@@ -141,7 +141,7 @@ public interface JobsRepository extends JpaRepository<Opportunity, String> {
 
     @Query(
             value = """
-                    select is_present_on_site from opportunity where job_id = :jobId
+                    select is_present_on_site from jobs where job_id = :jobId
                     """, nativeQuery = true
     )
     boolean isPresentOnSite(String jobId);

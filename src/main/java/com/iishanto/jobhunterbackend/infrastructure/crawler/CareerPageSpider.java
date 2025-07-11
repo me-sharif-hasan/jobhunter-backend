@@ -150,6 +150,7 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                             if (currentUrl != null && !currentUrl.equals(newUrl)) {
                                 System.out.println("Navigated to new URL: " + newUrl);
                                 root=webDriver.findElement(By.ByTagName.tagName("body"));
+                                rootXpath= getXpath(root);
                             }
                         }
                         break;
@@ -241,7 +242,13 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                 }
                 xpath.insert(0, "/" + tagName + "[" + index + "]");
             }
+            if (element.getTagName().equalsIgnoreCase("html")) {
+                break;
+            }
             element = (WebElement) ((JavascriptExecutor) webDriver).executeScript("return arguments[0].parentNode;", element);
+            if (element == null||!(element instanceof WebElement)) {
+                break;
+            }
         }
         return "/"+xpath.toString();
     }

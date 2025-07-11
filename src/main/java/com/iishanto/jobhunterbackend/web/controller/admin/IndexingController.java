@@ -2,7 +2,7 @@ package com.iishanto.jobhunterbackend.web.controller.admin;
 
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleSiteIndexingStrategyCompositionModel;
-import com.iishanto.jobhunterbackend.domain.model.SiteAttributeValidatorModel;
+import com.iishanto.jobhunterbackend.domain.model.values.IndexingStrategyNames;
 import com.iishanto.jobhunterbackend.domain.usecase.admin.GetSiteStrategyUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.admin.JobIndexUseCase;
 import com.iishanto.jobhunterbackend.web.dto.request.JobIndexStrategySaveRequestDto;
@@ -38,7 +38,16 @@ public class IndexingController {
             @RequestBody JobIndexStrategySaveRequestDto strategy,
             @RequestParam(name = "site_id") Long siteId
             ){
-        Long savedId = jobIndexUseCase.saveJobIndexStrategy(strategy.getType(),siteId, strategy.getProcessFlow());
+        Long savedId = null;
+        if(strategy.getType()== IndexingStrategyNames.AI){
+            savedId = jobIndexUseCase.saveJobIdScript(
+                    strategy.getType(),
+                    siteId,
+                    strategy.getIdScript()
+            );
+        }else if(strategy.getType()== IndexingStrategyNames.MANUAL){
+            savedId = jobIndexUseCase.saveJobIndexingProcessFlow(strategy.getType(),siteId, strategy.getProcessFlow());
+        }
         if (savedId == null || savedId <= 0) {
             throw new RuntimeException("Failed to save indexing strategy");
         }
@@ -56,15 +65,23 @@ public class IndexingController {
         if (Objects.isNull(siteId) || siteId <= 0) {
             throw new IllegalArgumentException("Invalid site ID provided");
         }
-        SimpleSiteIndexingStrategyCompositionModel siteStrategy = getSiteStrategyUseCase.getSiteStrategy(siteId);
-        return new ApiResponse(
-                true,
-                JobIndexStrategyResponseDto.builder()
-                        .type(siteStrategy.getIndexingStrategy())
-                        .processFlow(siteStrategy.getStrategyPipeline())
-                        .build(),
-                "Fetched job indexing strategies for site ID: " + siteId
-        );
+        try{
+            SimpleSiteIndexingStrategyCompositionModel siteStrategy = getSiteStrategyUseCase.getSiteStrategy(siteId);
+            return new ApiResponse(
+                    true,
+                    JobIndexStrategyResponseDto.builder()
+                            .type(siteStrategy.getIndexingStrategy())
+                            .processFlow(siteStrategy.getStrategyPipeline())
+                            .build(),
+                    "Fetched job indexing strategies for site ID: " + siteId
+            );
+        }catch (Exception e){
+            return new ApiResponse(
+                    false,
+                    null,
+                    "Failed to fetch job indexing strategies: " + e.getMessage(
+            ));
+        }
     }
 
     @PostMapping("/validate-strategy")

@@ -187,6 +187,7 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
                 )
                 .strategyPipeline(jsonStrategy)
                 .build());
+        indexingStrategy.setIndexingStrategy(type);
         indexingStrategy.setStrategyPipeline(jsonStrategy);
         return Optional.of(indexingStrategyRepository.save(indexingStrategy))
                 .orElseThrow(()->new RuntimeException("Save failure.")).getId();
@@ -196,7 +197,6 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
     public SimpleSiteIndexingStrategyCompositionModel getIndexingStrategy(Long siteId) {
         IndexingStrategy indexingStrategy = indexingStrategyRepository.findBySiteId(siteId)
                 .orElseThrow(() -> new IllegalArgumentException("Indexing strategy not found for site ID: " + siteId));
-
         try{
             return indexingStrategy.toDomain();
         }catch (Exception e){
