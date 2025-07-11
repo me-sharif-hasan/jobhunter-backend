@@ -19,5 +19,5 @@ public interface AdminJobDataAdapter {
 
     void saveJob(SimpleJobModel jobModel);
 
-    void updateNonExistentJobsGivenFoundJobs(Set<String> availableJobIds);
+    void updateNonExistentJobsGivenFoundJobs(Set<String> availableJobIds,Long siteId);
 }

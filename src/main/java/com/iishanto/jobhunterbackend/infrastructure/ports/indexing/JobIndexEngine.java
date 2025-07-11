@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iishanto.jobhunterbackend.config.HunterUtility;
 import com.iishanto.jobhunterbackend.domain.adapter.JobIndexingAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
+import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
 import com.iishanto.jobhunterbackend.domain.model.SiteAttributeValidatorModel;
 import com.iishanto.jobhunterbackend.domain.model.values.SystemStatusValues;
 import com.iishanto.jobhunterbackend.domain.service.admin.SystemStatusService;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -159,16 +161,16 @@ public class JobIndexEngine implements JobIndexingAdapter {
         isIndexing=true;
         systemStatusService.updateJobIndexingStatus(SystemStatusValues.JOB_INDEXING);
         new Thread(()->{
-            runIndexingUnit(onIndexingDone);
+            runIndexingUnit(onIndexingDone,indexingQueue.stream().map(Site::toDomain).collect(Collectors.toCollection(LinkedList::new)));
         }).start();
     }
 
-    public void runIndexingUnit(OnIndexingDone onIndexingDone) {
+    public void runIndexingUnit(OnIndexingDone onIndexingDone,Queue<SimpleSiteModel> sitesQueue) {
         List <String> newJobIds=new LinkedList<>();
         Set <String> foundJobIds=new HashSet<>();
-        while (!indexingQueue.isEmpty()){
+        while (!sitesQueue.isEmpty()){
             try{
-                Site site=indexingQueue.poll();
+                Site site=Site.fromSiteModel(sitesQueue.poll());
                 System.out.println("Indexing: "+site.getHomepage());
                 GeminiClient.GeminiPrompt prompt = geminiClient.getJobListingPromptFromUrl(site.getJobListPageUrl());
                 if(prompt==null) continue;

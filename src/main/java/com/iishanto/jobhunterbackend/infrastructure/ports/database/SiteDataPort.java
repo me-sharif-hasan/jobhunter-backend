@@ -2,6 +2,7 @@ package com.iishanto.jobhunterbackend.infrastructure.ports.database;
 
 import com.iishanto.jobhunterbackend.domain.adapter.UserDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteDataAdapter;
+import com.iishanto.jobhunterbackend.domain.model.SimpleSiteIndexingStrategyCompositionModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
 import com.iishanto.jobhunterbackend.domain.model.values.IndexingStrategyNames;
 import com.iishanto.jobhunterbackend.exception.SiteAlreadyExistsException;
@@ -169,7 +170,10 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
     }
 
     @Override
-    public Long saveIndexingStrategy(Long siteId, String jsonStrategy) {
+    public Long saveIndexingStrategy(IndexingStrategyNames type, Long siteId, String jsonStrategy) {
+        if(type == null) {
+            throw new IllegalArgumentException("Indexing strategy type cannot be null");
+        }
         if (jsonStrategy == null || jsonStrategy.isEmpty()) {
             throw new IllegalArgumentException("Indexing strategy cannot be null or empty");
         }
@@ -179,12 +183,24 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
                         Site.builder().id(siteId).build()
                 )
                 .indexingStrategy(
-                        IndexingStrategyNames.HYBRID
+                        type
                 )
                 .strategyPipeline(jsonStrategy)
                 .build());
         indexingStrategy.setStrategyPipeline(jsonStrategy);
         return Optional.of(indexingStrategyRepository.save(indexingStrategy))
                 .orElseThrow(()->new RuntimeException("Save failure.")).getId();
+    }
+
+    @Override
+    public SimpleSiteIndexingStrategyCompositionModel getIndexingStrategy(Long siteId) {
+        IndexingStrategy indexingStrategy = indexingStrategyRepository.findBySiteId(siteId)
+                .orElseThrow(() -> new IllegalArgumentException("Indexing strategy not found for site ID: " + siteId));
+
+        try{
+            return indexingStrategy.toDomain();
+        }catch (Exception e){
+            throw new RuntimeException("Failed to convert indexing strategy to domain model: " + e.getMessage(), e);
+        }
     }
 }

@@ -3,14 +3,18 @@ package com.iishanto.jobhunterbackend.domain.service.admin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iishanto.jobhunterbackend.domain.adapter.JobDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.JobIndexingAdapter;
+import com.iishanto.jobhunterbackend.domain.adapter.NotificationAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.SiteDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminJobDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
 import com.iishanto.jobhunterbackend.domain.model.SiteAttributeValidatorModel;
+import com.iishanto.jobhunterbackend.domain.model.values.IndexingStrategyNames;
 import com.iishanto.jobhunterbackend.domain.usecase.admin.JobIndexUseCase;
 import com.iishanto.jobhunterbackend.infrastructure.crawler.CareerPageSpider;
+import com.iishanto.jobhunterbackend.infrastructure.ports.indexing.JobIndexEngine;
+import com.iishanto.jobhunterbackend.web.dto.response.indexing.JobIndexStrategyResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -28,26 +32,30 @@ public class JobIndexingService implements JobIndexUseCase {
     private final CareerPageSpider careerPageSpider;
     private final JobDataAdapter jobDataAdapter;
     private final AdminJobDataAdapter adminJobDataAdapter;
+    private final JobIndexEngine jobIndexEngine;
+    private final NotificationAdapter notificationAdapter;
 
     @Override
     public void refreshJobIndexWithStrategy(Long siteId) {
-        Set <SimpleSiteModel> siteIdsToRefresh = siteId!=null&&siteId>0
+        Set <SimpleSiteModel> sitesToRefresh = siteId!=null&&siteId>0
                 ? Set.of(adminSiteDataAdapter.getSiteById(siteId).orElseThrow(()->new IllegalArgumentException("Site ID Not Found")))
                 : Set.copyOf(adminSiteDataAdapter.getSitesForIndexing());
 
-        if (siteIdsToRefresh.isEmpty()) {
+        if (sitesToRefresh.isEmpty()) {
             throw new IllegalArgumentException("No sites found for indexing");
         }
 
 
         Map<Long,SiteAttributeValidatorModel> siteDataPipelineModel = jobIndexingAdapter.getSiteAttributeValidatorModels(
-                siteIdsToRefresh.stream().map(SimpleSiteModel::getId).collect(Collectors.toList())
+                sitesToRefresh.stream().map(SimpleSiteModel::getId).collect(Collectors.toList())
         ).stream().collect(Collectors.toMap(SiteAttributeValidatorModel::getSiteId, model -> model));
-
-        siteIdsToRefresh.forEach(site->{
-            List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow = siteDataPipelineModel.get(site.getId()).getProcessFlow();
+        Queue <SimpleSiteModel> aiDependentSitesToIndex = new LinkedList<>();
+        Set <String> foundJobIds = new HashSet<>();
+        sitesToRefresh.forEach(site->{
+            List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow = Optional.ofNullable(siteDataPipelineModel.get(site.getId())).orElseGet(()->SiteAttributeValidatorModel.builder().build()).getProcessFlow();
             if(processFlow==null|| processFlow.isEmpty()){
                 System.out.println("Skipping indexing for site " + site.getName() + " as no attributes found");
+                aiDependentSitesToIndex.add(site);
                 return;
             }
             System.out.println("Indexing site: " + site.getName() + " with attributes: " + processFlow.size()+" steps");
@@ -60,13 +68,22 @@ public class JobIndexingService implements JobIndexUseCase {
                     jobModel.setJobUrl(StringUtils.trim(jobModel.getJobUrl()));
                     handleJob(jobModel);
                     availableJobIds.add(jobModel.getJobId());
+                    foundJobIds.add(jobModel.getJobId());
                 });
-                adminJobDataAdapter.updateNonExistentJobsGivenFoundJobs(availableJobIds);
+                adminJobDataAdapter.updateNonExistentJobsGivenFoundJobs(availableJobIds,site.getId());
             }catch (Exception e){
                 e.printStackTrace();
             }
-            System.out.println("Indexing completed for site: " + site.getName());
+            System.out.println("Manual Indexing completed for site: " + site.getName());
         });
+        System.out.println("Manual Indexing completed for all sites, now indexing AI dependent sites");
+        notificationAdapter.sendJobNotification(new ArrayList<>(foundJobIds));
+
+        jobIndexEngine.runIndexingUnit(jobIds -> {
+            foundJobIds.addAll(jobIds);
+            notificationAdapter.sendJobNotification(new ArrayList<>(foundJobIds));
+            System.out.println("AI dependent sites indexed, found " + jobIds.size() + " jobs");
+        },aiDependentSitesToIndex);
     }
 
     private void handleJob(SimpleJobModel jobModel) {
@@ -99,11 +116,11 @@ public class JobIndexingService implements JobIndexUseCase {
     }
 
     @Override
-    public Long saveJobIndexStrategy(Long siteId, List<SiteAttributeValidatorModel.JobExtractionPipeline> pipeline) {
+    public Long saveJobIndexStrategy(IndexingStrategyNames type, Long siteId, List<SiteAttributeValidatorModel.JobExtractionPipeline> pipeline) {
         Optional.ofNullable(adminSiteDataAdapter.getSiteById(siteId))
                 .orElseThrow(() -> new RuntimeException("Site not found"));
         String jsonStrategy = objectMapper.valueToTree(pipeline).toString();
-        Long savedId = adminSiteDataAdapter.saveIndexingStrategy(siteId, jsonStrategy);
+        Long savedId = adminSiteDataAdapter.saveIndexingStrategy(type,siteId, jsonStrategy);
         if (savedId == null || savedId <= 0) {
             throw new RuntimeException("Failed to save indexing strategy");
         }

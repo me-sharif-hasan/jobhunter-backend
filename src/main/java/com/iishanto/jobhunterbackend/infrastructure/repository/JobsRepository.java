@@ -146,5 +146,5 @@ public interface JobsRepository extends JpaRepository<Opportunity, String> {
     )
     boolean isPresentOnSite(String jobId);
 
-    List<Opportunity> findAllByJobIdNotIn(Collection<String> jobIds);
+    List<Opportunity> findAllByJobIdNotInAndSite_Id(Collection<String> jobIds,Long siteId);
 }

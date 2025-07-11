@@ -107,8 +107,8 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
     }
 
     @Override
-    public void updateNonExistentJobsGivenFoundJobs(Set<String> availableJobIds) {
-        List<Opportunity> existingJobs = jobsRepository.findAllByJobIdNotIn(availableJobIds);
+    public void updateNonExistentJobsGivenFoundJobs(Set<String> availableJobIds,Long siteId) {
+        List<Opportunity> existingJobs = jobsRepository.findAllByJobIdNotInAndSite_Id(availableJobIds,siteId);
         existingJobs.forEach(job -> {
             job.setIsPresentOnSite(false);
         });

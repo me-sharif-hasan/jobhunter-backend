@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Entity
 @Data
-public class SystemStatus{
+public class SystemDataStore {
     @Id
     @Column(unique = true, nullable = false)
     private SystemStatusNames name;
@@ -20,10 +20,10 @@ public class SystemStatus{
         );
     }
 
-    public static SystemStatus fromSimpleSystemStatus(SimpleSystemStatus s){
-        SystemStatus systemStatus = new SystemStatus();
-        systemStatus.setName(s.getName());
-        systemStatus.setValue(s.getValue());
-        return systemStatus;
+    public static SystemDataStore fromSimpleSystemStatus(SimpleSystemStatus s){
+        SystemDataStore systemDataStore = new SystemDataStore();
+        systemDataStore.setName(s.getName());
+        systemDataStore.setValue(s.getValue());
+        return systemDataStore;
     }
 }
