@@ -30,11 +30,49 @@ export default class SiteDatasource {
         )
     }
 
-    async updateSiteIndexingStrategy(siteId: number, strategy: { type: 'ai' | 'json', jsCode?: string, config?: string }) {
+    async getSiteIndexingStrategy(siteId: number) {
+        const url = `${Constants.getSiteIndexingStrategy}?site_id=${siteId}`;
+        console.log('SiteDatasource: Making GET request to:', url);
+
+        try {
+            const { data } = await this.backend.get<ApiResponse<any>>(url);
+            console.log('SiteDatasource: Response received:', data);
+
+            if (data.success) {
+                console.log('SiteDatasource: Returning data:', data.data);
+                return data.data;
+            }
+            throw new Error(data.message || 'Error fetching site indexing strategy.');
+        } catch (error) {
+            console.error('SiteDatasource: Network error:', error);
+            throw new Error(error.message || 'Error fetching site indexing strategy.');
+        }
+    }
+
+    async refreshSiteJobsIndex(siteId: number) {
+        const url = `${Constants.refreshJobsIndex}?site_id=${siteId}`;
+        console.log('SiteDatasource: Making GET request to refresh jobs index:', url);
+
+        try {
+            const { data } = await this.backend.get<ApiResponse<any>>(url);
+            console.log('SiteDatasource: Refresh response received:', data);
+
+            if (data.success) {
+                console.log('SiteDatasource: Refresh successful, message:', data.message);
+                return data;
+            }
+            throw new Error(data.message || 'Error refreshing site jobs index.');
+        } catch (error) {
+            console.error('SiteDatasource: Refresh network error:', error);
+            throw new Error(error.message || 'Error refreshing site jobs index.');
+        }
+    }
+
+    async updateSiteIndexingStrategy(siteId: number, strategy: { type: 'AI' | 'MANUAL', jsCode?: string, config?: string }) {
         // Transform the strategy to match backend DTO structure
         const requestPayload = {
             type: strategy.type,
-            processFlow: strategy.type === 'json' && strategy.config
+            processFlow: strategy.type === 'MANUAL' && strategy.config
                 ? JSON.parse(strategy.config)
                 : []
         };
@@ -50,11 +88,11 @@ export default class SiteDatasource {
         throw new Error(data.message || 'Error updating site indexing strategy.');
     }
 
-    async validateSiteIndexingStrategy(siteId: number, strategy: { type: 'ai' | 'json', jsCode?: string, config?: string }) {
+    async validateSiteIndexingStrategy(siteId: number, strategy: { type: 'AI' | 'MANUAL', jsCode?: string, config?: string }) {
         // Transform the strategy to match backend DTO structure
         const requestPayload = {
             type: strategy.type,
-            processFlow: strategy.type === 'json' && strategy.config
+            processFlow: strategy.type === 'MANUAL' && strategy.config
                 ? JSON.parse(strategy.config)
                 : []
         };

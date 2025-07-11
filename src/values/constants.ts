@@ -7,6 +7,8 @@ export default new class Constants {
     addSiteAsAdmin: string='/admin/site';
     updateSiteIndexingStrategy: string='/admin/indexing/save-strategy';
     validateSiteIndexingStrategy: string='/admin/indexing/validate-strategy';
+    getSiteIndexingStrategy: string='/admin/indexing/get-strategy';
+    refreshJobsIndex: string='/admin/indexing/refresh';
     getAllJobAdminUrl: string='/admin/job';
     getSystemStatus: string = '/admin/system-status'
     refreshJobIndexUrl: string= '/admin/job/refresh';

@@ -20,7 +20,7 @@ import { oneDark } from '@codemirror/theme-one-dark';
 export default function SiteIndex(){
     const siteController = dicontainer.get(SiteController);
     const [sites, setSites] = useState<Site[]>([]);
-    const [limit,setLimit]=useState(10);
+    const [limit,setLimit] = useState(10);
     const [page, setPage] = useState(0);
     const [totalPage, setTotalPage] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -34,6 +34,8 @@ export default function SiteIndex(){
     const [validationResults, setValidationResults] = useState('');
     const [isValidating, setIsValidating] = useState(false);
     const [jobCount, setJobCount] = useState<number | null>(null);
+    const [isLoadingConfig, setIsLoadingConfig] = useState(false);
+    const [refreshingJobs, setRefreshingJobs] = useState<Set<number>>(new Set());
 
     useEffect(() => {
         let mounted = true;
@@ -100,13 +102,51 @@ export default function SiteIndex(){
     }
 
     // Handler for opening indexing strategy dialog
-    const openIndexingDialog = (site: Site) => {
+    const openIndexingDialog = async (site: Site) => {
+        console.log('Opening indexing dialog for site:', site.id);
+
         setSelectedSite(site);
         setIndexingDialogVisible(true);
-        setActiveTabIndex(0);
         setAiJsCode('');
         setJsonConfig('');
         setValidationResults('');
+        setJobCount(null);
+        setIsLoadingConfig(true);
+
+        try {
+            console.log('Fetching indexing strategy for site ID:', site.id);
+            // Fetch existing configuration
+            const existingConfig = await siteController.getSiteIndexingStrategy(site.id);
+            console.log('Received config:', existingConfig);
+
+            if (existingConfig) {
+                if (existingConfig.type === 'AI') {
+                    console.log('Setting AI tab active');
+                    setActiveTabIndex(0); // Select AI tab
+                    // For AI type, we don't have a fixed structure yet
+                    // You can add logic here when AI configuration structure is defined
+                } else if (existingConfig.type === 'MANUAL') {
+                    console.log('Setting MANUAL tab active with processFlow:', existingConfig.processFlow);
+                    setActiveTabIndex(1); // Select Manual/JSON tab
+                    // Set the processFlow as JSON in the manual tab
+                    if (existingConfig.processFlow) {
+                        setJsonConfig(JSON.stringify(existingConfig.processFlow, null, 2));
+                    }
+                }
+            } else {
+                console.log('No existing config found, defaulting to AI tab');
+                // No existing config, default to AI tab
+                setActiveTabIndex(0);
+            }
+        } catch (error: any) {
+            console.error('Error fetching existing configuration:', error);
+            // Default to AI tab if fetch fails
+            setActiveTabIndex(0);
+            alert(`Could not load existing configuration: ${error.message}`);
+        } finally {
+            console.log('Config loading completed');
+            setIsLoadingConfig(false);
+        }
     };
 
     // Handler for closing indexing dialog
@@ -126,16 +166,16 @@ export default function SiteIndex(){
         }
 
         const strategy = activeTabIndex === 0
-            ? { type: 'ai' as const, jsCode: aiJsCode }
-            : { type: 'json' as const, config: jsonConfig };
+            ? { type: 'AI' as const, jsCode: aiJsCode }
+            : { type: 'MANUAL' as const, config: jsonConfig };
 
         // Validate that at least one field has content
-        if (strategy.type === 'ai' && !strategy.jsCode.trim()) {
+        if (strategy.type === 'AI' && !strategy.jsCode.trim()) {
             alert('Please enter JavaScript code before testing.');
             return;
         }
 
-        if (strategy.type === 'json' && !strategy.config.trim()) {
+        if (strategy.type === 'MANUAL' && !strategy.config.trim()) {
             alert('Please enter JSON configuration before testing.');
             return;
         }
@@ -166,16 +206,16 @@ export default function SiteIndex(){
         }
 
         const strategy = activeTabIndex === 0
-            ? { type: 'ai' as const, jsCode: aiJsCode }
-            : { type: 'json' as const, config: jsonConfig };
+            ? { type: 'AI' as const, jsCode: aiJsCode }
+            : { type: 'MANUAL' as const, config: jsonConfig };
 
         // Validate that at least one field has content
-        if (strategy.type === 'ai' && !strategy.jsCode.trim()) {
+        if (strategy.type === 'AI' && !strategy.jsCode.trim()) {
             alert('Please enter JavaScript code before saving.');
             return;
         }
 
-        if (strategy.type === 'json' && !strategy.config.trim()) {
+        if (strategy.type === 'MANUAL' && !strategy.config.trim()) {
             alert('Please enter JSON configuration before saving.');
             return;
         }
@@ -190,11 +230,37 @@ export default function SiteIndex(){
         }
     };
 
+    // Handler for refreshing site jobs index
+    const refreshSiteJobs = async (site: Site) => {
+        console.log('Refreshing jobs index for site:', site.id);
+
+        // Add site ID to refreshing set
+        setRefreshingJobs(prev => new Set(prev).add(site.id));
+
+        try {
+            const result = await siteController.refreshSiteJobsIndex(site.id);
+            console.log('Refresh result:', result);
+            alert(`Job index refreshed successfully for ${site.name}!`);
+        } catch (error: any) {
+            console.error('Error refreshing jobs index:', error);
+            alert(`Error refreshing jobs index: ${error.message}`);
+        } finally {
+            // Remove site ID from refreshing set
+            setRefreshingJobs(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(site.id);
+                return newSet;
+            });
+        }
+    };
+
     // Actions column template
     const actionsTemplate = (rowData: Site) => {
         if (loading) {
             return loadingTemplate();
         }
+
+        const isRefreshing = refreshingJobs.has(rowData.id);
 
         return (
             <div className="flex gap-2">
@@ -204,6 +270,15 @@ export default function SiteIndex(){
                     tooltip="Add Indexing Strategy"
                     tooltipOptions={{ position: 'top' }}
                     onClick={() => openIndexingDialog(rowData)}
+                />
+                <Button
+                    icon={isRefreshing ? "pi pi-spin pi-spinner" : "pi pi-refresh"}
+                    className="p-button-rounded p-button-text p-button-sm"
+                    tooltip="Refresh Jobs Index"
+                    tooltipOptions={{ position: 'top' }}
+                    onClick={() => refreshSiteJobs(rowData)}
+                    disabled={isRefreshing}
+                    loading={isRefreshing}
                 />
             </div>
         );
@@ -311,6 +386,7 @@ export default function SiteIndex(){
                             className="p-button-primary p-button-sm"
                             size="small"
                             loading={isValidating}
+                            disabled={isLoadingConfig}
                         />
                         <Button
                             label="Save"
@@ -318,87 +394,98 @@ export default function SiteIndex(){
                             onClick={saveConfiguration}
                             className="p-button-success p-button-sm"
                             size="small"
+                            disabled={isLoadingConfig}
                         />
                     </div>
                 }
             >
                 <div className="p-4">
-                    <TabView activeIndex={activeTabIndex} onTabChange={(e) => setActiveTabIndex(e.index)}>
-                        <TabPanel header="By AI">
-                            <div className="flex flex-col gap-4 pt-4">
-                                <p className="text-sm text-gray-600 mb-2">
-                                    Write JavaScript code for extracting job IDs using AI assistance. This field is optional and not required by the backend.
-                                </p>
-                                <div className="w-full">
-                                    <CodeMirror
-                                        value={aiJsCode}
-                                        onChange={(value) => setAiJsCode(value)}
-                                        height="300px"
-                                        extensions={[javascript({ jsx: true })]}
-                                        theme={oneDark}
-                                        placeholder="return window.location.href;"
-                                    />
-                                </div>
-                            </div>
-                        </TabPanel>
-                        <TabPanel header="By JSON">
-                            <div className="flex flex-col gap-4 pt-4">
-                                <p className="text-sm text-gray-600 mb-2">
-                                    Provide a JSON configuration that defines the indexing strategy structure and rules.
-                                </p>
-                                <div className="w-full">
-                                    <CodeMirror
-                                        value={jsonConfig}
-                                        onChange={(value) => setJsonConfig(value)}
-                                        height="300px"
-                                        extensions={[json()]}
-                                        theme={oneDark}
-                                        placeholder='{"selector": ".job-item", "attributes": ["data-id", "href"], "rules": []}'
-                                    />
-                                </div>
-                            </div>
-                        </TabPanel>
-                    </TabView>
+                    {isLoadingConfig ? (
+                        <div className="flex items-center justify-center py-8">
+                            <ProgressSpinner style={{width: '40px', height: '40px'}} strokeWidth="4" />
+                            <span className="ml-3 text-gray-600">Loading existing configuration...</span>
+                        </div>
+                    ) : (
+                        <>
+                            <TabView activeIndex={activeTabIndex} onTabChange={(e) => setActiveTabIndex(e.index)}>
+                                <TabPanel header="By AI">
+                                    <div className="flex flex-col gap-4 pt-4">
+                                        <p className="text-sm text-gray-600 mb-2">
+                                            Write JavaScript code for extracting job IDs using AI assistance. This field is optional and not required by the backend.
+                                        </p>
+                                        <div className="w-full">
+                                            <CodeMirror
+                                                value={aiJsCode}
+                                                onChange={(value) => setAiJsCode(value)}
+                                                height="300px"
+                                                extensions={[javascript({ jsx: true })]}
+                                                theme={oneDark}
+                                                placeholder="return window.location.href;"
+                                            />
+                                        </div>
+                                    </div>
+                                </TabPanel>
+                                <TabPanel header="By JSON">
+                                    <div className="flex flex-col gap-4 pt-4">
+                                        <p className="text-sm text-gray-600 mb-2">
+                                            Provide a JSON configuration that defines the indexing strategy structure and rules.
+                                        </p>
+                                        <div className="w-full">
+                                            <CodeMirror
+                                                value={jsonConfig}
+                                                onChange={(value) => setJsonConfig(value)}
+                                                height="300px"
+                                                extensions={[json()]}
+                                                theme={oneDark}
+                                                placeholder='{"selector": ".job-item", "attributes": ["data-id", "href"], "rules": []}'
+                                            />
+                                        </div>
+                                    </div>
+                                </TabPanel>
+                            </TabView>
 
-                    {/* Validation Results Section */}
-                    {(validationResults || isValidating) && (
-                        <div className="mt-6">
-                            <div className="flex justify-between items-center mb-3">
-                                <h4 className="text-lg font-semibold text-gray-700">Validation Results</h4>
-                                {isValidating && (
-                                    <ProgressSpinner style={{width: '20px', height: '20px'}} strokeWidth="4" />
-                                )}
-                            </div>
+                            {/* Validation Results Section */}
+                            {(validationResults || isValidating) && (
+                                <div className="mt-6">
+                                    <div className="flex justify-between items-center mb-3">
+                                        <h4 className="text-lg font-semibold text-gray-700">Validation Results</h4>
+                                        {isValidating && (
+                                            <ProgressSpinner style={{width: '20px', height: '20px'}} strokeWidth="4" />
+                                        )}
+                                    </div>
 
-                            {isValidating ? (
-                                <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
-                                    <p className="text-blue-700 m-0">Testing configuration with backend...</p>
-                                </div>
-                            ) : validationResults.startsWith('Error:') ? (
-                                <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-                                    <p className="text-red-700 m-0">{validationResults}</p>
-                                </div>
-                            ) : (
-                                <div className="w-full">
-                                    <p className="text-sm text-gray-600 mb-2">
-                                        Jobs found by the indexing strategy:
-                                    </p>
-                                    <CodeMirror
-                                        value={validationResults}
-                                        height="200px"
-                                        extensions={[json()]}
-                                        theme={oneDark}
-                                        editable={false}
-                                    />
-                                    <p className="text-sm text-gray-500 mt-2">
-                                        Total Jobs: {jobCount}
-                                    </p>
+                                    {isValidating ? (
+                                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
+                                            <p className="text-blue-700 m-0">Testing configuration with backend...</p>
+                                        </div>
+                                    ) : validationResults.startsWith('Error:') ? (
+                                        <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+                                            <p className="text-red-700 m-0">{validationResults}</p>
+                                        </div>
+                                    ) : (
+                                        <div className="w-full">
+                                            <p className="text-sm text-gray-600 mb-2">
+                                                Jobs found by the indexing strategy:
+                                            </p>
+                                            <CodeMirror
+                                                value={validationResults}
+                                                height="200px"
+                                                extensions={[json()]}
+                                                theme={oneDark}
+                                                editable={false}
+                                            />
+                                            <p className="text-sm text-gray-500 mt-2">
+                                                Total Jobs: {jobCount}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
-                        </div>
+                        </>
                     )}
                 </div>
             </Dialog>
         </div>
     </>;
 }
+

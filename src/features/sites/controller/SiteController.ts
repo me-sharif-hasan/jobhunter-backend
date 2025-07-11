@@ -16,11 +16,35 @@ export default class SiteController {
         return this.siteDatasource.addNewSiteAutoMode(siteHomePage, siteCareerPage);
     }
 
-    async updateIndexingStrategy(siteId: number, strategy: { type: 'ai' | 'json', jsCode?: string, config?: string }) {
+    async getSiteIndexingStrategy(siteId: number) {
+        console.log('SiteController: getSiteIndexingStrategy called with siteId:', siteId);
+        try {
+            const result = await this.siteDatasource.getSiteIndexingStrategy(siteId);
+            console.log('SiteController: getSiteIndexingStrategy result:', result);
+            return result;
+        } catch (error) {
+            console.error('SiteController: getSiteIndexingStrategy error:', error);
+            throw error;
+        }
+    }
+
+    async refreshSiteJobsIndex(siteId: number) {
+        console.log('SiteController: refreshSiteJobsIndex called with siteId:', siteId);
+        try {
+            const result = await this.siteDatasource.refreshSiteJobsIndex(siteId);
+            console.log('SiteController: refreshSiteJobsIndex result:', result);
+            return result;
+        } catch (error) {
+            console.error('SiteController: refreshSiteJobsIndex error:', error);
+            throw error;
+        }
+    }
+
+    async updateIndexingStrategy(siteId: number, strategy: { type: 'AI' | 'MANUAL', jsCode?: string, config?: string }) {
         return this.siteDatasource.updateSiteIndexingStrategy(siteId, strategy);
     }
 
-    async validateIndexingStrategy(siteId: number, strategy: { type: 'ai' | 'json', jsCode?: string, config?: string }) {
+    async validateIndexingStrategy(siteId: number, strategy: { type: 'AI' | 'MANUAL', jsCode?: string, config?: string }) {
         return this.siteDatasource.validateSiteIndexingStrategy(siteId, strategy);
     }
 }
