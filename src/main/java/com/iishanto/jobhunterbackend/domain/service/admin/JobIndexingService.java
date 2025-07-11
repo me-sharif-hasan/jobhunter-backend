@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,6 +64,7 @@ public class JobIndexingService implements JobIndexUseCase {
                     availableJobIds.add(jobModel.getJobId());
                 });
                 adminJobDataAdapter.updateNonExistentJobsGivenFoundJobs(availableJobIds);
+                adminSiteDataAdapter.updateLastIndexedAt(site.getId(), Timestamp.from(Instant.now()));
             }catch (Exception e){
                 e.printStackTrace();
             }

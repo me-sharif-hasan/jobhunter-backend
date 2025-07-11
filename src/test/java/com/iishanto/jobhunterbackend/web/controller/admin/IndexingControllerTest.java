@@ -216,4 +216,47 @@ return 0l;
                 )
                 .andReturn();
     }
+
+
+    private String getChaldalJson(){
+        return """
+                {
+                                    "processFlow": [
+                                        {
+                                             "operation":"find",
+                                             "selector":"//*[@id=\\"career\\"]/div/div[2]/a | //*[@id=\\"career\\"]/div/div[3]/div/a",
+                                             "childPipelines":[
+                                                 {
+                                                     "clickIntent":"ACTION",
+                                                     "operation":"click"
+                                                 },
+                                                 {
+                                                     "operation":"map",
+                                                     "selector":"./../div",
+                                                     "attribute":"jobDescription"
+                                                 },
+                                                 {
+                                                     "operation":"map",
+                                                     "selector":"./span",
+                                                     "attribute":"title"
+                                                 },
+                                                 {
+                                                     "operation":"map",
+                                                     "selector":"./p",
+                                                     "attribute":"location"
+                                                 },
+                                                 {
+                                                     "operation":"map",
+                                                     "javaScript": "return window.location.href + '%title%'.trim().replace(\\/\\\\s+\\/g, '_');",
+                                                     "attribute":"jobId"
+                                                 },
+                                                 {
+                                                     "operation":"save"
+                                                 }
+                                             ]
+                                        }
+                                    ]
+                                }
+                """;
+    }
 }

@@ -2,6 +2,7 @@ package com.iishanto.jobhunterbackend.domain.adapter.admin;
 
 import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,4 +12,6 @@ public interface AdminSiteDataAdapter {
     List<SimpleSiteModel> getSitesForIndexing();
     Optional<SimpleSiteModel> getSiteById(Long siteId);
     Long saveIndexingStrategy(Long siteId, String jsonStrategy);
+
+    void updateLastIndexedAt(Long id, Timestamp from);
 }

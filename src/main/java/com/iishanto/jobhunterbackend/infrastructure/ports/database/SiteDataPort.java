@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 @Component
@@ -186,5 +187,13 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
         indexingStrategy.setStrategyPipeline(jsonStrategy);
         return Optional.of(indexingStrategyRepository.save(indexingStrategy))
                 .orElseThrow(()->new RuntimeException("Save failure.")).getId();
+    }
+
+    @Override
+    public void updateLastIndexedAt(Long id, Timestamp timestamp) {
+        if(timestamp == null) {
+            throw new IllegalArgumentException("Timestamp cannot be null");
+        }
+        siteRepository.updateLastIndexedDate(id, timestamp);
     }
 }
