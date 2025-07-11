@@ -74,7 +74,10 @@ export default class SiteDatasource {
             type: strategy.type,
             processFlow: strategy.type === 'MANUAL' && strategy.config
                 ? JSON.parse(strategy.config)
-                : []
+                : [],
+            idScript: strategy.type === 'AI' && strategy.jsCode
+                ? strategy.jsCode
+                : null
         };
 
         const { data } = await this.backend.post<ApiResponse<any>>(
@@ -94,7 +97,10 @@ export default class SiteDatasource {
             type: strategy.type,
             processFlow: strategy.type === 'MANUAL' && strategy.config
                 ? JSON.parse(strategy.config)
-                : []
+                : [],
+            idScript: strategy.type === 'AI' && strategy.jsCode
+                ? strategy.jsCode
+                : null
         };
 
         const { data } = await this.backend.post<ApiResponse<any[]>>(
