@@ -45,3 +45,4 @@ public class AdminJobService implements GetAllJobsUseCase, JobUpdateUseCase {
         adminJobDataAdapter.updateJob(simpleJobModel);
     }
 }
+

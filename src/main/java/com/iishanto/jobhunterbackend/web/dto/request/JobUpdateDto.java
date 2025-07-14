@@ -41,3 +41,4 @@ public class JobUpdateDto {
         return simpleJobModel;
     }
 }
+

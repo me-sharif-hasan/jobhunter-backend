@@ -2,6 +2,7 @@ package com.iishanto.jobhunterbackend.infrastructure.database;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.infrastructure.projection.PersonalJobProjection;
 import jakarta.annotation.Nullable;
@@ -17,6 +18,7 @@ import java.util.Optional;
 
 @Data
 @Entity(name = "jobs")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Opportunity {
     @Id
     private String jobId;

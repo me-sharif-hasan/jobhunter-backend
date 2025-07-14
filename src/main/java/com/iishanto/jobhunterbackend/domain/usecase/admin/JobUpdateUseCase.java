@@ -8,3 +8,4 @@ public interface JobUpdateUseCase {
 
     void updateJob(String jobId, SimpleJobModel simpleJobModel);
 }
+

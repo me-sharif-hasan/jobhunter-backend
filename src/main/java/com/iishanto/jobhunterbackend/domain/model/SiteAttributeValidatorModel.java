@@ -30,7 +30,8 @@ public class SiteAttributeValidatorModel {
             @JsonSubTypes.Type(value = MapElementResult.class, name = "map"),
             @JsonSubTypes.Type(value = BackToPreviousPage.class, name = "back"),
             @JsonSubTypes.Type(value = SaveJob.class, name = "save"),
-            @JsonSubTypes.Type(value = AskAI.class, name = "askAi")
+            @JsonSubTypes.Type(value = AskAI.class, name = "askAi"),
+            @JsonSubTypes.Type(value = FindByAi.class, name = "findByAi")
     })
     @NoArgsConstructor
     @Data
@@ -106,5 +107,14 @@ public class SiteAttributeValidatorModel {
         public AskAI() {
             super("askAi");
         }
+    }
+
+    @Getter
+    @Setter
+    public static class FindByAi extends JobExtractionPipeline {
+        public FindByAi(){
+            super("findByAi");
+        }
+        private List<JobExtractionPipeline> childPipelines;
     }
 }

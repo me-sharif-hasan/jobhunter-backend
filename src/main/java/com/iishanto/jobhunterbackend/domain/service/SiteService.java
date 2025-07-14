@@ -7,6 +7,7 @@ import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
 import com.iishanto.jobhunterbackend.domain.usecase.AddSiteUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.GetSiteUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.GetSitesUseCase;
+import com.iishanto.jobhunterbackend.domain.usecase.admin.JobIndexUseCase;
 import com.iishanto.jobhunterbackend.exception.SiteAlreadyExistsException;
 import com.iishanto.jobhunterbackend.exception.UserAlreadyOwnsSiteException;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,7 @@ import java.util.List;
 public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseCase {
     private final SiteDataAdapter siteDataAdapter;
     private final UserDataAdapter userDataAdapter;
+    private final JobIndexUseCase jobIndexUseCase;
     @Override
     public Long addSite(SimpleSiteModel site) {
         return siteDataAdapter.saveSite(site);
@@ -38,7 +40,9 @@ public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseC
             throw new IllegalArgumentException("Job list page url already exists");
         }
         SimpleSiteModel siteModel=getSiteInformationFromUrl(url);
-        return saveSite(siteModel, jobListPageUrl);
+        Long siteId = saveSite(siteModel, jobListPageUrl);
+        jobIndexUseCase.createAiIndexingStrategy(siteId);
+        return siteId;
     }
 
     private Long saveSite(SimpleSiteModel siteModel,String jobListPageUrl){

@@ -21,3 +21,4 @@ public interface AdminJobDataAdapter {
 
     void updateNonExistentJobsGivenFoundJobs(Set<String> availableJobIds,Long siteId);
 }
+

@@ -72,6 +72,7 @@ public class JobIndexingService implements JobIndexUseCase {
                     foundJobIds.add(jobModel.getJobId());
                 });
                 adminJobDataAdapter.updateNonExistentJobsGivenFoundJobs(availableJobIds,site.getId());
+                adminSiteDataAdapter.updateSiteLastIndexedAt(site.getId(), new Date());
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -169,6 +170,29 @@ public class JobIndexingService implements JobIndexUseCase {
             jobs.add(jobModel);
         });
         return jobs;
+    }
+
+    @Override
+    public Long createAiIndexingStrategy(Long siteId) {
+        List<SiteAttributeValidatorModel.JobExtractionPipeline> pipelines=new ArrayList<>();
+        SiteAttributeValidatorModel.FindByAi findByAi = new SiteAttributeValidatorModel.FindByAi();
+        if(findByAi.getChildPipelines()==null){
+            findByAi.setChildPipelines(new ArrayList<>());
+        }
+
+        SiteAttributeValidatorModel.AskAI askAi = new SiteAttributeValidatorModel.AskAI();
+
+        SiteAttributeValidatorModel.MapElementResult mapElementResult = new SiteAttributeValidatorModel.MapElementResult();
+        mapElementResult.setOperation("map");
+        mapElementResult.setJavaScript("return window.location.href;");
+        mapElementResult.setAttribute("jobId");
+
+        SiteAttributeValidatorModel.SaveJob saveJob = new SiteAttributeValidatorModel.SaveJob();
+        findByAi.setChildPipelines(List.of(askAi, mapElementResult, saveJob));
+
+        pipelines.add(findByAi);
+
+        return saveStrategy(IndexingStrategyNames.MANUAL, siteId, pipelines);
     }
 
     public interface OnJobAvailableCallback {

@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 @Component
@@ -202,5 +203,12 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
         }catch (Exception e){
             throw new RuntimeException("Failed to convert indexing strategy to domain model: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void updateSiteLastIndexedAt(Long id, Date date) {
+        Site site = siteRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Site with ID " + id + " does not exist."));
+        site.setLastCrawledAt(Timestamp.from(date.toInstant()));
     }
 }

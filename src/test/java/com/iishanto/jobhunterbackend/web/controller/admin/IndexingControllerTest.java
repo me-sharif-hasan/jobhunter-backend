@@ -110,6 +110,7 @@ class IndexingControllerTest {
     private String getStrategyJson() {
         return """
                 {
+                    "type":"MANUAL",
                     "processFlow":[
                         {
                             "operation":"find",

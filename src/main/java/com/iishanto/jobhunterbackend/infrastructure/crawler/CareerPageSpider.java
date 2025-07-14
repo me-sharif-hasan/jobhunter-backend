@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iishanto.jobhunterbackend.config.WebDriverManager;
 import com.iishanto.jobhunterbackend.domain.adapter.JobIndexingAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteValidationDataAdapter;
+import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SiteAttributeValidatorModel;
 import com.iishanto.jobhunterbackend.domain.model.values.ClickIntention;
 import com.iishanto.jobhunterbackend.domain.service.admin.JobIndexingService;
 import com.iishanto.jobhunterbackend.infrastructure.database.Opportunity;
+import com.iishanto.jobhunterbackend.infrastructure.google.GeminiClient;
 import com.iishanto.jobhunterbackend.infrastructure.ports.indexing.JobIndexEngine;
 import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
 import lombok.AllArgsConstructor;
@@ -35,13 +37,13 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
     private final JobsRepository jobsRepository;
     private final ObjectMapper objectMapper;
     private final WebDriverManager webDriverManager;
+    private final GeminiClient geminiClient;
 
     @Override
     public void executeProcessFlow(String url, List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow, JobIndexingService.OnJobAvailableCallback onJobAvailable) {
-        webCrawler.getHtml(url);
         List<String> foundJobs=new ArrayList<>();
-        executeProcessFlowRecursive(null, processFlow, new JobExtractionCallback() {
-            Map<String, String> jobMappings = new HashMap<>();
+        executeProcessFlowRecursive(null,url, processFlow, new JobExtractionCallback() {
+            final Map<String, String> jobMappings = new HashMap<>();
             @Override
             public void onNewMappingAvailable(String key, String output) {
                 System.out.println("New mapping available: " + key + " -> " + output);
@@ -72,11 +74,12 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
         }, null);
     }
 
-    private void executeProcessFlowRecursive(WebElement root, List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow, JobExtractionCallback callback, Map<String, String> jobMetaMappings) {
+    private void executeProcessFlowRecursive(WebElement root,String url, List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow, JobExtractionCallback callback, Map<String, String> jobMetaMappings) {
         WebDriver webDriver= webDriverManager.getDriver();
         String rootXpath = getXpath(root);
         for (SiteAttributeValidatorModel.JobExtractionPipeline pipeline : processFlow) {
             if (pipeline instanceof SiteAttributeValidatorModel.FindElements findElements) {
+                webCrawler.getHtml(url);
                 String selectorXpath = findElements.getSelector();
                 if (selectorXpath == null || selectorXpath.isEmpty()) {
                     System.out.println("Selector is empty, skipping FindElements operation.");
@@ -100,7 +103,7 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                         if (metaPipeline != null && !metaPipeline.isEmpty()) {
                             for (SiteAttributeValidatorModel.MapElementResult mapElementResult : metaPipeline) {
                                 try {
-                                    WebElement targetElement = refreshedElements.get(i).findElement(By.xpath(mapElementResult.getSelector()));
+                                    WebElement targetElement = getElement(refreshedElements.get(i),mapElementResult.getSelector());
                                     String attribute = mapElementResult.getAttribute();
                                     String text = targetElement.getText();
                                     listPageMetadata.put(attribute, text);
@@ -109,7 +112,7 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                                 }
                             }
                         }
-                        executeProcessFlowRecursive(refreshedElements.get(i), childPipelines, callback,listPageMetadata);
+                        executeProcessFlowRecursive(refreshedElements.get(i),url, childPipelines, callback,listPageMetadata);
                     }
                 }
             } else if (root != null && pipeline instanceof SiteAttributeValidatorModel.ClickOnElement navigateAction) {
@@ -176,12 +179,14 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                 if(!StringUtils.isBlank(mapElementResult.getJavaScript())&&!StringUtils.isBlank(mapElementResult.getSelector())) {
                     throw new IllegalArgumentException("Both JavaScript and Selector cannot be set at the same time.");
                 }
-                String text;
+                String text=null;
                 String attribute = mapElementResult.getAttribute();
                 if(!StringUtils.isBlank(mapElementResult.getSelector())) {
                     root = webDriver.findElement(By.xpath(rootXpath));
-                    WebElement targetElement = root.findElement(By.xpath(mapElementResult.getSelector()));
-                    text = targetElement.getAttribute("textContent");
+                    WebElement targetElement = getElement(root,mapElementResult.getSelector());
+                    if(targetElement != null) {
+                        text = targetElement.getAttribute("textContent");
+                    }
                 }else{
                     String js = """
                             return (()=>{
@@ -199,6 +204,10 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                         System.out.println("Mapping: " + entry.getKey() + " -> " + entry.getValue());
                         if(entry.getValue() == null || entry.getValue().isEmpty()) {
                             System.out.println("Invalid mapping, skipping.");
+                            continue;
+                        }
+                        if(callback.getJobMappings().containsKey(entry.getKey())&&callback.getJobMappings().get(entry.getKey())!=null) {
+                            System.out.println("Mapping found: " + entry.getKey() + " -> " + entry.getValue()+" Skipping Meta data");
                             continue;
                         }
                         callback.onNewMappingAvailable(entry.getKey(), entry.getValue());
@@ -223,9 +232,41 @@ public class CareerPageSpider implements AdminSiteValidationDataAdapter {
                     System.out.println("Mapping: " + key + " -> " + jobMappings.get(key));
                     callback.onNewMappingAvailable(key, jobMappings.get(key));
                 }
+            }else if(pipeline instanceof SiteAttributeValidatorModel.FindByAi findByAi){
+                GeminiClient.GeminiPrompt jobListingPrompt = geminiClient.getJobListingPromptFromUrl(url);
+                List <SimpleJobModel> opportunities = geminiClient.getJsonResponseOfJobs(jobListingPrompt);
+                for( SimpleJobModel jobModel : opportunities){
+                    Map <String,String> jobMappings = objectMapper.convertValue(jobModel, new TypeReference<>() {
+                    });
+                    jobMappings.entrySet().removeIf(e -> e.getValue() == null || e.getValue().isEmpty());
+                    for (String key : jobMappings.keySet()) {
+                        callback.onNewMappingAvailable(key, jobMappings.get(key));
+                    }
+                    String jobUrl = jobModel.getJobUrl();
+                    webDriver.navigate().to(jobUrl);
+                    new WebDriverWait(webDriver, Duration.ofSeconds(10))
+                            .until(ExpectedConditions.urlToBe(jobUrl));
+                    WebElement targetElement = webDriver.findElement(By.tagName("body"));
+                    executeProcessFlowRecursive(targetElement,webDriver.getCurrentUrl(),findByAi.getChildPipelines(), callback, jobMappings);
+                }
             }
         }
     }
+
+    private WebElement getElement(WebElement base,String selector){
+        try{
+            return base.findElement(By.xpath(selector));
+        }catch (Exception e){
+            try{
+                return base.findElement(By.cssSelector(selector));
+            }catch (Exception e2){
+                System.out.println("Failed to find element with selector: " + selector);
+                e2.printStackTrace();
+                return null;
+            }
+        }
+    }
+
     private String getXpath(WebElement element) {
         WebDriver webDriver= webDriverManager.getDriver();
         StringBuilder xpath = new StringBuilder();
