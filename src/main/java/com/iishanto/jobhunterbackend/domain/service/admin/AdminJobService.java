@@ -33,7 +33,24 @@ public class AdminJobService implements GetAllJobsUseCase, JobUpdateUseCase {
 
     @Override
     public void approveJob(String jobId) {
+        if(jobId == null || jobId.isEmpty()) {
+            throw new IllegalArgumentException("Job ID cannot be null or empty");
+        }
+        adminJobDataAdapter.updateJob(SimpleJobModel.builder()
+            .jobId(jobId)
+            .isApproved(true)
+            .build());
+    }
 
+    @Override
+    public void rejectJob(String jobId) {
+        if(jobId == null || jobId.isEmpty()) {
+            throw new IllegalArgumentException("Job ID cannot be null or empty");
+        }
+        adminJobDataAdapter.updateJob(SimpleJobModel.builder()
+            .jobId(jobId)
+            .isApproved(false)
+            .build());
     }
 
     @Override
@@ -45,4 +62,3 @@ public class AdminJobService implements GetAllJobsUseCase, JobUpdateUseCase {
         adminJobDataAdapter.updateJob(simpleJobModel);
     }
 }
-

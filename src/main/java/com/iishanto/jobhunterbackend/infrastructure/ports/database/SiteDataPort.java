@@ -171,6 +171,12 @@ public class SiteDataPort implements SiteDataAdapter, AdminSiteDataAdapter {
     }
 
     @Override
+    public void updateSite(SimpleSiteModel site) {
+        Site siteEntity = Site.fromSiteModel(site);
+        siteRepository.save(siteEntity);
+    }
+
+    @Override
     public Long saveIndexingStrategy(IndexingStrategyNames type, Long siteId, String jsonStrategy) {
         if(type == null) {
             throw new IllegalArgumentException("Indexing strategy type cannot be null");

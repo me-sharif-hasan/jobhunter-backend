@@ -2,12 +2,14 @@ package com.iishanto.jobhunterbackend.domain.service;
 
 import com.iishanto.jobhunterbackend.domain.adapter.SiteDataAdapter;
 import com.iishanto.jobhunterbackend.domain.adapter.UserDataAdapter;
+import com.iishanto.jobhunterbackend.domain.adapter.admin.AdminSiteDataAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
 import com.iishanto.jobhunterbackend.domain.usecase.AddSiteUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.GetSiteUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.GetSitesUseCase;
 import com.iishanto.jobhunterbackend.domain.usecase.admin.JobIndexUseCase;
+import com.iishanto.jobhunterbackend.domain.usecase.admin.UpdateSiteUseCase;
 import com.iishanto.jobhunterbackend.exception.SiteAlreadyExistsException;
 import com.iishanto.jobhunterbackend.exception.UserAlreadyOwnsSiteException;
 import lombok.AllArgsConstructor;
@@ -22,10 +24,11 @@ import java.util.List;
 
 @AllArgsConstructor
 @Service
-public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseCase {
+public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseCase, UpdateSiteUseCase {
     private final SiteDataAdapter siteDataAdapter;
     private final UserDataAdapter userDataAdapter;
     private final JobIndexUseCase jobIndexUseCase;
+    private final AdminSiteDataAdapter adminSiteDataAdapter;
     @Override
     public Long addSite(SimpleSiteModel site) {
         return siteDataAdapter.saveSite(site);
@@ -145,5 +148,36 @@ public class SiteService implements AddSiteUseCase, GetSiteUseCase, GetSitesUseC
     @Override
     public List<SimpleSiteModel> getSites(int page, int size,String query) {
         return siteDataAdapter.getSites(page,size,query);
+    }
+
+    @Override
+    public void updateSite(Long siteId, SimpleSiteModel siteModel) {
+        if (siteId == null) {
+            throw new IllegalArgumentException("Site ID cannot be null");
+        }
+        if (siteModel.getJobListPageUrl() == null || siteModel.getJobListPageUrl().isEmpty()) {
+            throw new IllegalArgumentException("Job list page URL cannot be empty");
+        }
+
+        SimpleSiteModel existingSite = adminSiteDataAdapter.getSiteById(siteId).orElseThrow();
+        if (existingSite == null) {
+            throw new IllegalArgumentException("Site not found with ID: " + siteId);
+        }
+
+        // Check if another site already uses this job list URL
+        SimpleSiteModel siteWithSameUrl = siteDataAdapter.getSiteByJobListUrl(siteModel.getJobListPageUrl());
+        if (siteWithSameUrl != null && !siteWithSameUrl.getId().equals(siteId)) {
+            throw new IllegalArgumentException("Another site already uses this job list URL");
+        }
+
+        // Update all fields
+        existingSite.setName(siteModel.getName());
+        existingSite.setHomepage(siteModel.getHomepage());
+        existingSite.setJobListPageUrl(siteModel.getJobListPageUrl());
+        existingSite.setDescription(siteModel.getDescription());
+        existingSite.setIconUrl(siteModel.getIconUrl());
+        existingSite.setLastCrawledAt(Timestamp.from(Instant.now()));
+
+        adminSiteDataAdapter.updateSite(existingSite);
     }
 }

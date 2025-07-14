@@ -17,4 +17,5 @@ public interface AdminSiteDataAdapter {
     SimpleSiteIndexingStrategyCompositionModel getIndexingStrategy(Long siteId);
 
     void updateSiteLastIndexedAt(Long id, Date date);
+    void updateSite(SimpleSiteModel site);
 }

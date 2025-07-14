@@ -63,6 +63,7 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
             job.setLocation(simpleJobModel.getLocation());
             job.setJobUrl(simpleJobModel.getJobUrl());
             job.setTitle(simpleJobModel.getTitle());
+            job.setApproved(simpleJobModel.isApproved());
             job.setJobCategory(simpleJobModel.getJobCategory());
             job.setJobDescription(simpleJobModel.getJobDescription());
             job.setJobPostedDate(simpleJobModel.getJobPostedDate());

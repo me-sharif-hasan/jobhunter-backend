@@ -1,8 +1,10 @@
 package com.iishanto.jobhunterbackend.testutils;
 
 import com.iishanto.jobhunterbackend.infrastructure.crawler.WebCrawler;
+import com.iishanto.jobhunterbackend.infrastructure.database.Opportunity;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
+import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
 import org.apache.commons.io.FileUtils;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -44,5 +48,20 @@ public class TestDataFactory {
     }
     public void resetWebCrawler() {
         Mockito.reset(webCrawler);
+    }
+
+    @Autowired
+    private JobsRepository jobsRepository;
+
+    public Opportunity createJob(String jobId, String title, String url, boolean isApproved) {
+        Opportunity opportunity = new Opportunity();
+        opportunity.setJobId(jobId);
+        opportunity.setTitle(title);
+        opportunity.setJobUrl(url);
+        opportunity.setApproved(isApproved);
+        opportunity.setJobParsedAt(Timestamp.from(Instant.now()));
+        opportunity.setJobUpdatedAt(Timestamp.from(Instant.now()));
+        opportunity.setIsPresentOnSite(true);
+        return jobsRepository.save(opportunity);
     }
 }

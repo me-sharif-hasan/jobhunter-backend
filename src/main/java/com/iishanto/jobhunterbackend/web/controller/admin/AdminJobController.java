@@ -82,6 +82,28 @@ public class AdminJobController {
         );
         return apiResponse;
     }
+
+    @PatchMapping("/approve")
+    public ApiResponse approveJob(
+            @RequestParam String jobId
+    ) {
+        jobUpdateUseCase.approveJob(jobId);
+        return new ApiResponse(
+                true,
+                jobId,
+                "Job approved successfully"
+        );
+    }
+
+    @PatchMapping("/reject")
+    public ApiResponse rejectJob(
+            @RequestParam String jobId
+    ) {
+        jobUpdateUseCase.rejectJob(jobId);
+        return new ApiResponse(
+                true,
+                jobId,
+                "Job rejected successfully"
+        );
+    }
 }
-
-
