@@ -26,16 +26,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Testcontainers
 class AdminSiteControllerTest {
-    static final MySQLContainer MYSQL_CONTAINER;
-    static {
-        MYSQL_CONTAINER = new MySQLContainer("mysql:8.0.32");
-        MYSQL_CONTAINER.start();
-    }
-
     @DynamicPropertySource
-    static void setupMySQL(DynamicPropertyRegistry registry) {
+    static void setProperties(DynamicPropertyRegistry registry) {
         TestUtils.setupMySQL(registry);
     }
+
 
     @Autowired
     private MockMvc mockMvc;
