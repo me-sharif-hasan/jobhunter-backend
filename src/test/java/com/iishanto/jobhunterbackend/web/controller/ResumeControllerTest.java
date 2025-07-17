@@ -55,6 +55,7 @@ class ResumeControllerTest {
     String jwtToken;
     @BeforeEach
     void setUp() {
+        testUtils.clearDatabase();
         jwtToken = testUtils.setupAuthentication();
         assertNotNull(jwtToken, "JWT Token should not be null");
     }

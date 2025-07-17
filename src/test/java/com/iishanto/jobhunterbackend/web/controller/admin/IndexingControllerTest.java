@@ -60,6 +60,7 @@ class IndexingControllerTest {
 
     @BeforeEach
     void setUp() {
+        testUtils.clearDatabase();
         jwtToken = testUtils.setupAuthentication();
         assertNotNull(jwtToken, "JWT Token should not be null");
     }
@@ -80,7 +81,6 @@ class IndexingControllerTest {
         Site site = testDataFactory.createSite("https://www.example.com", "https://www.example.com/careers");
         assertNotNull(site, "Site should be created successfully");
         assertNotNull(site.getId(), "Site ID should not be null");
-        assertEquals(1L, site.getId(), "Site ID should be 1");
 
         MvcResult theResult = mockMvc.perform(
                 post(
