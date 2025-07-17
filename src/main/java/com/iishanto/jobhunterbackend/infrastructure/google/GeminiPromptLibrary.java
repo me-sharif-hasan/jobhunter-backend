@@ -8,9 +8,32 @@ import java.time.Instant;
 public final class GeminiPromptLibrary {
     public static String getPrompt(PromptType promptType, PromptParameters build) {
         return switch (promptType) {
+            case CV_STRENGTH -> getCvStrengthPromptTemplate(build);
             case JOB_DETAIL -> getJobDetailPromptTemplate(build);
             case JOB_LIST -> getJobListPromptTemplate(build);
         };
+    }
+
+    private static String getCvStrengthPromptTemplate(PromptParameters build) {
+        return """
+                    {
+                      "contents": [
+                        {
+                          "parts": [
+                            {
+                              "text": "%s"
+                            },
+                            {
+                              "text": "Current Time: %s. Ensure consistent formatting and valid JSON. The format is: { \\"resumeScore\\": <score from 0 to 100>, \\"evaluationBreakdown\\": { provided keys must be justified }, \\"reasoning\\": \\"<reasoning for the score, must be within 100 words>\\" }. Keep strong judgment so that you do not change your opinion in unchanged CV and description."
+                            }
+                          ]
+                        }
+                      ],
+                      "generationConfig": {
+                        "temperature": %d
+                      }
+                    }
+                """.formatted(build.escapedMessage, Timestamp.from(Instant.now()), build.temperature);
     }
 
     private static String getJobDetailPromptTemplate(PromptParameters build) {
@@ -146,6 +169,6 @@ public final class GeminiPromptLibrary {
 
     public static enum PromptType{
         JOB_LIST,
-        JOB_DETAIL
+        CV_STRENGTH, JOB_DETAIL
     }
 }

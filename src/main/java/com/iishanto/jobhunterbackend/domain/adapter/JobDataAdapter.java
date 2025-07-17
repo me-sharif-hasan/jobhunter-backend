@@ -9,16 +9,10 @@ import java.util.List;
 
 public interface JobDataAdapter {
     void markApplied(String jobId, Long userId);
-
     void unmarkApplied(String jobId, Long id);
-
     List<SimpleUserAppliedJobsModel> getAppliedJobs(Long id, int page, int limit, String query);
-
     void updateJobApplicationStatus(String jobId, Long userId, JobApplicationStatus status);
-
     SimpleJobCommentModel postComment(SimpleJobCommentModel model);
-
     List<SimpleJobCommentModel> getJobComments(String jobId, int limit, Long startAt);
-
-    void saveSimpleJob(SimpleJobModel jobModel);
+    SimpleJobModel getJobById(String jobId);
 }

@@ -191,11 +191,9 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
     }
 
     @Override
-    public void saveSimpleJob(SimpleJobModel jobModel) {
-        Opportunity job = Opportunity.fromSimpleJobModel(jobModel, Site.fromSiteModel(jobModel.getSite()));
-        if(job.getJobId() == null){
-            throw new IllegalArgumentException("Job ID cannot be null");
-        }
-        jobsRepository.save(job);
+    public SimpleJobModel getJobById(String jobId) {
+        return jobsRepository.findById(jobId)
+                .map(Opportunity::toSimpleJobModel)
+                .orElseThrow(() -> new RuntimeException("Job not found with ID: " + jobId));
     }
 }

@@ -10,5 +10,7 @@ public interface UserDataAdapter {
     SimpleUserModel getLoggedInUser();
     SimpleUserModel getUserById(Long id);
     SimpleUserModel getUserByEmail(String email);
+    Long saveResume(String resumeContentAsText,Long userId);
 
+    String getResumeTextByUserId(Long userId);
 }

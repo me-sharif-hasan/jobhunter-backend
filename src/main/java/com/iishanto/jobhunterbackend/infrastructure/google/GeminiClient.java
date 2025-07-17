@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.CharMatcher;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.infrastructure.crawler.WebCrawler;
+import com.iishanto.jobhunterbackend.utils.HunterUtils;
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
 import lombok.Builder;
 import org.jsoup.nodes.Document;
@@ -60,7 +61,7 @@ public class GeminiClient {
             GeminiResponse geminiResponse = objectMapper.readValue(response, GeminiResponse.class);
             for(GeminiResponse.Candidate candidate:geminiResponse.getCandidates()){
                 String json=candidate.getContent().getParts().get(0).getText();
-                json=sanitizeJsonString(json.substring(7,json.length()-3));
+                json=HunterUtils.sanitizeJsonString(json.substring(7,json.length()-3));
                 System.out.println("the json: "+json);
                 List < SimpleJobModel > jobModels = objectMapper.readValue(json, objectMapper.getTypeFactory().constructCollectionType(List.class, SimpleJobModel.class));
                 return jobModels;
@@ -95,13 +96,6 @@ public class GeminiClient {
         }
     }
 
-    private String sanitizeJsonString(String json){
-        return CharMatcher.javaIsoControl().and(CharMatcher.isNot('\n'))
-                .and(CharMatcher.isNot('\r'))
-                .and(CharMatcher.isNot('\t'))
-                .removeFrom(json);
-    }
-
     public SimpleJobModel getJobMetadata(GeminiPrompt prompt) {
         String response = getResponse(prompt.getPromptTemplate(GeminiPromptLibrary.PromptType.JOB_DETAIL));
         ObjectMapper objectMapper = new ObjectMapper();
@@ -109,7 +103,7 @@ public class GeminiClient {
             GeminiResponse geminiResponse = objectMapper.readValue(response, GeminiResponse.class);
             for(GeminiResponse.Candidate candidate:geminiResponse.getCandidates()){
                 String json=candidate.getContent().getParts().get(0).getText();
-                json=sanitizeJsonString(json.substring(7,json.length()-3));
+                json=HunterUtils.sanitizeJsonString(json.substring(7,json.length()-3));
                 SimpleJobModel jobModel = objectMapper.readValue(json, SimpleJobModel.class);
                 System.out.println(json);
                 return jobModel;
@@ -132,7 +126,7 @@ public class GeminiClient {
             String body = document.html();
             String markdown= FlexmarkHtmlConverter.builder().build().convert(body);
             String escapedMessage = markdown.replace("\"","\\\"");
-            escapedMessage=sanitizeMarkdown(markdown);
+            escapedMessage= HunterUtils.sanitizeMarkdown(markdown);
 //            escapedMessage=escapedMessage.replaceAll("\\(data:(image|video)/(.*?)\\)","");
             return GeminiPromptLibrary.getPrompt(
                     promptType,
@@ -144,15 +138,6 @@ public class GeminiClient {
             );
         }
 
-        private String sanitizeMarkdown(String markdown) {
-            return CharMatcher.javaIsoControl() // Remove non-printable control characters
-                    .and(CharMatcher.isNot('\n'))
-                    .and(CharMatcher.isNot('\r'))
-                    .and(CharMatcher.isNot('\t'))
-                    .removeFrom(markdown)
-                    .replaceAll("\\(data:(image|video)/[^)]+\\)", "") // Remove base64 media links
-                    .replace("\"", "\\\"");
-        }
 
     }
 }
