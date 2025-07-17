@@ -36,11 +36,12 @@ public class Site {
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private Timestamp createdAt;
-
+    @Builder.Default
     private SiteControlStatus status = SiteControlStatus.ACTIVE;
+    @Builder.Default
     private SiteRuntimeStatus runtimeStatus = SiteRuntimeStatus.IDLE;
 
-
+    @Builder.Default
     private boolean isPublished = true;
 
     public static Site fromSiteModel(SimpleSiteModel siteModel){

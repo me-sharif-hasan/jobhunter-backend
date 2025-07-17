@@ -21,6 +21,7 @@ public class SimpleSiteModel{
     private String jobListPageUrl;
     private Timestamp lastCrawledAt;
 
+    @Builder.Default
     boolean isSubscribed=false;
     boolean isActive;
     public SimpleSiteModel (

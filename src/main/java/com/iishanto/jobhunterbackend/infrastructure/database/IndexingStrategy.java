@@ -28,6 +28,7 @@ public class IndexingStrategy {
     private Site site;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private IndexingStrategyNames indexingStrategy = IndexingStrategyNames.AI;
     @Lob
     private String strategyPipeline;

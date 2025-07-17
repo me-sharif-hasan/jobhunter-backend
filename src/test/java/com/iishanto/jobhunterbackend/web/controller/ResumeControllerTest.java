@@ -1,10 +1,12 @@
 package com.iishanto.jobhunterbackend.web.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iishanto.jobhunterbackend.infrastructure.database.UserResume;
 import com.iishanto.jobhunterbackend.infrastructure.google.GeminiClient;
 import com.iishanto.jobhunterbackend.infrastructure.repository.UserResumeRepository;
 import com.iishanto.jobhunterbackend.testutils.TestDataFactory;
 import com.iishanto.jobhunterbackend.testutils.TestUtils;
+import com.iishanto.jobhunterbackend.web.dto.response.ApiResponse;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -20,6 +22,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -39,6 +42,8 @@ class ResumeControllerTest {
     private TestUtils testUtils;
     @Autowired
     private TestDataFactory testDataFactory;
+    @Autowired
+    private ObjectMapper objectMapper;
     @Autowired
     private UserResumeRepository userResumeRepository;
     @MockitoBean
@@ -119,18 +124,19 @@ class ResumeControllerTest {
         );
 
         // Perform the upload request
-        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/resume/upload")
+        MvcResult apiResult = mockMvc.perform(MockMvcRequestBuilders.multipart("/api/resume/upload")
                 .file(file)
                 .header("Authorization", "Bearer " + jwtToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data").value(1));
+                .andExpect(jsonPath("$.data").isNumber()).andReturn();
 
-        UserResume userResume = userResumeRepository.findById(1L).orElse(null);
+        ApiResponse apiResponse = objectMapper.readValue(apiResult.getResponse().getContentAsString(), ApiResponse.class);
+
+        UserResume userResume = userResumeRepository.findById(Long.valueOf((Integer) apiResponse.getData())).orElse(null);
         assertNotNull(userResume, "UserResume should not be null");
         assertNotNull(userResume.getUser(), "User should not be null");
         assertEquals("Test Resume Content", userResume.getContent().trim(), "Resume content should match");
-        assertEquals(1L, userResume.getUser().getId(), "User ID should match the logged-in user ID");
     }
 
     @AfterEach

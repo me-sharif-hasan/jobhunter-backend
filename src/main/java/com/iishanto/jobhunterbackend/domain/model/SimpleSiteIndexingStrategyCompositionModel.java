@@ -12,6 +12,6 @@ import java.util.List;
 @Data
 public class SimpleSiteIndexingStrategyCompositionModel {
     private Long id;
-    private IndexingStrategyNames indexingStrategy = IndexingStrategyNames.AI;
+    private IndexingStrategyNames indexingStrategy;
     private List<SiteAttributeValidatorModel.JobExtractionPipeline> strategyPipeline;
 }
