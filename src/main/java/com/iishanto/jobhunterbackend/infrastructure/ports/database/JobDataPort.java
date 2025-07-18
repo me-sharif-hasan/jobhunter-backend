@@ -6,7 +6,8 @@ import com.iishanto.jobhunterbackend.domain.model.SimpleJobCommentModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserAppliedJobsModel;
 import com.iishanto.jobhunterbackend.domain.model.values.JobApplicationStatus;
-import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
+import com.iishanto.jobhunterbackend.infrastructure.database.Opportunity;
+import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.database.User;
 import com.iishanto.jobhunterbackend.infrastructure.database.UserAppliedJobs;
 import com.iishanto.jobhunterbackend.infrastructure.database.firebase.JobComment;
@@ -23,6 +24,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -35,8 +37,8 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
     @Override
     public List<SimpleJobModel> getAllJobsForAdmin(int page, int limit, String query) {
         Pageable pageable = PageRequest.of(page, limit);
-        List<Jobs> jobs = jobsRepository.findAllByJobDescriptionContainingOrTitleContainingOrLocationContainingOrderByJobParsedAtDesc(query,query,query,pageable);
-        return jobs.stream().map(Jobs::toSimpleJobModel).collect(Collectors.toList());
+        List<Opportunity> jobs = jobsRepository.findAllByJobDescriptionContainingOrTitleContainingOrLocationContainingOrderByJobParsedAtDesc(query,query,query,pageable);
+        return jobs.stream().map(Opportunity::toSimpleJobModel).collect(Collectors.toList());
     }
 
     @Override
@@ -46,21 +48,22 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
 
     @Override
     public void updateJobDuplicateStatus(String jobId, boolean isDuplicate) {
-        Jobs job = jobsRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
+        Opportunity job = jobsRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
         job.setDuplicate(isDuplicate);
         jobsRepository.save(job);
     }
 
     @Override
     public void updateJob(SimpleJobModel simpleJobModel) {
-        Optional <Jobs> optionalJob = jobsRepository.findById(simpleJobModel.getJobId());
+        Optional <Opportunity> optionalJob = jobsRepository.findById(simpleJobModel.getJobId());
         if (optionalJob.isPresent()) {
-            Jobs job = optionalJob.get();
+            Opportunity job = optionalJob.get();
             job.setJobType(simpleJobModel.getJobType());
             job.setSalary(simpleJobModel.getSalary());
             job.setLocation(simpleJobModel.getLocation());
             job.setJobUrl(simpleJobModel.getJobUrl());
             job.setTitle(simpleJobModel.getTitle());
+            job.setApproved(simpleJobModel.isApproved());
             job.setJobCategory(simpleJobModel.getJobCategory());
             job.setJobDescription(simpleJobModel.getJobDescription());
             job.setJobPostedDate(simpleJobModel.getJobPostedDate());
@@ -70,14 +73,54 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
             jobsRepository.save(job);
         } else {
             throw new RuntimeException("Job not found");
+        }    }
+
+    @Override
+    public void updateIndexedJob(SimpleJobModel simpleJobModel) {
+        if(jobsRepository.existsById(simpleJobModel.getJobId())) {
+            boolean isPresentOnSite = jobsRepository.isPresentOnSite(simpleJobModel.getJobId());
+            Opportunity updatedJob = Opportunity.fromSimpleJobModel(simpleJobModel, Site.fromSiteModel(simpleJobModel.getSite()));
+            if(isPresentOnSite){
+                updatedJob.setIsReopened(true);
+                updatedJob.setReopenNoticedAt(Timestamp.from(Instant.now()));
+            }
+            updatedJob.setIsPresentOnSite(true);
+            jobsRepository.save(updatedJob);
+        }else{
+            throw new RuntimeException("Job not found");
         }
+
+    }
+
+    @Override
+    public Optional<SimpleJobModel> findJobById(String jobId) {
+        return jobsRepository.findById(jobId).map(Opportunity::toSimpleJobModel);
+    }
+
+    @Override
+    public void saveJob(SimpleJobModel jobModel) {
+        Opportunity opportunity = Opportunity.fromSimpleJobModel(jobModel, Site.fromSiteModel(jobModel.getSite()));
+        if (opportunity.getJobId() == null) {
+            throw new IllegalArgumentException("Job ID cannot be null");
+        }
+        opportunity.setIsPresentOnSite(true);
+        jobsRepository.save(opportunity);
+    }
+
+    @Override
+    public void updateNonExistentJobsGivenFoundJobs(Set<String> availableJobIds,Long siteId) {
+        List<Opportunity> existingJobs = jobsRepository.findAllByJobIdNotInAndSite_Id(availableJobIds,siteId);
+        existingJobs.forEach(job -> {
+            job.setIsPresentOnSite(false);
+        });
+        jobsRepository.saveAll(existingJobs);
     }
 
     @Override
     public void markApplied(String jobId, Long userId) {
         try{
             User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-            Jobs job = jobsRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
+            Opportunity job = jobsRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
             Optional<UserAppliedJobs> optionalUserAppliedJobs = userAppliedJobsRepository.findByJob_JobIdAndUser_Id(jobId,userId);
             UserAppliedJobs userAppliedJobs = optionalUserAppliedJobs.orElseGet(UserAppliedJobs::new);
             userAppliedJobs.setJob(job);
@@ -145,5 +188,12 @@ public class JobDataPort implements AdminJobDataAdapter, JobDataAdapter {
             startAt = -1L;
         }
         return jobCommentRepository.findByJobId(jobId,startAt,limit).stream().map(JobComment::toSimpleJobCommentModel).collect(Collectors.toList());
+    }
+
+    @Override
+    public SimpleJobModel getJobById(String jobId) {
+        return jobsRepository.findById(jobId)
+                .map(Opportunity::toSimpleJobModel)
+                .orElseThrow(() -> new RuntimeException("Job not found with ID: " + jobId));
     }
 }

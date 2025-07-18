@@ -30,7 +30,7 @@ public class UserAppliedJobs {
 
         @ManyToOne
         @JoinColumn(name = "job_id", nullable = false)
-        private Jobs job;
+        private Opportunity job;
 
         @Column(nullable = false, updatable = false)
         @CreationTimestamp

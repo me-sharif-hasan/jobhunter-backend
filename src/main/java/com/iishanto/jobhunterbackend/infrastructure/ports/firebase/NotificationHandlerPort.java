@@ -31,9 +31,9 @@ public class NotificationHandlerPort implements NotificationAdapter {
     @Override
     public void sendJobNotification(List<String> jobIds) {
         if(jobIds.isEmpty()) return;
-        List < Jobs> jobsList=jobsRepository.findAllByJobIdIn(jobIds);
-        Map < Site,List<Jobs>> groupedJobs=new HashMap<>();
-        for (Jobs job:jobsList){
+        List <Opportunity> opportunityList =jobsRepository.findAllByJobIdIn(jobIds);
+        Map < Site,List<Opportunity>> groupedJobs=new HashMap<>();
+        for (Opportunity job: opportunityList){
             if(!groupedJobs.containsKey(job.getSite())){
                 groupedJobs.put(job.getSite(),new LinkedList<>());
             }
@@ -71,15 +71,15 @@ public class NotificationHandlerPort implements NotificationAdapter {
         return pushNotificationTokenRepository.findAllByUserIn(targetUsers);
     }
 
-    private FirebaseHandler.NotificationPayload createNewJobNotificationPayload(List <Jobs> jobsList, Site site,List < PushNotificationToken> pushNotificationTokens){
-        String title="%d new job openings for %s.".formatted(jobsList.size(),site.getName());
+    private FirebaseHandler.NotificationPayload createNewJobNotificationPayload(List <Opportunity> opportunityList, Site site, List < PushNotificationToken> pushNotificationTokens){
+        String title="%d new job openings for %s.".formatted(opportunityList.size(),site.getName());
         String body="Check them out before they expires.\n";
-        for(int i=0;i<jobsList.size();i++){
+        for(int i = 0; i< opportunityList.size(); i++){
             if(i>4){
                 body+="and more.";
                 break;
             }
-            body+="%d. %s\n".formatted(i+1,jobsList.get(i).getTitle());
+            body+="%d. %s\n".formatted(i+1, opportunityList.get(i).getTitle());
         }
         List<String> targetTokens=pushNotificationTokens.stream().map(PushNotificationToken::getToken).toList();
         return FirebaseHandler.NotificationPayload.builder()

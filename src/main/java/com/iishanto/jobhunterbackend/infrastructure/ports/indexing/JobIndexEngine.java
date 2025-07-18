@@ -1,39 +1,40 @@
 package com.iishanto.jobhunterbackend.infrastructure.ports.indexing;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iishanto.jobhunterbackend.config.HunterUtility;
 import com.iishanto.jobhunterbackend.domain.adapter.JobIndexingAdapter;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
+import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
+import com.iishanto.jobhunterbackend.domain.model.SiteAttributeValidatorModel;
 import com.iishanto.jobhunterbackend.domain.model.values.SystemStatusValues;
 import com.iishanto.jobhunterbackend.domain.service.admin.SystemStatusService;
 import com.iishanto.jobhunterbackend.domain.utility.DateNormalizer;
-import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
+import com.iishanto.jobhunterbackend.infrastructure.database.IndexingStrategy;
+import com.iishanto.jobhunterbackend.infrastructure.database.Opportunity;
 import com.iishanto.jobhunterbackend.infrastructure.database.Site;
 import com.iishanto.jobhunterbackend.infrastructure.google.GeminiClient;
 import com.iishanto.jobhunterbackend.infrastructure.google.GeminiPromptLibrary;
+import com.iishanto.jobhunterbackend.infrastructure.repository.IndexingStrategyRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.JobsRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.SiteRepository;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 public class JobIndexEngine implements JobIndexingAdapter {
     private final SiteRepository siteRepository;
     private final JobsRepository jobsRepository;
-    HunterUtility hunterUtility;
+    private final IndexingStrategyRepository indexingStrategyRepository;
+    private final HunterUtility hunterUtility;
     private final SystemStatusService systemStatusService;
-    private final
-    GeminiClient geminiClient;
-    public JobIndexEngine(SiteRepository siteRepository, JobsRepository jobsRepository, GeminiClient geminiClient, HunterUtility hunterUtility, SystemStatusService systemStatusService) {
-        this.siteRepository=siteRepository;
-        this.geminiClient=geminiClient;
-        this.jobsRepository=jobsRepository;
-        this.hunterUtility=hunterUtility;
-        this.systemStatusService=systemStatusService;
-    }
+    private final GeminiClient geminiClient;
+    private final ObjectMapper objectMapper;
     Queue < Site > indexingQueue=new LinkedList<>();
     boolean isIndexing=false;
     @Override
@@ -47,15 +48,29 @@ public class JobIndexEngine implements JobIndexingAdapter {
 
 
     @Override
-    public Jobs getJobMetadata(Jobs job){
+    public Opportunity getJobMetadata(Opportunity job){
+        return getJobMetadata(job,null);
+    }
+
+    @Override
+    public Opportunity getJobMetadata(Opportunity job, String baseContext) {
         System.out.println("Getting Metadata for: "+job.getJobId());
-        GeminiClient.GeminiPrompt prompt = geminiClient.getMetadataPromptFromUrl(job.getJobUrl());
+        GeminiClient.GeminiPrompt prompt = null;
+        if(!StringUtils.isBlank(baseContext)){
+            prompt = GeminiClient.GeminiPrompt.builder()
+                    .temperature(0)
+                    .baseUrl(job.getJobUrl())
+                    .message(baseContext)
+                    .build();
+        }else{
+            prompt = geminiClient.getMetadataPromptFromUrl(job.getJobUrl());
+        }
         if (prompt==null) return job;
         System.out.println("THE PROMPT"+prompt.getPromptTemplate(GeminiPromptLibrary.PromptType.JOB_DETAIL));
         SimpleJobModel jobModel = geminiClient.getJobMetadata(prompt);
         System.out.println("the job model"+jobModel);
         if(jobModel==null) return job;
-        Jobs jobEntity=Jobs.fromSimpleJobModel(jobModel, job.getSite());
+        Opportunity jobEntity= Opportunity.fromSimpleJobModel(jobModel, job.getSite());
         mergeNullFields(jobEntity,job);
         jobEntity.setJobId(job.getJobId());
         jobEntity.setJobUrl(job.getJobUrl());
@@ -63,7 +78,35 @@ public class JobIndexEngine implements JobIndexingAdapter {
         return jobEntity;
     }
 
-    private void mergeNullFields(Jobs jobEntity, Jobs initialJob) {
+    @Override
+    public List<SiteAttributeValidatorModel> getSiteAttributeValidatorModels(List<Long> siteIds) {
+        if (siteIds == null || siteIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<IndexingStrategy> strategies= indexingStrategyRepository.findAllBySiteIdIn(siteIds);
+        List <SiteAttributeValidatorModel> models = new ArrayList<>();
+        for (IndexingStrategy strategy : strategies) {
+            String pipeline = strategy.getStrategyPipeline();
+            try{
+                List<SiteAttributeValidatorModel.JobExtractionPipeline> processFlow = objectMapper.convertValue(
+                        objectMapper.readTree(pipeline),
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, SiteAttributeValidatorModel.JobExtractionPipeline.class)
+
+                );
+                SiteAttributeValidatorModel model = SiteAttributeValidatorModel.builder()
+                        .url(strategy.getSite().getJobListPageUrl())
+                        .siteId(strategy.getSite().getId())
+                        .processFlow(processFlow)
+                        .build();
+                models.add(model);
+            }catch (Exception e){
+                System.out.println("An error occurred while parsing the pipeline: " + e.getMessage());
+            }
+        }
+        return models;
+    }
+
+    public static void mergeNullFields(Opportunity jobEntity, Opportunity initialJob) {
         if (jobEntity.getTitle() == null) {
             jobEntity.setTitle(initialJob.getTitle());
         }
@@ -117,16 +160,16 @@ public class JobIndexEngine implements JobIndexingAdapter {
         isIndexing=true;
         systemStatusService.updateJobIndexingStatus(SystemStatusValues.JOB_INDEXING);
         new Thread(()->{
-            runIndexingUnit(onIndexingDone);
+            runIndexingUnit(onIndexingDone,indexingQueue.stream().map(Site::toDomain).collect(Collectors.toCollection(LinkedList::new)));
         }).start();
     }
 
-    public void runIndexingUnit(OnIndexingDone onIndexingDone) {
+    public void runIndexingUnit(OnIndexingDone onIndexingDone,Queue<SimpleSiteModel> sitesQueue) {
         List <String> newJobIds=new LinkedList<>();
         Set <String> foundJobIds=new HashSet<>();
-        while (!indexingQueue.isEmpty()){
+        while (!sitesQueue.isEmpty()){
             try{
-                Site site=indexingQueue.poll();
+                Site site=Site.fromSiteModel(sitesQueue.poll());
                 System.out.println("Indexing: "+site.getHomepage());
                 GeminiClient.GeminiPrompt prompt = geminiClient.getJobListingPromptFromUrl(site.getJobListPageUrl());
                 if(prompt==null) continue;
@@ -140,7 +183,7 @@ public class JobIndexEngine implements JobIndexingAdapter {
                     if (normalizedDate!=null){
                         job.setJobLastDate(normalizedDate.toString());
                     }
-                    Jobs jobEntity=Jobs.fromSimpleJobModel(job,site);
+                    Opportunity jobEntity= Opportunity.fromSimpleJobModel(job,site);
                     if(jobEntity.getJobId()!=null){
                         jobEntity.setJobId(site.getJobListPageUrl()+"/"+jobEntity.getJobId());
                     }else{
@@ -167,12 +210,12 @@ public class JobIndexEngine implements JobIndexingAdapter {
                         newJobIds.add(jobEntity.getJobId());
                         foundJobIds.add(jobEntity.getJobId());
                     }else{
-                        Optional<Jobs> optionalJob=jobsRepository.findById(jobEntity.getJobId());
+                        Optional<Opportunity> optionalJob=jobsRepository.findById(jobEntity.getJobId());
                         if(optionalJob.isEmpty()){
                             optionalJob=jobsRepository.findByJobUrl(jobEntity.getJobUrl());
                         }
                         if(optionalJob.isPresent()){
-                            Jobs existingJob=optionalJob.get();
+                            Opportunity existingJob=optionalJob.get();
                             existingJob.setLastSeenAt(new Timestamp(System.currentTimeMillis()));
                             Timestamp updatedTimeFormat = DateNormalizer.normalizeToTimestamp(existingJob.getJobLastDate());
 
@@ -208,12 +251,12 @@ public class JobIndexEngine implements JobIndexingAdapter {
         onIndexingDone.onIndexingDone(newJobIds);
     }
 
-    private String cleanJobId(String jobId) {
+    public static String cleanJobId(String jobId) {
         return StringUtils.stripAccents(jobId).replaceAll("[^a-zA-Z0-9]", "_");
     }
 
     void updateNonExistentJobs(Set<String> foundJobIds,Long siteId) {
-        List <Jobs> jobs = jobsRepository.findJobsByJobIdNotInAndSiteId(foundJobIds, siteId);
+        List <Opportunity> jobs = jobsRepository.findJobsByJobIdNotInAndSiteId(foundJobIds, siteId);
         if (jobs.isEmpty()) return;
         System.out.println("Updating non-existent jobs: " + jobs.size());
         jobs.forEach(j->{

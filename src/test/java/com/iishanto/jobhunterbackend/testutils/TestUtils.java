@@ -25,6 +25,11 @@ public class TestUtils {
     SiteRepository siteRepository;
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    UserResumeRepository userResumeRepository;
+    @Autowired
+    TestDataFactory testDataFactory;
+    @Autowired IndexingStrategyRepository indexingStrategyRepository;
 
 
     static final MySQLContainer MYSQL_CONTAINER;
@@ -60,10 +65,14 @@ public class TestUtils {
     }
 
     public void clearDatabase() {
+        System.out.println("Clearing database");
         subscriptionRepository.deleteAll();
         userAppliedJobsRepository.deleteAll();
         jobsRepository.deleteAll();
+        indexingStrategyRepository.deleteAll();
         siteRepository.deleteAll();
+        userResumeRepository.deleteAll();
         userRepository.deleteAll();
+        testDataFactory.resetWebCrawler();
     }
 }

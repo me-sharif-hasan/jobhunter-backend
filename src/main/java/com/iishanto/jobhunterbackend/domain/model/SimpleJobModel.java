@@ -35,6 +35,7 @@ public class SimpleJobModel {
     public boolean isApproved;
     public Timestamp appliedAt;
     public boolean isApplied;
+    @Builder.Default
     public JobApplicationStatus applicationStatus = JobApplicationStatus.UNKNOWN;
     public boolean isReopened;
     public Timestamp reopenNoticedAt;

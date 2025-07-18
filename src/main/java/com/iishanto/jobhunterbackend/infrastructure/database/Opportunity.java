@@ -1,6 +1,8 @@
 package com.iishanto.jobhunterbackend.infrastructure.database;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.infrastructure.projection.PersonalJobProjection;
 import jakarta.annotation.Nullable;
@@ -12,10 +14,12 @@ import org.springframework.data.annotation.LastModifiedDate;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 @Data
-@Entity
-public class Jobs {
+@Entity(name = "jobs")
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Opportunity {
     @Id
     private String jobId;
     private String title;
@@ -90,11 +94,12 @@ public class Jobs {
     @ToString.Exclude
     @ManyToMany(mappedBy = "appliedJobs",fetch = FetchType.LAZY)
     @JsonBackReference
+    @JsonIgnore
     List<User> users;
 
 
-    public static Jobs fromSimpleJobModel(SimpleJobModel jobModel, Site site) {
-        Jobs job=new Jobs();
+    public static Opportunity fromSimpleJobModel(SimpleJobModel jobModel, Site site) {
+        Opportunity job=new Opportunity();
         job.setJobId(jobModel.getJobId());
         job.setTitle(jobModel.getTitle());
         job.setJobUrl(jobModel.getJobUrl());
@@ -120,9 +125,9 @@ public class Jobs {
         SimpleJobModel simpleJobModel= new SimpleJobModel(
                 jobId,
                 title,
-                site.getName(),
-                site.getHomepage(),
-                site.getIconUrl(),
+                Optional.ofNullable(site).orElseGet(Site::new).getName(),
+                Optional.ofNullable(site).orElseGet(Site::new).getHomepage(),
+                Optional.ofNullable(site).orElseGet(Site::new).getIconUrl(),
                 jobUrl,
                 location,
                 salary,
@@ -145,8 +150,8 @@ public class Jobs {
         return simpleJobModel;
     }
 
-    public static Jobs fromProjection(PersonalJobProjection projection) {
-        Jobs job = new Jobs();
+    public static Opportunity fromProjection(PersonalJobProjection projection) {
+        Opportunity job = new Opportunity();
         job.setJobId(projection.getJobId());
         job.setTitle(projection.getTitle());
         job.setJobUrl(projection.getJobUrl());

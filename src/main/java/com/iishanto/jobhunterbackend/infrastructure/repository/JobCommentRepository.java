@@ -24,10 +24,13 @@ public class JobCommentRepository extends DefaultFirebaseRealtimeDatabaseReposit
         document.setCreateAt(Timestamp.from(Instant.now()));
         document.setUpdateAt(Timestamp.from(Instant.now()));
         document.setUuid(UUID.randomUUID().toString());
-        return super.set(document, document.getJobId());
+        return super.set(document, cleanJobId(document.getJobId()));
     }
 
     public List<JobComment> findByJobId(String jobId, Long startAt, int limit) {
-        return super.find(Filter.FilterBuilder.builder().orderBy("createAt").startAt(startAt+1).limitToFirst(limit).build(),jobId);
+        return super.find(Filter.FilterBuilder.builder().orderBy("createAt").startAt(startAt+1).limitToFirst(limit).build(),cleanJobId(jobId));
+    }
+    private String cleanJobId(String jobId) {
+        return jobId.replaceAll("[^a-zA-Z0-9]", "_");
     }
 }

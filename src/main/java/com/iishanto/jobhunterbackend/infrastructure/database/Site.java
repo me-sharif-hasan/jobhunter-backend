@@ -1,16 +1,23 @@
 package com.iishanto.jobhunterbackend.infrastructure.database;
 
 import com.iishanto.jobhunterbackend.domain.model.SimpleSiteModel;
+import com.iishanto.jobhunterbackend.domain.model.values.IndexingStrategyNames;
 import com.iishanto.jobhunterbackend.domain.model.values.SiteControlStatus;
 import com.iishanto.jobhunterbackend.domain.model.values.SiteRuntimeStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.sql.Timestamp;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Site {
     @Id
@@ -29,12 +36,13 @@ public class Site {
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private Timestamp createdAt;
-
+    @Builder.Default
     private SiteControlStatus status = SiteControlStatus.ACTIVE;
+    @Builder.Default
     private SiteRuntimeStatus runtimeStatus = SiteRuntimeStatus.IDLE;
 
+    @Builder.Default
     private boolean isPublished = true;
-
 
     public static Site fromSiteModel(SimpleSiteModel siteModel){
         Site site=new Site();

@@ -1,29 +1,26 @@
 package com.iishanto.jobhunterbackend.infrastructure.ports.database;
 
 import com.iishanto.jobhunterbackend.domain.adapter.UserDataAdapter;
-import com.iishanto.jobhunterbackend.domain.model.SimpleJobModel;
 import com.iishanto.jobhunterbackend.domain.model.SimpleUserModel;
-import com.iishanto.jobhunterbackend.infrastructure.database.Jobs;
 import com.iishanto.jobhunterbackend.infrastructure.database.User;
-import com.iishanto.jobhunterbackend.infrastructure.database.UserAppliedJobs;
+import com.iishanto.jobhunterbackend.infrastructure.database.UserResume;
 import com.iishanto.jobhunterbackend.infrastructure.repository.UserAppliedJobsRepository;
 import com.iishanto.jobhunterbackend.infrastructure.repository.UserRepository;
+import com.iishanto.jobhunterbackend.infrastructure.repository.UserResumeRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.security.Principal;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Optional;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserDataPort implements UserDataAdapter {
     private final UserRepository userRepository;
-    UserAppliedJobsRepository userAppliedJobsRepository;
+    private final UserResumeRepository userResumeRepository;
+    private final UserAppliedJobsRepository userAppliedJobsRepository;
     @Override
     public Long addUser(SimpleUserModel userModel) {
         System.out.println("User Added: "+userModel.toString());
@@ -63,5 +60,25 @@ public class UserDataPort implements UserDataAdapter {
         User user=userRepository.findByEmail(email);
         if(user==null) return null;
         return user.toUserModel();
+    }
+
+    @Override
+    public Long saveResume(String resumeContentAsText, Long userId) {
+        UserResume userResume = Optional.ofNullable(userResumeRepository.findByUser_Id(userId)).orElseGet(UserResume::new);
+        userResume.setContent(resumeContentAsText);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+        userResume.setUser(user);
+        userResume = userResumeRepository.save(userResume);
+        return Optional.of(userResume).orElseThrow(()->new RuntimeException("Save failure.")).getId();
+    }
+
+    @Override
+    public String getResumeTextByUserId(Long userId) {
+        UserResume userResume = userResumeRepository.findByUser_Id(userId);
+        if (userResume == null) {
+            throw new IllegalArgumentException("Resume not found for user. Upload a resume first.");
+        }
+        return userResume.getContent();
     }
 }

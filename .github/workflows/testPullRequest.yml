@@ -68,4 +68,4 @@ jobs:
       # Build the application
       - name: Build with Maven
         run: |
-          ./mvnw clean package
+          ./mvnw clean test -Dspring.profiles.active=dev -f pom.xml
