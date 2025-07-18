@@ -210,7 +210,7 @@ class _ResumeStrengthScreenState extends State<ResumeStrengthScreen> {
           
           // Improvement suggestions
           ImprovementSuggestionsWidget(
-            suggestions: ImprovementSuggestionsWidget.getDefaultSuggestions(score),
+            resumeStrengthModel: resumeData,
           ),
           
           const SizedBox(height: 32),

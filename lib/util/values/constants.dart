@@ -54,6 +54,7 @@ class Constants{
   static const undoAppliedJob = "/api/jobs/unmark-applied";
 
   static const getResumeStrength = "/api/resume/me-vs-job";
+  static const uploadResume = "/api/resume/upload";
 
   static const List<List<int>> themeColor = [
     [0xFF42A5F5, 0xFF79BCFF], // Light Blue to Blue

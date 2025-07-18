@@ -3,7 +3,7 @@ import 'package:personalized_job_hunter/features/auth/controller/auth_controller
 import 'package:personalized_job_hunter/util/values/constants.dart';
 import 'package:provider/provider.dart';
 
-import '../widget/facebook_button_widget.dart';
+import '../widget/resume_upload_button.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -145,7 +145,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           ),
                         ),
                         Column(children: [
-                          SizedBox(height: 16),
+                          const SizedBox(height: 32),
+                          const ResumeUploadButton(),
+                          const SizedBox(height: 16),
                           // FacebookButtonWidget(onPressed: () {
                           //   print('Connect with Facebook tapped');
                           //   // Implement Facebook login logic here
