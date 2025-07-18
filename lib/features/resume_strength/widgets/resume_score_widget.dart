@@ -117,7 +117,7 @@ class _ResumeScoreWidgetState extends State<ResumeScoreWidget>
                 animation: _progressAnimation,
                 builder: (context, child) {
                   return Text(
-                    '${(_progressAnimation.value * widget.score).toInt()}',
+                    '${(_progressAnimation.value * 100).toInt()}',
                     style: TextStyle(
                       fontSize: widget.size * 0.25,
                       fontWeight: FontWeight.bold,
