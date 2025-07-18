@@ -28,6 +28,8 @@ import 'features/notification/controller/in_app_notification_controller.dart';
 import 'features/notification/domain/datasource/notification_datasource.dart';
 import 'features/profile/controller/facebook_controller.dart';
 import 'features/profile/datasource/profile_datasource.dart';
+import 'features/resume_strength/controller/resume_strength_controller.dart';
+import 'features/resume_strength/domain/datasource/resume_strength_datasource.dart';
 import 'features/splash/screens/splash_screen.dart';
 import 'features/subscriptions/controller/site_controller.dart';
 import 'features/subscriptions/domain/datasource/site_datasource.dart';
@@ -46,6 +48,7 @@ void setupLocator() {
   locator.registerSingleton<BackendMetaDatasource>(BackendMetaDatasource());
   locator.registerSingleton<NotificationDatasource>(NotificationDatasource());
   locator.registerSingleton<PersonalSiteDatasource>(PersonalSiteDatasource());
+  locator.registerSingleton<ResumeStrengthDataSource>(ResumeStrengthDataSource());
 }
 
 
@@ -118,7 +121,8 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => AuthController()),
         ChangeNotifierProvider(create: (_) => FacebookController()),
         ChangeNotifierProvider(create: (_) => InAppNotificationController()),
-        ChangeNotifierProvider(create: (_)=> Personalsitecontroller())
+        ChangeNotifierProvider(create: (_)=> Personalsitecontroller()),
+        ChangeNotifierProvider(create: (_) => ResumeStrengthController()),
       ],
       child: const JobHunter(),
     ),

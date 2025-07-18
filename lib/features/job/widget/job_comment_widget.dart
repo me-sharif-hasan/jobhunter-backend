@@ -39,17 +39,19 @@ class _JobCommentWidgetState extends State<JobCommentWidget> with SingleTickerPr
 
     // Load comments initially
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<JobTimelineController>().loadComments(widget.jobId).then((_) {
-        if (mounted) {
-          setState(() {
-            _isCommentsLoaded = true;
-          });
-          final comments = context.read<JobTimelineController>().jobCommentMap[widget.jobId] ?? [];
-          if (comments.isNotEmpty) {
-            _startCommentSlideshow(comments);
+      if(context.mounted){
+        context.read<JobTimelineController>().loadComments(widget.jobId).then((_) {
+          if (mounted) {
+            setState(() {
+              _isCommentsLoaded = true;
+            });
+            final comments = context.read<JobTimelineController>().jobCommentMap[widget.jobId] ?? [];
+            if (comments.isNotEmpty) {
+              _startCommentSlideshow(comments);
+            }
           }
-        }
       });
+      }
     });
   }
 
