@@ -23,6 +23,7 @@ class _ResumeUploadButtonState extends State<ResumeUploadButton> {
       builder: (context, controller, _) {
         return Column(
           children: [
+            // Main upload/cancel button (combined)
             AnimatedScale(
               scale: _isPressed ? 0.96 : 1.0,
               duration: const Duration(milliseconds: 100),
@@ -30,11 +31,15 @@ class _ResumeUploadButtonState extends State<ResumeUploadButton> {
                 width: double.infinity,
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 decoration: BoxDecoration(
-                  color: Constants.getThemeColor(1)[0], // Solid orange color
+                  color: controller.isUploading 
+                      ? Colors.red 
+                      : Constants.getThemeColor(1)[0], // Red when uploading (cancel), orange when idle
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Constants.getThemeColor(1)[0].withOpacity(0.2),
+                      color: (controller.isUploading 
+                          ? Colors.red 
+                          : Constants.getThemeColor(1)[0]).withOpacity(0.2),
                       blurRadius: 6,
                       offset: const Offset(0, 3),
                     ),
@@ -45,7 +50,9 @@ class _ResumeUploadButtonState extends State<ResumeUploadButton> {
                   borderRadius: BorderRadius.circular(16),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(16),
-                    onTap: controller.isUploading ? null : () => _pickAndUploadFile(context, controller),
+                    onTap: controller.isUploading 
+                        ? () => controller.cancelUpload()
+                        : () => _pickAndUploadFile(context, controller),
                     onTapDown: (_) => setState(() => _isPressed = true),
                     onTapUp: (_) => setState(() => _isPressed = false),
                     onTapCancel: () => setState(() => _isPressed = false),
@@ -55,18 +62,25 @@ class _ResumeUploadButtonState extends State<ResumeUploadButton> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           controller.isUploading
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                  ),
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    const Icon(Icons.close, size: 20, color: Colors.white),
+                                  ],
                                 )
                               : const Icon(Icons.upload_file_rounded, size: 24, color: Colors.white),
                           const SizedBox(width: 12),
                           Text(
-                            controller.isUploading ? 'Uploading...' : 'Upload Resume (PDF)',
+                            controller.isUploading ? 'Cancel Upload' : 'Upload Resume (PDF)',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

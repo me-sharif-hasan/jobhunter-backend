@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
@@ -14,12 +15,17 @@ class ResumeUploadController extends ChangeNotifier {
   bool _isUploading = false;
   String? _errorMessage;
   String? _successMessage;
+  Completer<void>? _uploadCompleter;
 
   bool get isUploading => _isUploading;
   String? get errorMessage => _errorMessage;
   String? get successMessage => _successMessage;
 
   Future<void> uploadResume(File file) async {
+    if (_isUploading) return; // Prevent multiple uploads
+    
+    _uploadCompleter = Completer<void>();
+    
     try {
       _setUploading(true);
       _clearMessages();
@@ -39,30 +45,53 @@ class ResumeUploadController extends ChangeNotifier {
       log('Uploading resume: ${file.path}');
       
       await _dataSource.uploadResume(file.path);
-      _successMessage = 'Resume uploaded successfully!';
       
-      // Add haptic feedback for success
-      HapticFeedback.mediumImpact();
-      
-      log('Resume uploaded successfully');
-      
-      // Auto-dismiss success message after 4 seconds
-      Future.delayed(const Duration(seconds: 4), () {
-        if (_successMessage != null) {
-          _clearMessages();
-        }
-      });
+      if (_uploadCompleter?.isCompleted == false) {
+        _successMessage = 'Resume uploaded successfully!';
+        
+        // Add haptic feedback for success
+        HapticFeedback.mediumImpact();
+        
+        log('Resume uploaded successfully');
+        
+        // Auto-dismiss success message after 4 seconds
+        Future.delayed(const Duration(seconds: 4), () {
+          if (_successMessage != null && !(_uploadCompleter?.isCompleted ?? true)) {
+            _clearMessages();
+          }
+        });
+        
+        _uploadCompleter?.complete();
+      }
       
     } catch (e) {
-      log('Error uploading resume: $e');
-      _errorMessage = e.toString();
-      _successMessage = null;
+      if (_uploadCompleter?.isCompleted == false) {
+        log('Error uploading resume: $e');
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+        
+        // Add haptic feedback for error
+        HapticFeedback.lightImpact();
+        
+        // Auto-dismiss error message after 6 seconds
+        Future.delayed(const Duration(seconds: 6), () {
+          if (_errorMessage != null && !(_uploadCompleter?.isCompleted ?? true)) {
+            _clearMessages();
+          }
+        });
+        
+        _uploadCompleter?.completeError(e);
+      }
     } finally {
       _setUploading(false);
+      _uploadCompleter = null;
     }
   }
 
   Future<void> uploadResumeBytes(Uint8List bytes, String fileName) async {
+    if (_isUploading) return; // Prevent multiple uploads
+    
+    _uploadCompleter = Completer<void>();
+    
     try {
       _setUploading(true);
       _clearMessages();
@@ -80,58 +109,73 @@ class ResumeUploadController extends ChangeNotifier {
       log('Uploading resume bytes: $fileName');
       
       await _dataSource.uploadResumeBytes(bytes, fileName);
-      _successMessage = 'Resume uploaded successfully!';
       
-      // Add haptic feedback for success
-      HapticFeedback.mediumImpact();
-      
-      log('Resume uploaded successfully');
-      
-      // Auto-dismiss success message after 4 seconds
-      Future.delayed(const Duration(seconds: 4), () {
-        if (_successMessage != null) {
-          _clearMessages();
-        }
-      });
+      if (_uploadCompleter?.isCompleted == false) {
+        _successMessage = 'Resume uploaded successfully!';
+        
+        // Add haptic feedback for success
+        HapticFeedback.mediumImpact();
+        
+        log('Resume uploaded successfully');
+        
+        // Auto-dismiss success message after 4 seconds
+        Future.delayed(const Duration(seconds: 4), () {
+          if (_successMessage != null && !(_uploadCompleter?.isCompleted ?? true)) {
+            _clearMessages();
+          }
+        });
+        
+        _uploadCompleter?.complete();
+      }
       
     } catch (e) {
-      log('Error uploading resume: $e');
-      _errorMessage = e.toString().replaceAll('Exception: ', '');
-      
-      // Add haptic feedback for error
-      HapticFeedback.lightImpact();
-      
-      // Auto-dismiss error message after 6 seconds
-      Future.delayed(const Duration(seconds: 6), () {
-        if (_errorMessage != null) {
-          _clearMessages();
-        }
-      });
+      if (_uploadCompleter?.isCompleted == false) {
+        log('Error uploading resume: $e');
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+        
+        // Add haptic feedback for error
+        HapticFeedback.lightImpact();
+        
+        // Auto-dismiss error message after 6 seconds
+        Future.delayed(const Duration(seconds: 6), () {
+          if (_errorMessage != null && !(_uploadCompleter?.isCompleted ?? true)) {
+            _clearMessages();
+          }
+        });
+        
+        _uploadCompleter?.completeError(e);
+      }
     } finally {
       _setUploading(false);
+      _uploadCompleter = null;
     }
   }
 
   void _setUploading(bool uploading) {
-    if (WidgetsBinding.instance.lifecycleState != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _isUploading = uploading;
-        notifyListeners();
-      });
-    }
+    _isUploading = uploading;
+    notifyListeners();
   }
 
   void _clearMessages() {
-    if (WidgetsBinding.instance.lifecycleState != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _errorMessage = null;
-        _successMessage = null;
-        notifyListeners();
-      });
-    }
+    _errorMessage = null;
+    _successMessage = null;
+    notifyListeners();
   }
 
   void clearMessages() {
     _clearMessages();
+  }
+
+  void cancelUpload() {
+    if (_isUploading && _uploadCompleter != null && !_uploadCompleter!.isCompleted) {
+      log('Cancelling upload...');
+      _uploadCompleter!.completeError(Exception('Upload cancelled by user'));
+      _errorMessage = 'Upload cancelled';
+      _setUploading(false);
+      _uploadCompleter = null;
+      
+      // Add haptic feedback for cancellation
+      HapticFeedback.lightImpact();
+    }
   }
 }
