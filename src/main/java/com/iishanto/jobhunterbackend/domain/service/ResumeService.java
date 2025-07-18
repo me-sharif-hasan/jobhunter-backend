@@ -27,7 +27,7 @@ public class ResumeService implements ResumeManagementUseCase {
     private final AiAdapter aiAdapter;
     @Override
     public Long uploadResume(InputStream fileIo, String contentType) throws IOException{
-        if(contentType ==null|| !contentType.equals("application/pdf")){
+        if(contentType ==null|| !(contentType.equals("application/pdf")||contentType.equals("application/octet-stream"))){
             throw new IllegalArgumentException("Invalid file type. Only PDF files are allowed.");
         }
         if(fileIo==null){

@@ -64,20 +64,20 @@ public class UserDataPort implements UserDataAdapter {
 
     @Override
     public Long saveResume(String resumeContentAsText, Long userId) {
-        UserResume userResume = new UserResume();
+        UserResume userResume = Optional.ofNullable(userResumeRepository.findByUser_Id(userId)).orElseGet(UserResume::new);
         userResume.setContent(resumeContentAsText);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
         userResume.setUser(user);
         userResume = userResumeRepository.save(userResume);
-        return Optional.ofNullable(userResume).orElseThrow(()->new RuntimeException("Save failure.")).getId();
+        return Optional.of(userResume).orElseThrow(()->new RuntimeException("Save failure.")).getId();
     }
 
     @Override
     public String getResumeTextByUserId(Long userId) {
         UserResume userResume = userResumeRepository.findByUser_Id(userId);
         if (userResume == null) {
-            throw new IllegalArgumentException("Resume not found for user ID: " + userId);
+            throw new IllegalArgumentException("Resume not found for user. Upload a resume first.");
         }
         return userResume.getContent();
     }
