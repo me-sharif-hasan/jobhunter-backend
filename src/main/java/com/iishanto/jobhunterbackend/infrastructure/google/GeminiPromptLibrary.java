@@ -24,7 +24,7 @@ public final class GeminiPromptLibrary {
                               "text": "%s"
                             },
                             {
-                              "text": "Current Time: %s. Ensure consistent formatting and valid JSON. The format is: { \\"resumeScore\\": <score from 0 to 100>, \\"evaluationBreakdown\\": { provided keys must be justified }, \\"reasoning\\": \\"<reasoning for the score, must be within 100 words>\\" }. Keep strong judgment so that you do not change your opinion in unchanged CV and description."
+                              "text": "Current Time: %s. Ensure consistent formatting and valid JSON. The format is: { \\"resumeScore\\": <score from 0 to 100>, \\"evaluationBreakdown\\": { provided keys must be justified }, \\"reasoning\\": \\"<reasoning for the score, must be within 100 words>\\",\\"improvementSuggestions\\":[List of string saying how to improve.] }. Keep strong judgment so that you do not change your opinion in unchanged CV and description."
                             }
                           ]
                         }

@@ -17,6 +17,7 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -65,7 +66,7 @@ public class ResumeService implements ResumeManagementUseCase {
                 Evaluate the resume based on the following criteria: %s
                 """.formatted(job.getJobDescription(), resumeText, StringUtils.join(getWeights().keySet().stream().map(key->key+" : Maximum Mark: "+getWeights().get(key)).toList(),", "));
         AiResponse data = aiAdapter.getPromptResponse(prompt,AiResponse.class);
-        return SimpleCalculatedResumeStrengthModel.builder().score(data.resumeScore).reasoning(data.reasoning).build();
+        return SimpleCalculatedResumeStrengthModel.builder().score(data.resumeScore).reasoning(data.reasoning).improvementSuggestions(data.improvementSuggestions).build();
     }
 
     private Map<String,Integer> getWeights(){
@@ -135,5 +136,6 @@ public class ResumeService implements ResumeManagementUseCase {
         private Integer resumeScore;
         private Map<String, Integer> evaluationBreakdown;
         private String reasoning;
+        private List<String> improvementSuggestions;
     }
 }
