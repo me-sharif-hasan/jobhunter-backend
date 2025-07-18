@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:personalized_job_hunter/features/job/controller/job_timeline_controller.dart';
 import 'package:personalized_job_hunter/features/job/widget/job_comment_widget.dart';
+import 'package:personalized_job_hunter/features/resume_strength/screens/resume_strength_screen.dart';
 import 'package:provider/provider.dart';
 import '../../common/domain/model/job_model.dart';
 import 'job_details_popup.dart';
@@ -133,8 +134,13 @@ class _JobTimelineCardState extends State<JobTimelineCard>
                                 JobTitleCard(job: widget.job),
                                 IconButton(
                                   onPressed: () {
-                                    Provider.of<JobTimelineController>(context, listen: false)
-                                        .toggleFavorite(widget.job);
+                                    Navigator.push(context, 
+                                      MaterialPageRoute(
+                                        builder: (context) => ResumeStrengthScreen(
+                                          job: widget.job,
+                                        ),
+                                      ),
+                                    );
                                   },
                                   icon: const Icon(
                                     Icons.insights,
