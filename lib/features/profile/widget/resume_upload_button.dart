@@ -134,8 +134,9 @@ class _ResumeUploadButtonState extends State<ResumeUploadButton> {
       if (result != null && result.files.isNotEmpty) {
         if (kIsWeb) {
           final bytes = result.files.first.bytes;
+          final fileName = result.files.first.name;
           if (bytes != null) {
-            await controller.uploadResume(bytes as File);
+            await controller.uploadResumeBytes(bytes, fileName);
           } else {
             throw Exception('No file bytes available on Web');
           }

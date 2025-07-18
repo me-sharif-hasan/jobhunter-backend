@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:http/http.dart' as http;
@@ -69,6 +70,28 @@ class BackendClient {
     });
     
     request.files.add(await http.MultipartFile.fromPath(uploadKey, filePath));
+    
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+    
+    if(response.statusCode == 403){
+      _routeToLogin();
+    }
+    return response;
+  }
+
+  Future<http.Response> uploadBytes(String path, Uint8List bytes, String fileName, String uploadKey) async {
+    log(Uri.parse(Constants.baseUrl + path).toString());
+    String token = await _getToken();
+    log('Saved token: $token');
+    
+    var request = http.MultipartRequest('POST', Uri.parse(Constants.baseUrl + path));
+    request.headers.addAll({
+      'Authorization': 'Bearer $token',
+      'Time-Zone': await getTimezoneId(),
+    });
+    
+    request.files.add(http.MultipartFile.fromBytes(uploadKey, bytes, filename: fileName));
     
     var streamedResponse = await request.send();
     var response = await http.Response.fromStream(streamedResponse);

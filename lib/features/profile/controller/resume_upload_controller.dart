@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
@@ -56,6 +57,56 @@ class ResumeUploadController extends ChangeNotifier {
       log('Error uploading resume: $e');
       _errorMessage = e.toString();
       _successMessage = null;
+    } finally {
+      _setUploading(false);
+    }
+  }
+
+  Future<void> uploadResumeBytes(Uint8List bytes, String fileName) async {
+    try {
+      _setUploading(true);
+      _clearMessages();
+      
+      // Check file size (1MB = 1048576 bytes)
+      if (bytes.length > 1048576) {
+        throw Exception('File size exceeds 1MB limit');
+      }
+
+      // Check file extension
+      if (!fileName.toLowerCase().endsWith('.pdf')) {
+        throw Exception('Only PDF files are allowed');
+      }
+      
+      log('Uploading resume bytes: $fileName');
+      
+      await _dataSource.uploadResumeBytes(bytes, fileName);
+      _successMessage = 'Resume uploaded successfully!';
+      
+      // Add haptic feedback for success
+      HapticFeedback.mediumImpact();
+      
+      log('Resume uploaded successfully');
+      
+      // Auto-dismiss success message after 4 seconds
+      Future.delayed(const Duration(seconds: 4), () {
+        if (_successMessage != null) {
+          _clearMessages();
+        }
+      });
+      
+    } catch (e) {
+      log('Error uploading resume: $e');
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      
+      // Add haptic feedback for error
+      HapticFeedback.lightImpact();
+      
+      // Auto-dismiss error message after 6 seconds
+      Future.delayed(const Duration(seconds: 6), () {
+        if (_errorMessage != null) {
+          _clearMessages();
+        }
+      });
     } finally {
       _setUploading(false);
     }
